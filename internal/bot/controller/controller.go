@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	tele "gopkg.in/telebot.v3"
 )
