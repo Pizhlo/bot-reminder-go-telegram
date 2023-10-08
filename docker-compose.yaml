@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres:15-bullseye
+    restart: always
+    environment:
+      POSTGRES_DB: bot-reminder
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "secret"
+    ports:
+      - "5432:5432"
