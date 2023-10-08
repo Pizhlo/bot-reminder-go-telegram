@@ -16,7 +16,7 @@ func New(conn *pgxpool.Pool) *TimezoneRepo {
 	return &TimezoneRepo{conn}
 }
 
-// SaveUserTimezone сохраняет часовой пояс пользователя. Аргументы: id - id базы данных, timezone - модель часовой пояс
+// SaveUserTimezone сохраняет часовой пояс пользователя. Аргументы: id - id базы данных, timezone - модель часового пояса
 func (db *TimezoneRepo) SaveUserTimezone(id int, timezone model.UserTimezone) error {
 	_, err := db.Exec(context.Background(), `insert into timezones(user_id, timezone) values(?, ?)`, id, timezone.Location)
 	if err != nil {

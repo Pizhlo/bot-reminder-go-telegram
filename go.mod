@@ -15,6 +15,7 @@ require (
 	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/zsefvlol/timezonemapper v1.0.0 // indirect
 	gopkg.in/telebot.v3 v3.1.3 // indirect
 )
 
