@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	tele "gopkg.in/telebot.v3"
 )
@@ -15,7 +16,7 @@ func New(srv *server.Server) *Controller {
 
 func (c *Controller) SetupBot() {
 	c.srv.Bot.Handle(`/start`, func(c tele.Context) error {
-		return c.Send("Hello!")
+		return c.Send(messages.StartMessage)
 	})
 
 	c.startBot()
