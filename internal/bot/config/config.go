@@ -14,6 +14,7 @@ type Config struct {
 	DBHost    string `mapstructure:"DB_HOST,required"`
 	DBPort    string `mapstructure:"DB_PORT,required"`
 	DBAddress string
+	Token     string
 }
 
 func LoadConfig(path string) (*Config, error) {
@@ -35,8 +36,6 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	conf.DBAddress = fmt.Sprintf(`postgresql://%s:%s@%s:%s/%s?sslmode=disable`, conf.DBUser, conf.DBPass, conf.DBHost, conf.DBPort, conf.DBName)
-
-	fmt.Println(conf)
 
 	return &conf, nil
 }

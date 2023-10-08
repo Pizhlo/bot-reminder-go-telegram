@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/calendar"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
@@ -14,6 +14,8 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/user"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
+	tele "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/middleware"
 )
 
 func main() {
@@ -27,13 +29,27 @@ func setup() {
 	}
 
 	logger := logger.New()
-	srv := server.New(setupDB(conf.DBAddress))
 	calendar := calendar.New()
+	noteEditor, remiderEditor, userEditor := setupDB(conf.DBAddress)
 
-	controller := controller.New(srv, calendar, logger)
+	logger.Info().Msg(`successfully connected db`)
 
-	logger.Log().Msg(`successfully loaded app`)
-	fmt.Println(controller)
+	pref := tele.Settings{
+		Token:  conf.Token,
+		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+	}
+	b, err := tele.NewBot(pref)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to create bot")
+	}
+
+	b.Use(middleware.Logger())
+
+	srv := server.New(noteEditor, remiderEditor, userEditor, calendar, logger, b)
+
+	controller := controller.New(srv)
+
+	controller.SetupBot()
 }
 
 func setupDB(dbAddr string) (*note.NoteRepo, *reminder.ReminderRepo, *user.UserRepo) {
