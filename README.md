@@ -15,5 +15,5 @@ But this is not all! You can also use `/add_note` command to save note if you ne
 
 To use this bot, first you need to get token from Bot Father.<br>
 Then clone this repo:<br>
-`git clone [github.com/Pizhlo/tgbot-reminder-go.git](https://github.com/Pizhlo/bot-reminder-go-telegram)`<br>
+`git clone github.com/Pizhlo/tgbot-reminder-go.git`<br>
 create `app.env` file (see `app.env.example`) and paste there your token and db source.
