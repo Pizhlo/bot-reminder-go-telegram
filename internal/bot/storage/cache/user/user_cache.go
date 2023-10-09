@@ -26,14 +26,14 @@ func (c *UserCache) SaveUser(id int, tgID int64) {
 func (c *UserCache) GetUser(tgID int64) (model.User, error) {
 	val, ok := c.data.Load(tgID)
 	if !ok {
-		return model.User{}, errors.UserNotFound
+		return model.User{}, errors.ErrUserNotFound
 	}
 
 	var user model.User
 
 	user, ok = val.(model.User)
 	if !ok {
-		return model.User{}, errors.UnableCastVariable
+		return model.User{}, errors.ErrUnableCastVariable
 	}
 
 	return user, nil

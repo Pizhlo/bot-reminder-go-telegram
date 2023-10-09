@@ -6,7 +6,6 @@ import (
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	pkg_err "github.com/pkg/errors"
-	"gopkg.in/telebot.v3"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -60,7 +59,7 @@ func (c *Controller) SetupBot() error {
 }
 
 func (c *Controller) sendStartupMsg() error {
-	_, err := c.srv.Bot.Send(telebot.Recipient(&tele.Chat{ID: -1001890622926}), "#запуск\nБот запущен")
+	_, err := c.srv.Bot.Send(tele.Recipient(&tele.Chat{ID: -1001890622926}), "#запуск\nБот запущен")
 	if err != nil {
 		return err
 	}

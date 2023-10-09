@@ -22,14 +22,14 @@ func (c *TimezoneCache) SaveUserTimezone(id int64, tz model.UserTimezone) {
 func (c *TimezoneCache) GetUserTimezone(id int64) (model.UserTimezone, error) {
 	val, ok := c.data.Load(id)
 	if !ok {
-		return model.UserTimezone{}, errors.UserNotFound
+		return model.UserTimezone{}, errors.ErrUserNotFound
 	}
 
 	var userTZ model.UserTimezone
 
 	userTZ, ok = val.(model.UserTimezone)
 	if !ok {
-		return model.UserTimezone{}, errors.UnableCastVariable
+		return model.UserTimezone{}, errors.ErrUserNotFound
 	}
 
 	return userTZ, nil

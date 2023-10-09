@@ -10,7 +10,7 @@ import (
 
 func (c *Controller) StartMsg(ctx tele.Context, err error) error {
 	if err != nil {
-		if errors.Is(err, api_err.UserNotFound) {
+		if errors.Is(err, api_err.ErrUserNotFound) {
 			locationMenu.Reply(
 				locationMenu.Row(locationBtn),
 				locationMenu.Row(rejectBtn),

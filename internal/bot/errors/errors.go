@@ -3,5 +3,5 @@ package errors
 import "errors"
 
 // API ERRORS
-var UserNotFound = errors.New(`user not found`)
-var UnableCastVariable = errors.New(`unable to cast variable`)
+var ErrUserNotFound = errors.New(`user not found`)
+var ErrUnableCastVariable = errors.New(`unable to cast variable`)
