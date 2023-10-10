@@ -28,10 +28,16 @@ var (
 )
 
 func (c *Controller) SetupBot() error {
+	c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
+
 	c.srv.Bot.Handle(startCmd, func(ctx tele.Context) error {
 		// проверяем, известен ли нам пользователь
 		_, err := c.srv.UserCacheEditor.GetUser(ctx.Chat().ID)
 		return c.StartMsg(ctx, err)
+	})
+
+	c.srv.Bot.Handle(tele.OnText, func(ctx tele.Context) error {
+		return c.srv.CreateNote(ctx)
 	})
 
 	c.srv.Bot.Handle(&rejectBtn, func(ctx tele.Context) error {

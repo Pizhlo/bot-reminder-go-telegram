@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/calendar"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -19,7 +21,9 @@ type Server struct {
 }
 
 // db
-type noteEditor interface{}
+type noteEditor interface {
+	CreateNote(ctx context.Context, note model.Note) error
+}
 type reminderEditor interface{}
 type userEditor interface {
 	SaveUser(telegramID int64) (int, error)
