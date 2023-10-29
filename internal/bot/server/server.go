@@ -3,30 +3,26 @@ package server
 import (
 	"context"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/calendar"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	tele "gopkg.in/telebot.v3"
 )
 
+// communicates with db
 type Server struct {
-	NoteEditor          noteEditor
-	ReminderEditor      reminderEditor
-	UserEditor          userEditor
-	TimezoneCacheEditor timezoneCacheEditor
-	UserCacheEditor     userCacheEditor
-	Calendar            *calendar.Calendar
-	Logger              *logger.Logger
-	Bot                 *tele.Bot
+	noteEditor          noteEditor
+	reminderEditor      reminderEditor
+	userEditor          userEditor
+	timezoneCacheEditor timezoneCacheEditor
+	userCacheEditor     userCacheEditor
 }
 
 // db
 type noteEditor interface {
-	CreateNote(ctx context.Context, note model.Note) error
+	SaveNote(ctx context.Context, note model.Note) error
 }
 type reminderEditor interface{}
 type userEditor interface {
-	SaveUser(telegramID int64) (int, error)
+	GetUser(ctx context.Context, tgID int64) (model.User, error)
+	SaveUser(ctx context.Context, telegramID int64) (int, error)
 }
 
 // cache
@@ -35,10 +31,10 @@ type timezoneCacheEditor interface {
 	SaveUserTimezone(id int64, tz model.UserTimezone)
 }
 type userCacheEditor interface {
-	GetUser(tgID int64) (model.User, error)
-	SaveUser(id int, tgID int64)
+	GetUser(ctx context.Context, tgID int64) (model.User, error)
+	SaveUser(ctx context.Context, id int, tgID int64)
 }
 
-func New(noteEditor noteEditor, reminderEditor reminderEditor, userEditor userEditor, tzCache timezoneCacheEditor, userCacheEditor userCacheEditor, calendar *calendar.Calendar, logger *logger.Logger, bot *tele.Bot) *Server {
-	return &Server{noteEditor, reminderEditor, userEditor, tzCache, userCacheEditor, calendar, logger, bot}
+func New(noteEditor noteEditor, reminderEditor reminderEditor, userEditor userEditor, tzCache timezoneCacheEditor, userCacheEditor userCacheEditor) *Server {
+	return &Server{noteEditor, reminderEditor, userEditor, tzCache, userCacheEditor}
 }

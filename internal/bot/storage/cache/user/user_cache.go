@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -16,14 +17,14 @@ func New() *UserCache {
 }
 
 // SaveUser хранит значения [telegram_id : id in db]
-func (c *UserCache) SaveUser(id int, tgID int64) {
+func (c *UserCache) SaveUser(ctx context.Context, id int, tgID int64) {
 	u := model.User{
 		ID: id,
 	}
 	c.data.Store(tgID, u)
 }
 
-func (c *UserCache) GetUser(tgID int64) (model.User, error) {
+func (c *UserCache) GetUser(ctx context.Context, tgID int64) (model.User, error) {
 	val, ok := c.data.Load(tgID)
 	if !ok {
 		return model.User{}, errors.ErrUserNotFound
