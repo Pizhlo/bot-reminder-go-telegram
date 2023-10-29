@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
