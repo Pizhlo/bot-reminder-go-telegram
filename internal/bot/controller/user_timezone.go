@@ -8,19 +8,17 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-func (c *Controller) saveTimezone(id int64, loc *telebot.Location) string {
+func (c *Controller) parseTimezone(id int64, loc *telebot.Location) model.UserTimezone {
 	tz := model.UserTimezone{
 		Lat:  loc.Lat,
 		Long: loc.Lng,
 	}
 
 	timezone := timezonemapper.LatLngToTimezoneString(39.9254474, 116.3870752)
-	// Should print "Timezone: Asia/Shanghai"
+
 	fmt.Printf("Timezone: %s\n", timezone)
 
 	tz.Location = timezone
 
-	c.srv.TimezoneCacheEditor.SaveUserTimezone(id, tz)
-
-	return timezone
+	return tz
 }

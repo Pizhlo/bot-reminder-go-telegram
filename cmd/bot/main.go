@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/calendar"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
@@ -25,20 +24,13 @@ func main() {
 }
 
 func setup() {
+	// conf
 	conf, err := config.LoadConfig(`../..`)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")
 	}
 
-	logger := logger.New()
-	calendar := calendar.New()
-	noteEditor, remiderEditor, userEditor := setupDB(conf.DBAddress)
-
-	tzCache := timezone_cache.New()
-	userCache := user_cache.New()
-
-	logger.Info().Msg(`successfully connected db`)
-
+	// bot
 	pref := tele.Settings{
 		Token:  conf.Token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -48,11 +40,18 @@ func setup() {
 		log.Fatal().Err(err).Msg("failed to create bot")
 	}
 
-	//b.Use(middleware.Logger())
+	// server
+	logger := logger.New()
+	noteEditor, remiderEditor, userEditor := setupDB(conf.DBAddress)
 
-	srv := server.New(noteEditor, remiderEditor, userEditor, tzCache, userCache, calendar, logger, b)
+	logger.Info().Msg(`successfully connected db`)
 
-	controller := controller.New(srv)
+	tzCache, userCache := setupCache()
+
+	srv := server.New(noteEditor, remiderEditor, userEditor, tzCache, userCache)
+
+	// contoller
+	controller := controller.New(b, logger, srv)
 
 	if err := controller.SetupBot(); err != nil {
 		log.Fatal().Err(err)
@@ -73,4 +72,11 @@ func setupDB(dbAddr string) (*note.NoteRepo, *reminder.ReminderRepo, *user.UserR
 	userEditor := user.New(conn)
 
 	return noteEditor, reminderEditor, userEditor
+}
+
+func setupCache() (*timezone_cache.TimezoneCache, *user_cache.UserCache) {
+	tzCache := timezone_cache.New()
+	userCache := user_cache.New()
+
+	return tzCache, userCache
 }

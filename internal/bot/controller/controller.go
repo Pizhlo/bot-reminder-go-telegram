@@ -1,58 +1,84 @@
 package controller
 
 import (
-	"fmt"
-
-	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	default_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/default"
+	note_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/note"
+	tz_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/timezone"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	pkg_err "github.com/pkg/errors"
 	tele "gopkg.in/telebot.v3"
 )
 
 type Controller struct {
-	srv *server.Server
+	commandHandlerMap map[int64]commandHandler
+	textHanderMap     map[int64]textHander
+	bot               *tele.Bot
+	logger            *logger.Logger
+	srv               *server.Server
 }
 
-func New(srv *server.Server) *Controller {
-	return &Controller{srv}
+type commandHandler interface {
+	Handle(ctx tele.Context) error
+}
+
+type textHander interface {
+	Handle(ctx tele.Context) error
+}
+
+type userEditor interface {
+	SaveUser(telegramID int64) (int, error)
+	GetUser(tgID int64) (int, error)
 }
 
 const (
-	startCmd = `/start`
+	startCmd             = `/start`
+	addReminderCmd       = `/add_reminder`
+	searchNotesByTextCmd = `/notes_search_text`
 )
 
-var (
-	locationMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
-	locationBtn  = locationMenu.Location("Отправить геолокацию")
-	rejectBtn    = locationMenu.Text(`Отказаться`)
-)
+func New(bot *tele.Bot, logger *logger.Logger, srv *server.Server) *Controller {
+	handlerMap := make(map[int64]commandHandler)
+	textHander := make(map[int64]textHander)
 
+	return &Controller{handlerMap, textHander, bot, logger, srv}
+}
 func (c *Controller) SetupBot() error {
-	c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
+	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
 
-	c.srv.Bot.Handle(startCmd, func(ctx tele.Context) error {
-		// проверяем, известен ли нам пользователь
-		_, err := c.srv.UserCacheEditor.GetUser(ctx.Chat().ID)
-		return c.StartMsg(ctx, err)
+	// commands
+
+	c.bot.Handle(startCmd, func(ctx tele.Context) error {
+		c.commandHandlerMap[ctx.Chat().ID] = default_handler.New(c.srv)
+		c.textHanderMap[ctx.Chat().ID] = note_handler.NewSaveNoteHandler(c.srv) // поведение на текст по умолчанию: сохранить заметку
+		return c.commandHandlerMap[ctx.Chat().ID].Handle(ctx)
 	})
 
-	c.srv.Bot.Handle(tele.OnText, func(ctx tele.Context) error {
-		return c.srv.CreateNote(ctx)
+	c.bot.Handle(addReminderCmd, func(ctx tele.Context) error {
+		return nil
 	})
 
-	c.srv.Bot.Handle(&rejectBtn, func(ctx tele.Context) error {
+	c.bot.Handle(searchNotesByTextCmd, func(ctx tele.Context) error {
+		return nil
+	})
+
+	// types
+
+	c.bot.Handle(tele.OnText, func(ctx tele.Context) error {
+		return c.textHanderMap[ctx.Chat().ID].Handle(ctx)
+	})
+
+	// buttons
+
+	c.bot.Handle(&default_handler.RejectBtn, func(ctx tele.Context) error {
 		return ctx.Send(`text`, tele.RemoveKeyboard)
 	})
 
-	c.srv.Bot.Handle(&locationBtn, func(ctx tele.Context) error {
-		fmt.Println("location")
-		err := c.saveUser(ctx.Chat().ID)
-		if err != nil {
-			return err
-		}
+	c.bot.Handle(&default_handler.LocationBtn, func(ctx tele.Context) error {
+		tz := c.parseTimezone(ctx.Chat().ID, ctx.Query().Location)
+		c.commandHandlerMap[ctx.Chat().ID] = tz_handler.New(tz, c.srv)
 
-		tz := c.saveTimezone(ctx.Chat().ID, ctx.Query().Location)
-		return ctx.Send(fmt.Sprintf(messages.LocationMessage, tz), tele.RemoveKeyboard)
+		return c.commandHandlerMap[ctx.Chat().ID].Handle(ctx)
 	})
 
 	if err := c.sendStartupMsg(); err != nil {
@@ -65,7 +91,7 @@ func (c *Controller) SetupBot() error {
 }
 
 func (c *Controller) sendStartupMsg() error {
-	_, err := c.srv.Bot.Send(tele.Recipient(&tele.Chat{ID: -1001890622926}), "#запуск\nБот запущен")
+	_, err := c.bot.Send(tele.Recipient(&tele.Chat{ID: -1001890622926}), "#запуск\nБот запущен")
 	if err != nil {
 		return err
 	}
@@ -74,6 +100,6 @@ func (c *Controller) sendStartupMsg() error {
 }
 
 func (c *Controller) startBot() {
-	c.srv.Logger.Info().Msg(`successfully loaded app`)
-	c.srv.Bot.Start()
+	c.logger.Info().Msg(`successfully loaded app`)
+	c.bot.Start()
 }
