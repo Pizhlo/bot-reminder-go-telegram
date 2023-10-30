@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"fmt"
-
 	default_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/default"
 	note_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/note"
 	tz_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/timezone"
