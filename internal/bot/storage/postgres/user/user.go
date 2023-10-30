@@ -4,8 +4,8 @@ import (
 	"context"
 
 	api_errs "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 )

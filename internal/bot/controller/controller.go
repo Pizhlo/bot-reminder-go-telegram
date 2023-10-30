@@ -43,6 +43,7 @@ func New(bot *tele.Bot, logger *logger.Logger, srv *server.Server) *Controller {
 }
 func (c *Controller) SetupBot() error {
 	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
+	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
 
 	// commands
 
@@ -103,6 +104,8 @@ func (c *Controller) sendStartupMsg() error {
 }
 
 func (c *Controller) startBot() {
+	c.logger.Info().Msg(`successfully loaded app`)
+	c.bot.Start()
 	c.logger.Info().Msg(`successfully loaded app`)
 	c.bot.Start()
 }
