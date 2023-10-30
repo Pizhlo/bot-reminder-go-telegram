@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	default_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/default"
 	note_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/note"
 	tz_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/timezone"
@@ -40,7 +42,6 @@ func New(bot *tele.Bot, logger *logger.Logger, srv *server.Server) *Controller {
 	return &Controller{handlerMap, textHander, bot, logger, srv}
 }
 func (c *Controller) SetupBot() error {
-	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
 	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
 
 	// commands
