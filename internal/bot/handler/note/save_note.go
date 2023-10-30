@@ -2,7 +2,9 @@ package note
 
 import (
 	"context"
+	"fmt"
 
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	tele "gopkg.in/telebot.v3"
@@ -17,6 +19,7 @@ func NewSaveNoteHandler(srv *server.Server) *SaveNoteHandler {
 }
 
 func (h *SaveNoteHandler) Handle(ctx tele.Context) error {
+	fmt.Println("save note handler handle")
 	c, cancel := context.WithCancel(context.TODO()) // тот ли контекст?
 	defer cancel()
 
@@ -30,5 +33,9 @@ func (h *SaveNoteHandler) Handle(ctx tele.Context) error {
 		Text:   ctx.Text(),
 	}
 
-	return h.srv.SaveNote(note)
+	if err := h.srv.SaveNote(note); err != nil {
+		return err
+	}
+
+	return ctx.Send(messages.SuccessfullyCreatedNoteMessage)
 }

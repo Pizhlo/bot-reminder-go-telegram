@@ -21,7 +21,7 @@ func New(conn *pgxpool.Pool) *UserRepo {
 func (db *UserRepo) GetUser(ctx context.Context, tgID int64) (model.User, error) {
 	var user model.User
 
-	err := db.QueryRow(ctx, `select id from "users" where tg_id = ?`, tgID).Scan(&user.ID)
+	err := db.QueryRow(ctx, `select id from "users" where tg_id = $1`, tgID).Scan(&user.ID)
 	if err != nil {
 		return user, err
 	}
@@ -35,7 +35,7 @@ func (db *UserRepo) GetUser(ctx context.Context, tgID int64) (model.User, error)
 
 func (db *UserRepo) SaveUser(ctx context.Context, telegramID int64) (int, error) {
 	var id int
-	err := db.QueryRow(context.Background(), `insert into "users"(tg_id) values(?) returning id`, telegramID).Scan(&id)
+	err := db.QueryRow(context.Background(), `insert into "users"(tg_id) values($1) returning id`, telegramID).Scan(&id)
 	if err != nil {
 		return 0, errors.Wrap(err, `unable to save user`)
 	}
