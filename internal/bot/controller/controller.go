@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	default_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/default"
 	note_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/note"
 	tz_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/timezone"
@@ -26,15 +28,11 @@ type textHander interface {
 	Handle(ctx tele.Context) error
 }
 
-type userEditor interface {
-	SaveUser(telegramID int64) (int, error)
-	GetUser(tgID int64) (int, error)
-}
-
 const (
 	startCmd             = `/start`
 	addReminderCmd       = `/add_reminder`
 	searchNotesByTextCmd = `/notes_search_text`
+	notesCmd             = `/notes`
 )
 
 func New(bot *tele.Bot, logger *logger.Logger, srv *server.Server) *Controller {
@@ -44,6 +42,7 @@ func New(bot *tele.Bot, logger *logger.Logger, srv *server.Server) *Controller {
 	return &Controller{handlerMap, textHander, bot, logger, srv}
 }
 func (c *Controller) SetupBot() error {
+	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
 	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
 
 	// commands
@@ -59,6 +58,11 @@ func (c *Controller) SetupBot() error {
 	})
 
 	c.bot.Handle(searchNotesByTextCmd, func(ctx tele.Context) error {
+		return nil
+	})
+
+	c.bot.Handle(notesCmd, func(ctx tele.Context) error {
+		fmt.Println(ctx.Text())
 		return nil
 	})
 
@@ -100,6 +104,8 @@ func (c *Controller) sendStartupMsg() error {
 }
 
 func (c *Controller) startBot() {
+	c.logger.Info().Msg(`successfully loaded app`)
+	c.bot.Start()
 	c.logger.Info().Msg(`successfully loaded app`)
 	c.bot.Start()
 }
