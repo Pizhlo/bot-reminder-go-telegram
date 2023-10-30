@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"fmt"
-
 	default_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/default"
 	note_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/note"
 	tz_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/timezone"
@@ -62,8 +60,8 @@ func (c *Controller) SetupBot() error {
 	})
 
 	c.bot.Handle(notesCmd, func(ctx tele.Context) error {
-		fmt.Println(ctx.Text())
-		return nil
+		c.commandHandlerMap[ctx.Chat().ID] = note_handler.NewNotesHandler(c.srv)
+		return c.commandHandlerMap[ctx.Chat().ID].Handle(ctx)
 	})
 
 	// types

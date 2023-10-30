@@ -6,12 +6,10 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 )
 
-func (s *Server) SaveNote(note model.Note) error {
-	c, cancel := context.WithCancel(context.TODO()) // тот ли контекст?
-	defer cancel()
+func (s *Server) GetAllNotes(ctx context.Context, userID int) ([]model.Note, error) {
+	return s.noteEditor.GetAllNotes(ctx, userID)
+}
 
-	if err := s.noteEditor.SaveNote(c, note); err != nil {
-		return err
-	}
-	return nil
+func (s *Server) SaveNote(ctx context.Context, note model.Note) error {
+	return s.noteEditor.SaveNote(ctx, note)
 }
