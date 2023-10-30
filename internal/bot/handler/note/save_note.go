@@ -33,6 +33,8 @@ func (h *SaveNoteHandler) Handle(ctx tele.Context) error {
 		Text:   ctx.Text(),
 	}
 
+
+
 	if err := h.srv.SaveNote(note); err != nil {
 		return err
 	}

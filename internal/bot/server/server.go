@@ -18,6 +18,7 @@ type Server struct {
 // db
 type noteEditor interface {
 	SaveNote(ctx context.Context, note model.Note) error
+	GetAllNotes(ctx context.Context, id int) ([]model.Note, error)
 }
 type reminderEditor interface{}
 type userEditor interface {

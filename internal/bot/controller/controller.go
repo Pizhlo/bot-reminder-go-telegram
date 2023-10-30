@@ -43,7 +43,6 @@ func New(bot *tele.Bot, logger *logger.Logger, srv *server.Server) *Controller {
 }
 func (c *Controller) SetupBot() error {
 	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
-	//c.srv.UserCacheEditor.SaveUser(1, 297850814) // для целей тестирования
 
 	// commands
 
@@ -62,8 +61,8 @@ func (c *Controller) SetupBot() error {
 	})
 
 	c.bot.Handle(notesCmd, func(ctx tele.Context) error {
-		fmt.Println(ctx.Text())
-		return nil
+		c.commandHandlerMap[ctx.Chat().ID] = note_handler.NewNotesHandler(c.srv)
+		return c.commandHandlerMap[ctx.Chat().ID].Handle(ctx)
 	})
 
 	// types
