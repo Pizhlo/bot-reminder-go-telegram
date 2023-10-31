@@ -6,16 +6,19 @@ import (
 
 	api_err "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	tele "gopkg.in/telebot.v3"
 )
 
-type DefaultHandler struct {
-	srv *server.Server
+type defaultHandler struct {
+	srv server
 }
 
-func New(srv *server.Server) *DefaultHandler {
-	return &DefaultHandler{srv}
+type server interface {
+	GetUserID(ctx context.Context, tgID int64) (int, error)
+}
+
+func New(srv server) *defaultHandler {
+	return &defaultHandler{srv}
 }
 
 var (
@@ -25,7 +28,7 @@ var (
 )
 
 // handles /start command
-func (h *DefaultHandler) Handle(ctx tele.Context) error {
+func (h *defaultHandler) Handle(ctx tele.Context) error {
 	c, cancel := context.WithCancel(context.TODO()) // тот ли контекст?
 	defer cancel()
 

@@ -16,7 +16,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
 	tele "gopkg.in/telebot.v3"
-	"gopkg.in/telebot.v3/middleware"
 )
 
 func main() {
@@ -54,11 +53,8 @@ func setup() {
 	controller := controller.New(b, logger, srv)
 
 	if err := controller.SetupBot(); err != nil {
-		log.Fatal().Err(err)
+		logger.Fatal().Err(err).Msg("failed to start bot")
 	}
-	b.Use(middleware.Logger())
-
-	controller.SetupBot()
 }
 
 func setupDB(dbAddr string) (*note.NoteRepo, *reminder.ReminderRepo, *user.UserRepo) {

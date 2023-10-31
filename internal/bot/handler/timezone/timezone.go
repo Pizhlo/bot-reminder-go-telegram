@@ -4,17 +4,21 @@ import (
 	"context"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	"gopkg.in/telebot.v3"
 )
 
 type timezoneHandler struct {
 	userTimezone model.UserTimezone
-	srv          *server.Server
+	srv          server
 }
 
-func New(userTimezone model.UserTimezone, srv *server.Server) *timezoneHandler {
-	return &timezoneHandler{userTimezone, srv}
+type server interface {
+	GetUserID(ctx context.Context, tgID int64) (int, error)
+	SaveTimezone(id int, tz model.UserTimezone) error
+}
+
+func New(userTimezone model.UserTimezone, srv server) *timezoneHandler {
+	return &timezoneHandler{userTimezone: userTimezone, srv: srv}
 }
 
 func (h *timezoneHandler) Handle(ctx telebot.Context) error {

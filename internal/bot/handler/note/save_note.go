@@ -2,35 +2,32 @@ package note
 
 import (
 	"context"
-	"fmt"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	tele "gopkg.in/telebot.v3"
 )
 
-type SaveNoteHandler struct {
-	srv *server.Server
+type saveNoteHandler struct {
+	srv notes
 }
 
-func NewSaveNoteHandler(srv *server.Server) *SaveNoteHandler {
-	return &SaveNoteHandler{srv}
+type notes interface {
+	GetUserID(ctx context.Context, tgID int64) (int, error)
+	SaveNote(ctx context.Context, note model.Note) error
 }
 
-func (h *SaveNoteHandler) Handle(ctx tele.Context) error {
-	fmt.Println("save note handler handle")
+func NewSaveNoteHandler(srv notes) *saveNoteHandler {
+	return &saveNoteHandler{srv}
+}
+
+func (h *saveNoteHandler) Handle(ctx tele.Context) error {
 	c, cancel := context.WithCancel(context.TODO()) // тот ли контекст?
 	defer cancel()
 
-	id, err := h.srv.GetUserID(c, ctx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
 	note := model.Note{
-		UserID: id,
-		Text:   ctx.Text(),
+		TgID: ctx.Chat().ID,
+		Text: ctx.Text(),
 	}
 
 	if err := h.srv.SaveNote(c, note); err != nil {

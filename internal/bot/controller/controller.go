@@ -5,14 +5,14 @@ import (
 	note_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/note"
 	tz_handler "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/handler/timezone"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
-	pkg_err "github.com/pkg/errors"
 	tele "gopkg.in/telebot.v3"
 )
 
 type Controller struct {
 	commandHandlerMap map[int64]commandHandler
-	textHanderMap     map[int64]textHander
+	textHanderMap     map[int64]TextHander
 	bot               *tele.Bot
 	logger            *logger.Logger
 	srv               *server.Server
@@ -22,7 +22,7 @@ type commandHandler interface {
 	Handle(ctx tele.Context) error
 }
 
-type textHander interface {
+type TextHander interface {
 	Handle(ctx tele.Context) error
 }
 
@@ -35,7 +35,7 @@ const (
 
 func New(bot *tele.Bot, logger *logger.Logger, srv *server.Server) *Controller {
 	handlerMap := make(map[int64]commandHandler)
-	textHander := make(map[int64]textHander)
+	textHander := make(map[int64]TextHander)
 
 	return &Controller{handlerMap, textHander, bot, logger, srv}
 }
@@ -63,6 +63,11 @@ func (c *Controller) SetupBot() error {
 		return c.commandHandlerMap[ctx.Chat().ID].Handle(ctx)
 	})
 
+	c.bot.Handle(searchNotesByTextCmd, func(ctx tele.Context) error {
+		c.textHanderMap[ctx.Chat().ID] = note_handler.NewSearchByTextHandler(c.srv)
+		return ctx.Send(messages.SearchNotesByTextMessage)
+	})
+
 	// types
 
 	c.bot.Handle(tele.OnText, func(ctx tele.Context) error {
@@ -82,27 +87,25 @@ func (c *Controller) SetupBot() error {
 		return c.commandHandlerMap[ctx.Chat().ID].Handle(ctx)
 	})
 
-	if err := c.sendStartupMsg(); err != nil {
-		return pkg_err.Wrap(err, `unable to send startup message`)
-	}
+	// if err := c.sendStartupMsg(); err != nil {
+	// 	return pkg_err.Wrap(err, `unable to send startup message`)
+	// }
 
 	c.startBot()
 
 	return nil
 }
 
-func (c *Controller) sendStartupMsg() error {
-	_, err := c.bot.Send(tele.Recipient(&tele.Chat{ID: -1001890622926}), "#запуск\nБот запущен")
-	if err != nil {
-		return err
-	}
+// func (c *Controller) sendStartupMsg() error {
+// 	_, err := c.bot.Send(tele.Recipient(&tele.Chat{ID: -1001890622926}), "#запуск\nБот запущен")
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (c *Controller) startBot() {
-	c.logger.Info().Msg(`successfully loaded app`)
-	c.bot.Start()
 	c.logger.Info().Msg(`successfully loaded app`)
 	c.bot.Start()
 }

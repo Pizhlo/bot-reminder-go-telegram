@@ -7,16 +7,6 @@ import (
 	api_err "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 )
 
-// type Server struct {
-// 	NoteEditor          noteEditor
-// 	ReminderEditor      reminderEditor
-// 	UserEditor          userEditor
-// 	TimezoneCacheEditor timezoneCacheEditor
-// 	UserCacheEditor     userCacheEditor
-// 	Calendar            *calendar.Calendar
-// 	State               state
-// }
-
 func (s *Server) GetUserID(ctx context.Context, tgID int64) (int, error) {
 	id, err := s.getUserFromCache(ctx, tgID)
 	if err != nil {
