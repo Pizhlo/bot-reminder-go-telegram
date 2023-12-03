@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
@@ -26,19 +27,21 @@ func New(dbURl string) (*UserRepo, error) {
 }
 
 func (db *UserRepo) Add(ctx context.Context, tgid int) (*user.User, error) {
-	checkUser, err := db.FindByTelegramID(ctx, tgid)
+	_, err := db.FindByTelegramID(ctx, tgid)
 	if err != nil {
-		return nil, fmt.Errorf("error while getting user: %w", err)
-	}
-
-	if checkUser.ID != 0 {
-		u := &user.User{
-			ID:   checkUser.ID,
-			TGID: tgid,
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("error while getting user: %w", err)
 		}
-
-		return u, nil
 	}
+
+	// if checkUser.ID != 0 {
+	// 	u := &user.User{
+	// 		ID:   checkUser.ID,
+	// 		TGID: tgid,
+	// 	}
+
+	// 	return u, nil
+	// }
 
 	var id int
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
@@ -104,7 +107,8 @@ func (db *UserRepo) Update(ctx context.Context, id int, updFun func(*user.User) 
 		return nil, fmt.Errorf("err in update function: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, `insert into users.timezones (user_id, timezone) values($1, $2)`, id, newUser.Timezone.Name)
+	_, err = tx.ExecContext(ctx, `insert into users.timezones (user_id, timezone, lon, lat) values($1, $2, $3, $4)`,
+		id, newUser.Timezone.Name, newUser.Timezone.Lon, newUser.Timezone.Lat)
 	if err != nil {
 		return nil, fmt.Errorf("err while updating user timezone: %w", err)
 	}
@@ -119,9 +123,13 @@ func (db *UserRepo) Update(ctx context.Context, id int, updFun func(*user.User) 
 
 func (db *UserRepo) FindByTelegramID(ctx context.Context, tgid int) (*user.User, error) {
 	var id int
-	row := db.db.QueryRowContext(ctx, `select id from users.users where tg_id = $1`, tgid)
+	var lon, lat float64
+	var timezone string
 
-	err := row.Scan(&id)
+	row := db.db.QueryRowContext(ctx, `select users.users.id, users.timezones.timezone, users.timezones.lon, users.timezones.lat
+	from users.users join users.timezones on users.timezones.user_id = users.users.id where users.users.tg_id = $1`, tgid)
+
+	err := row.Scan(&id, &timezone, &lon, &lat)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting user by telegram ID: %w", err)
 	}
@@ -129,6 +137,11 @@ func (db *UserRepo) FindByTelegramID(ctx context.Context, tgid int) (*user.User,
 	u := &user.User{
 		ID:   id,
 		TGID: tgid,
+		Timezone: user.Timezone{
+			Name: timezone,
+			Lon:  lon,
+			Lat:  lat,
+		},
 	}
 
 	return u, nil

@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	model_user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	pnl "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/presenter/notelist"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/account"
@@ -115,26 +117,38 @@ func Start(confName, path string) {
 			ctx, cancel := context.WithCancel(baseContext())
 			defer cancel()
 
-			acc, err := accounting.AddUser(ctx, int(telctx.Sender().ID))
+			_, err := accounting.FindUserByTelegramID(ctx, int(telctx.Sender().ID))
 			if err != nil {
-				l.Error("error adding a user", "error", err)
+				err = errors.Unwrap(err)
+				if errors.Is(err, user.ErrNotFound) {
+					acc, err := accounting.AddUser(ctx, int(telctx.Sender().ID))
+					if err != nil {
+						l.Error("error adding a user", "error", err)
 
-				return fmt.Errorf("cannot add a user on start: %w", err)
+						return fmt.Errorf("cannot add a user on start: %w", err)
+					}
+
+					slog.Info("registered a user", "user id", acc.ID, "telegram id", int(telctx.Sender().ID))
+
+					err = telctx.Send(fmt.Sprintf("Привет, %s!", telctx.Sender().FirstName))
+					if err != nil {
+						return err
+					}
+
+					err = locDlg.Open(telctx)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				}
+
+				l.Error("error finding a user", "error", err)
+
+				return fmt.Errorf("cannot find a user on start: %w", err)
 			}
 
-			slog.Info("registered a user", "user id", acc.ID, "telegram id", int(telctx.Sender().ID))
-
-			err = telctx.Send(fmt.Sprintf("Привет, %s!", telctx.Sender().FirstName))
-			if err != nil {
-				return err
-			}
-
-			err = locDlg.Open(telctx)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return telctx.Send("Чего желаешь в этот раз?")
 		})
 
 		bot.Handle("/help", func(ctx tele.Context) error {

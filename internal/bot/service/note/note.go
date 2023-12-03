@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/account"
@@ -30,12 +31,19 @@ func NewStandard(users account.Service, notes note.Repo) *Standard {
 }
 
 func (p *Standard) AddNote(ctx context.Context, userID int, text string) (*note.Note, error) {
-	_, err := p.users.GetUser(ctx, userID)
+	u, err := p.users.GetUser(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("cannot add a note: %w", err)
 	}
 
-	n, err := p.notes.Add(ctx, userID, text)
+	loc, err := time.LoadLocation(u.Timezone.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error while setting timezone for created field in note table: %w", err)
+	}
+
+	created := time.Now().In(loc)
+
+	n, err := p.notes.Add(ctx, userID, text, created)
 	if err != nil {
 		return nil, fmt.Errorf("cannot add a note: %w", err)
 	}

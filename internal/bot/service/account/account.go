@@ -47,13 +47,19 @@ func NewStandard(memory memoryRepo, postgres postgresRepo) *Standard {
 }
 
 func (p *Standard) GetUser(ctx context.Context, id int) (*user.User, error) {
+	var u *user.User
+
 	u, err := p.memoryUsers.Get(ctx, id)
 	if err != nil {
-		if errors.Is(err, user.ErrNotFound) {
-			return nil, fmt.Errorf("cannot get a %d user: %w", id, ErrUserNotFound)
-		}
+		var dbErr error
+		u, dbErr = p.postgresUsers.Get(ctx, id)
+		if dbErr != nil {
+			if errors.Is(dbErr, user.ErrNotFound) {
+				return nil, fmt.Errorf("cannot get a %d user: %w", id, ErrUserNotFound)
+			}
 
-		return nil, fmt.Errorf("cannot get a %d user: %w", id, err)
+			return nil, fmt.Errorf("cannot get a %d user: %w", id, err)
+		}
 	}
 
 	return u, nil
@@ -105,13 +111,20 @@ func (p *Standard) UpdateUser(ctx context.Context, id int, person *user.User) (*
 }
 
 func (p *Standard) FindUserByTelegramID(ctx context.Context, tgid int) (*user.User, error) {
+	var u *user.User
+	var dbErr error
+
 	u, err := p.memoryUsers.FindByTelegramID(ctx, tgid)
 	if err != nil {
-		if errors.Is(err, user.ErrNotFound) {
-			return nil, fmt.Errorf("cannot find a user (%d): %w", tgid, ErrUserNotFound)
+		u, dbErr = p.postgresUsers.FindByTelegramID(ctx, tgid)
+		if dbErr != nil {
+			if errors.Is(dbErr, user.ErrNotFound) {
+				return nil, fmt.Errorf("cannot find a user (%d): %w", tgid, ErrUserNotFound)
+			}
+
+			return nil, fmt.Errorf("cannot find a user (%d): %w", tgid, err)
 		}
 
-		return nil, fmt.Errorf("cannot find a user (%d): %w", tgid, err)
 	}
 
 	return u, nil

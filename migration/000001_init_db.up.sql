@@ -9,6 +9,8 @@ create table if not exists users.timezones (
 	id serial not null primary key,
 	user_id int not null unique,
 	timezone text not null,
+	lon float not null,
+	lat float not null,
 	foreign key (user_id) references users.users(id) on delete cascade
 );
 

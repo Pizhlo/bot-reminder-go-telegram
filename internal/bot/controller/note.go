@@ -69,5 +69,5 @@ func (p *Note) Handle(telctx telebot.Context) error {
 
 	l.Info("adding a note", "note id", n.ID)
 
-	return nil
+	return telctx.Send("Заметка успешно создана!")
 }
