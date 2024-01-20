@@ -3,6 +3,7 @@ package note
 import (
 	"context"
 
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 )
@@ -17,5 +18,5 @@ type noteEditor interface {
 }
 
 func New(noteEditor noteEditor) *NoteService {
-	return &NoteService{noteEditor: noteEditor, logger: logrus.New()}
+	return &NoteService{noteEditor: noteEditor, logger: logger.New()}
 }

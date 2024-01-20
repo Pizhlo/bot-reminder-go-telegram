@@ -19,7 +19,7 @@ const (
 )
 
 func New(bot *tele.Bot, controller *controller.Controller) *Server {
-	return &Server{bot: bot, fsm: make(map[int64]*fsm.FSM, 0)}
+	return &Server{bot: bot, fsm: make(map[int64]*fsm.FSM, 0), controller: controller}
 }
 
 func (s *Server) Start(ctx context.Context) {
@@ -29,6 +29,10 @@ func (s *Server) Start(ctx context.Context) {
 func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(startCommand, func(telectx tele.Context) error {
 		s.RegisterUser(telectx.Chat().ID)
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 	})
 }

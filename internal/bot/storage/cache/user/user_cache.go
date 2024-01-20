@@ -10,8 +10,8 @@ import (
 )
 
 type Memory struct {
-	store map[int]*user.User
-	uniq  map[int]int
+	store map[int]*user.User   // хранить по тг базы
+	uniq  map[int64]*user.User // хранить по тг айди
 	lock  *sync.RWMutex
 	seq   atomic.Int64
 }
@@ -21,30 +21,30 @@ type Memory struct {
 func New() *Memory {
 	return &Memory{
 		store: map[int]*user.User{},
-		uniq:  map[int]int{},
+		uniq:  map[int64]*user.User{},
 		lock:  &sync.RWMutex{},
 	}
 }
 
-func (p *Memory) Add(ctx context.Context, u *user.User) (*user.User, error) {
+func (p *Memory) Save(ctx context.Context, id int64, u *user.User) error {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
-	if known, ok := p.uniq[u.ID]; ok {
-		return nil, fmt.Errorf("a user %d (%d) alredy exists", known, u.TGID)
+	if known, ok := p.uniq[u.TGID]; ok {
+		return fmt.Errorf("a user %d (%d) alredy exists", known.TGID, u.TGID)
 	}
 
 	p.store[u.ID] = u
-	p.uniq[u.TGID] = u.ID
+	p.uniq[u.TGID] = u
 
-	return p.clone(u), nil
+	return nil
 }
 
-func (p *Memory) Get(ctx context.Context, id int) (*user.User, error) {
+func (p *Memory) Get(ctx context.Context, id int64) (*user.User, error) {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 
-	if u, ok := p.store[id]; ok {
+	if u, ok := p.uniq[id]; ok {
 		return p.clone(u), nil
 	}
 
@@ -70,12 +70,12 @@ func (p *Memory) Update(ctx context.Context, id int, updFun func(*user.User) (*u
 	return p.clone(u), nil
 }
 
-func (p *Memory) FindByTelegramID(ctx context.Context, tgid int) (*user.User, error) {
+func (p *Memory) FindByTelegramID(ctx context.Context, tgid int64) (*user.User, error) {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 
 	if id, ok := p.uniq[tgid]; ok {
-		if u, uok := p.store[id]; uok {
+		if u, uok := p.store[id.ID]; uok {
 			return p.clone(u), nil
 		}
 	}

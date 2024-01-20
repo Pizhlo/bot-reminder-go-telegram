@@ -9,34 +9,36 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	note_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	user_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	tz_cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
+	user_cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/user"
 	note_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/note"
 	tz_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/timezone"
 	user_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/user"
-	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 func Start(confName, path string) {
-	logger := logrus.New()
+	logger := logger.New()
 
 	err := func(ctx context.Context) error {
 		logger.Info("starting")
 		defer logger.Info("stopped")
 
 		ctx, cancel := context.WithCancel(ctx)
-		//defer cancel()
+		defer cancel()
 
 		conf, err := config.LoadConfig(confName, path)
 		if err != nil {
 			return fmt.Errorf("unable to load config: %w", err)
 		}
 
-		baseContext := func() context.Context {
-			c, _ := context.WithTimeout(ctx, conf.Timeout)
+		_ = func() context.Context {
+			c, cancel := context.WithTimeout(ctx, conf.Timeout)
+			defer cancel()
 			return c
 		}
 
@@ -64,11 +66,11 @@ func Start(confName, path string) {
 		}
 
 		// cache
-		//u_cache := user_cache.New()
+		u_cache := user_cache.New()
 		tz := tz_cache.New()
 
 		// services
-		userSrv := user_srv.New(userRepo, tz, tzRepo)
+		userSrv := user_srv.New(userRepo, u_cache, tz, tzRepo)
 		noteSrv := note_srv.New(noteRepo)
 
 		controller := controller.NewMyController(userSrv, noteSrv)
@@ -89,10 +91,14 @@ func Start(confName, path string) {
 
 		logger.Debug("starting server...")
 
-		server.Start(baseContext())
+		server.Start(ctx)
 
 		go func() {
 			//defer cancel()
+			_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, "#запуск\nБот запущен")
+			if msgErr != nil {
+				logger.Errorf("Error while sending message 'Бот запущен': %v\n", err)
+			}
 
 			bot.Start()
 		}()
@@ -120,6 +126,10 @@ func Start(confName, path string) {
 
 			select {
 			case <-closer:
+				_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, "#запуск\nБот выключается")
+				if msgErr != nil {
+					logger.Errorf("Error while sending message 'Бот запущен': %v\n", err)
+				}
 				logger.Info("gently shutdown")
 
 			case <-shutdownCtx.Done():

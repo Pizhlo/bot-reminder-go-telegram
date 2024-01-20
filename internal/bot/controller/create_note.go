@@ -23,10 +23,10 @@ func (c *Controller) CreateNote(ctx context.Context, telectx telebot.Context) er
 
 	c.logger.Debug("Successfully got user's timezone")
 
-	loc, err := time.LoadLocation(tz.Location)
+	loc, err := time.LoadLocation(tz.Name)
 	if err != nil {
-		c.logger.Errorf("Error while loading location. Location: %s. Error: %v\n", tz.Location, err)
-		return fmt.Errorf("error while loading location. Location: %s. Error: %v", tz.Location, err)
+		c.logger.Errorf("Error while loading location. Location: %s. Error: %v\n", tz.Name, err)
+		return fmt.Errorf("error while loading location. Location: %s. Error: %v", tz.Name, err)
 	}
 
 	note := model.Note{

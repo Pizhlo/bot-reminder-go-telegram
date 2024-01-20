@@ -6,7 +6,7 @@ import (
 
 type User struct {
 	ID       int
-	TGID     int
+	TGID     int64
 	Timezone Timezone
 }
 

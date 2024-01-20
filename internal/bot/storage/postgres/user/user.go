@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
@@ -26,69 +25,41 @@ func New(dbURl string) (*UserRepo, error) {
 	return &UserRepo{db}, nil
 }
 
-func (db *UserRepo) Add(ctx context.Context, tgid int) (*user.User, error) {
-	_, err := db.FindByTelegramID(ctx, tgid)
-	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("error while getting user: %w", err)
-		}
-	}
-
-	// if checkUser.ID != 0 {
-	// 	u := &user.User{
-	// 		ID:   checkUser.ID,
-	// 		TGID: tgid,
-	// 	}
-
-	// 	return u, nil
-	// }
-
-	var id int
+func (db *UserRepo) Save(ctx context.Context, id int64, tz *user.User) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to create transaction: %w", err)
+		return fmt.Errorf("unable to create transaction: %w", err)
 	}
 
-	row := tx.QueryRowContext(ctx, `insert into users.users (tg_id) values($1) returning id`, tgid)
-
-	err = row.Scan(&id)
+	_, err = tx.ExecContext(ctx, `insert into users.users (tg_id) values($1)`, id)
 	if err != nil {
-		return nil, fmt.Errorf("error while scanning id: %w", err)
+		return fmt.Errorf("error while saving user in DB: %w", err)
 	}
 
-	u := &user.User{
-		ID:   id,
-		TGID: tgid,
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, fmt.Errorf("error while committing: %w", err)
-	}
-
-	return u, nil
+	return tx.Commit()
 }
 
-func (db *UserRepo) Get(ctx context.Context, id int) (*user.User, error) {
+func (db *UserRepo) Get(ctx context.Context, tgID int64) (*user.User, error) {
 	var dbID int
-	row := db.db.QueryRowContext(ctx, `select id from users.users where id = $1`, id)
+
+	row := db.db.QueryRowContext(ctx, `select id from users.users where tg_id = $1`, tgID)
 	err := row.Scan(&dbID)
 	if err != nil {
-		return nil, fmt.Errorf("error while scanning user by id %d: %w", id, err)
+		return nil, fmt.Errorf("error while scanning user by id %d: %w", tgID, err)
 	}
 
 	u := &user.User{
 		ID:   dbID,
-		TGID: id,
+		TGID: tgID,
 	}
 
 	return u, nil
 }
 
-func (db *UserRepo) Update(ctx context.Context, id int, updFun func(*user.User) (*user.User, error)) (*user.User, error) {
+func (db *UserRepo) Update(ctx context.Context, id int64, updFun func(*user.User) (*user.User, error)) (*user.User, error) {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
@@ -121,7 +92,7 @@ func (db *UserRepo) Update(ctx context.Context, id int, updFun func(*user.User) 
 	return newUser, nil
 }
 
-func (db *UserRepo) FindByTelegramID(ctx context.Context, tgid int) (*user.User, error) {
+func (db *UserRepo) FindByTelegramID(ctx context.Context, tgid int64) (*user.User, error) {
 	var id int
 	var lon, lat float64
 	var timezone string

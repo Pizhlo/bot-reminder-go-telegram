@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/pkg/errors"
 )
 
@@ -28,15 +28,23 @@ func New(dbURl string) (*TimezoneRepo, error) {
 }
 
 // SaveUserTimezone сохраняет часовой пояс пользователя. Аргументы: id - id базы данных, timezone - модель часового пояса
-func (db *TimezoneRepo) Save(ctx context.Context, id int64, timezone model.UserTimezone) error {
-	_, err := db.db.ExecContext(ctx, `insert into timezones(user_id, timezone) values(?, ?)`, id, timezone.Location)
+func (db *TimezoneRepo) Save(ctx context.Context, id int64, timezone *user.Timezone) error {
+	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+		ReadOnly:  false,
+	})
+	if err != nil {
+		return errors.Wrap(err, `error while creating transaction`)
+	}
+
+	_, err = tx.ExecContext(ctx, `insert into users.timezones(user_id, timezone, lon, lat) values((select id from users.users where tg_id=$1), $2, $3, $4)`, id, timezone.Name, timezone.Lon, timezone.Lat)
 	if err != nil {
 		return errors.Wrap(err, `error while saving timezone`)
 	}
 
-	return nil
+	return tx.Commit()
 }
 
-func (db *TimezoneRepo) Get(ctx context.Context, userID int64) (model.UserTimezone, error) {
-	return model.UserTimezone{}, nil
+func (db *TimezoneRepo) Get(ctx context.Context, userID int64) (*user.Timezone, error) {
+	return &user.Timezone{}, nil
 }

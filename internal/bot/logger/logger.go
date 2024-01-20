@@ -1,19 +1,12 @@
 package logger
 
 import (
-	"os"
-
-	"github.com/rs/zerolog/log"
-
-	"github.com/rs/zerolog"
+	"github.com/sirupsen/logrus"
 )
 
-type Logger struct {
-	zerolog.Logger
-}
+func New() *logrus.Logger {
+	l := logrus.New()
+	l.SetLevel(logrus.DebugLevel)
 
-func New() *Logger {
-	l := log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
-	return &Logger{l}
+	return l
 }
