@@ -8,6 +8,7 @@ import (
 
 	_ "github.com/lib/pq"
 
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/note"
 )
 
@@ -68,37 +69,21 @@ type Note struct {
 	UpdatedAt time.Time
 }
 
-func (db *NoteRepo) Add(ctx context.Context, userID int, text string, created time.Time) (*note.Note, error) {
+func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error while creating transaction: %w", err)
+		return fmt.Errorf("error while creating transaction: %w", err)
 	}
 
-	var id int
-
-	row := tx.QueryRowContext(ctx, `insert into notes.notes (user_id, text, created) values($1, $2, $3) returning id`, userID, text, created)
-
-	err = row.Scan(&id)
+	_, err = tx.ExecContext(ctx, `insert into notes.notes (user_id, text, created) values($1, $2, $3) returning id`, note.TgID, note.Text, note.Created)
 	if err != nil {
-		return nil, fmt.Errorf("error while scanning ID when inserting a note: %w", err)
+		return fmt.Errorf("error inserting note: %w", err)
 	}
 
-	n := &note.Note{
-		ID:        id,
-		UserID:    userID,
-		Text:      text,
-		CreatedAt: created,
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, fmt.Errorf("error while commit: %w", err)
-	}
-
-	return n, nil
+	return tx.Commit()
 }
 
 type SearchParams struct {

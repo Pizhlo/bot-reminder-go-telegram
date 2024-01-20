@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -15,11 +16,12 @@ func New() *TimezoneCache {
 	return &TimezoneCache{}
 }
 
-func (c *TimezoneCache) SaveUserTimezone(id int64, tz model.UserTimezone) {
+func (c *TimezoneCache) Save(ctx context.Context, id int64, tz model.UserTimezone) error {
 	c.data.Store(id, tz)
+	return nil
 }
 
-func (c *TimezoneCache) GetUserTimezone(id int64) (model.UserTimezone, error) {
+func (c *TimezoneCache) Get(ctx context.Context, id int64) (model.UserTimezone, error) {
 	val, ok := c.data.Load(id)
 	if !ok {
 		return model.UserTimezone{}, errors.ErrUserNotFound

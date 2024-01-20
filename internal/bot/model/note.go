@@ -4,7 +4,6 @@ import "time"
 
 type Note struct {
 	ID      int // id in DB
-	UserID  int // id in db
 	TgID    int64
 	Text    string
 	Created time.Time

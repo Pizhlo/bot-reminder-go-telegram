@@ -3,41 +3,36 @@ package server
 import (
 	"context"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/fsm"
+	tele "gopkg.in/telebot.v3"
 )
 
-// communicates with db
 type Server struct {
-	noteEditor          noteEditor
-	reminderEditor      reminderEditor
-	userEditor          userEditor
-	timezoneCacheEditor timezoneCacheEditor
-	userCacheEditor     userCacheEditor
+	bot        *tele.Bot
+	fsm        map[int64]*fsm.FSM
+	controller *controller.Controller
 }
 
-// db
-type noteEditor interface {
-	SaveNote(ctx context.Context, note model.Note) error
-	GetAllNotes(ctx context.Context, id int) ([]model.Note, error)
-	SearchNotesByText(ctx context.Context, query model.SearchNote) ([]model.Note, error)
+const (
+	startCommand = "/start"
+)
+
+func New(bot *tele.Bot, controller *controller.Controller) *Server {
+	return &Server{bot: bot, fsm: make(map[int64]*fsm.FSM, 0)}
 }
 
-type reminderEditor interface{}
-type userEditor interface {
-	GetUser(ctx context.Context, tgID int64) (model.User, error)
-	SaveUser(ctx context.Context, telegramID int64) (int, error)
+func (s *Server) Start(ctx context.Context) {
+	s.setupBot(ctx)
 }
 
-// cache
-type timezoneCacheEditor interface {
-	GetUserTimezone(id int64) (model.UserTimezone, error)
-	SaveUserTimezone(id int64, tz model.UserTimezone)
-}
-type userCacheEditor interface {
-	GetUser(ctx context.Context, tgID int64) (model.User, error)
-	SaveUser(ctx context.Context, id int, tgID int64)
+func (s *Server) setupBot(ctx context.Context) {
+	s.bot.Handle(startCommand, func(telectx tele.Context) error {
+		s.RegisterUser(telectx.Chat().ID)
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
 }
 
-func New(noteEditor noteEditor, reminderEditor reminderEditor, userEditor userEditor, tzCache timezoneCacheEditor, userCacheEditor userCacheEditor) *Server {
-	return &Server{noteEditor, reminderEditor, userEditor, tzCache, userCacheEditor}
+func (s *Server) RegisterUser(userID int64) {
+	s.fsm[userID] = fsm.NewFSM(s.controller)
 }

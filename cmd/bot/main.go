@@ -1,335 +1,324 @@
 package bot
 
-import (
-	"context"
-	"errors"
-	"fmt"
-	"os"
-	"os/signal"
-	"runtime"
-	"syscall"
-
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
-	model_user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
-	pnl "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/presenter/notelist"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/account"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
-	um "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/user"
-	postgres_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/note"
-	postgres_user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/user"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view/notelist"
-	"github.com/ringsaturn/tzf"
-	"github.com/sagikazarmark/slog-shim"
-	tele "gopkg.in/telebot.v3"
-)
-
-type tgid = controller.TGID
-
-const _BotPrefix = "TELENOTE"
-
-const helpText = `
-/start - зарегистрироваться;
-/help - вывести это сообщение;
-/note мандарины среди нас - добавить заметку с текстом "мандарины среди нас";
-/notes - вывести все заметки списком;
-/notes telegram bot - вывести все заметки, например, которые содержать слова: telegram и/или bot.
-`
-
-const locDlgMsg = "Ну, что ж!\nДля начала мне надо узнать ваш часовой пояс, а потом повторите свою команду."
-const LocDlgNotice = "Хорошо, как-нибудь в следующий раз!"
-
-func Start(confName, path string) {
-	err := func(ctx context.Context) error {
-		slog.Info("starting")
-		defer slog.Info("stopped")
-
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-
-		conf, err := config.LoadConfig(confName, path)
-		if err != nil {
-			return fmt.Errorf("unable to load config: %w", err)
-		}
-
-		baseContext := func() context.Context {
-			c, _ := context.WithTimeout(ctx, conf.Timeout)
-			return c
-		}
-
-		tzf, err := tzf.NewDefaultFinder()
-		if err != nil {
-			return fmt.Errorf("cannot initialize a time zone finder: %w", err)
-		}
-
-		var users = um.New()
-
-		slog.Info("created user inmemory store")
-
-		notes, err := postgres_note.New(conf.DBAddress)
-		if err != nil {
-			return fmt.Errorf("unable to create notes repo: %w", err)
-		}
+// import (
+// 	"context"
+// 	"errors"
+// 	"fmt"
+// 	"os"
+// 	"os/signal"
+// 	"runtime"
+// 	"syscall"
+
+// 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
+// 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+// 	"github.com/ringsaturn/tzf"
+// 	"github.com/sirupsen/logrus"
+// 	tele "gopkg.in/telebot.v3"
+// )
+
+// const _BotPrefix = "TELENOTE"
+
+// const helpText = `
+// /start - зарегистрироваться;
+// /help - вывести это сообщение;
+// /note мандарины среди нас - добавить заметку с текстом "мандарины среди нас";
+// /notes - вывести все заметки списком;
+// /notes telegram bot - вывести все заметки, например, которые содержать слова: telegram и/или bot.
+// `
+
+// const locDlgMsg = "Ну, что ж!\nДля начала мне надо узнать ваш часовой пояс, а потом повторите свою команду."
+// const LocDlgNotice = "Хорошо, как-нибудь в следующий раз!"
+
+// func Start(confName, path string) {
+// 	logger := logrus.New()
+
+// 	err := func(ctx context.Context) error {
+// 		logger.Info("starting")
+// 		defer logger.Info("stopped")
 
-		slog.Info("created note postgres store")
-
-		userRepo, err := postgres_user.New(conf.DBAddress)
-		if err != nil {
-			return fmt.Errorf("unable to user repo: %w", err)
-		}
+// 		ctx, cancel := context.WithCancel(ctx)
+// 		defer cancel()
 
-		slog.Info("created user postgres store")
+// 		conf, err := config.LoadConfig(confName, path)
+// 		if err != nil {
+// 			return fmt.Errorf("unable to load config: %w", err)
+// 		}
 
-		var accounting = account.NewStandard(users, userRepo)
+// 		baseContext := func() context.Context {
+// 			c, _ := context.WithTimeout(ctx, conf.Timeout)
+// 			return c
+// 		}
 
-		var noting = note.NewStandard(accounting, notes)
+// 		tzf, err := tzf.NewDefaultFinder()
+// 		if err != nil {
+// 			return fmt.Errorf("cannot initialize a time zone finder: %w", err)
+// 		}
 
-		locDlg := NewLocationDialog(locDlgMsg, LocDlgNotice, "Ну, ладно, разрешаю следить за собой ...", "Помогите, зрения лишают!")
+// 		var users = user_cache.New()
 
-		noteCtrl := controller.NewNote(baseContext, noting, accounting)
-		noteDelCtrl := controller.NewNoteDelete(baseContext)
+// 		logger.Info("created user inmemory store")
 
-		dynamicCtrl := controller.NewRegex(noteCtrl.Handle)
-		dynamicCtrl.Handle(`^\/dn\d+$`, noteDelCtrl.Handle)
+// 		notes, err := postgres_note.New(conf.DBAddress)
+// 		if err != nil {
+// 			return fmt.Errorf("unable to create notes repo: %w", err)
+// 		}
 
-		bot, err := tele.NewBot(tele.Settings{
-			Token:  conf.Token,
-			Poller: &tele.LongPoller{Timeout: conf.Timeout},
-		})
+// 		logger.Info("created note postgres store")
 
-		if err != nil {
-			return fmt.Errorf("cannot create a bot: %w", err)
-		}
+// 		userRepo, err := postgres_user.New(conf.DBAddress)
+// 		if err != nil {
+// 			return fmt.Errorf("unable to user repo: %w", err)
+// 		}
 
-		locDlg.OnClose(bot.NewContext(tele.Update{}), func(ctx tele.Context) error {
-			slog.Info("handling", "command", "location dlg close btn", "sender id", ctx.Sender().ID)
+// 		logger.Info("created user postgres store")
 
-			return locDlg.Close(ctx)
-		})
+// 		locDlg := NewLocationDialog(locDlgMsg, LocDlgNotice, "Ну, ладно, разрешаю следить за собой ...", "Помогите, зрения лишают!")
 
-		bot.Handle("/start", func(telctx tele.Context) error {
-			l := slog.With(
-				"command", "start",
-				"sender id", telctx.Sender().ID,
-			)
+// 		noteCtrl := controller.NewNote(baseContext, noting, accounting)
+// 		noteDelCtrl := controller.NewNoteDelete(baseContext)
 
-			ctx, cancel := context.WithCancel(baseContext())
-			defer cancel()
+// 		dynamicCtrl := controller.NewRegex(noteCtrl.Handle)
+// 		dynamicCtrl.Handle(`^\/dn\d+$`, noteDelCtrl.Handle)
 
-			_, err := accounting.FindUserByTelegramID(ctx, int(telctx.Sender().ID))
-			if err != nil {
-				err = errors.Unwrap(err)
-				if errors.Is(err, user.ErrNotFound) {
-					acc, err := accounting.AddUser(ctx, int(telctx.Sender().ID))
-					if err != nil {
-						l.Error("error adding a user", "error", err)
+// 		bot, err := tele.NewBot(tele.Settings{
+// 			Token:  conf.Token,
+// 			Poller: &tele.LongPoller{Timeout: conf.Timeout},
+// 		})
 
-						return fmt.Errorf("cannot add a user on start: %w", err)
-					}
+// 		if err != nil {
+// 			return fmt.Errorf("cannot create a bot: %w", err)
+// 		}
 
-					slog.Info("registered a user", "user id", acc.ID, "telegram id", int(telctx.Sender().ID))
+// 		locDlg.OnClose(bot.NewContext(tele.Update{}), func(ctx tele.Context) error {
+// 			logger.Info("handling", "command", "location dlg close btn", "sender id", ctx.Sender().ID)
 
-					err = telctx.Send(fmt.Sprintf("Привет, %s!", telctx.Sender().FirstName))
-					if err != nil {
-						return err
-					}
+// 			return locDlg.Close(ctx)
+// 		})
 
-					err = locDlg.Open(telctx)
-					if err != nil {
-						return err
-					}
+// 		bot.Handle("/start", func(telctx tele.Context) error {
+// 			l := logger.With(
+// 				"command", "start",
+// 				"sender id", telctx.Sender().ID,
+// 			)
 
-					return nil
-				}
+// 			ctx, cancel := context.WithCancel(baseContext())
+// 			defer cancel()
 
-				l.Error("error finding a user", "error", err)
+// 			_, err := accounting.FindUserByTelegramID(ctx, int(telctx.Sender().ID))
+// 			if err != nil {
+// 				err = errors.Unwrap(err)
+// 				if errors.Is(err, user.ErrNotFound) {
+// 					acc, err := accounting.AddUser(ctx, int(telctx.Sender().ID))
+// 					if err != nil {
+// 						l.Error("error adding a user", "error", err)
 
-				return fmt.Errorf("cannot find a user on start: %w", err)
-			}
+// 						return fmt.Errorf("cannot add a user on start: %w", err)
+// 					}
 
-			return telctx.Send("Чего желаешь в этот раз?")
-		})
+// 					logger.Info("registered a user", "user id", acc.ID, "telegram id", int(telctx.Sender().ID))
 
-		bot.Handle("/help", func(ctx tele.Context) error {
-			slog.Info("handling", "command", "help", "chat id", ctx.Chat().ID)
+// 					err = telctx.Send(fmt.Sprintf("Привет, %s!", telctx.Sender().FirstName))
+// 					if err != nil {
+// 						return err
+// 					}
 
-			return ctx.Send(fmt.Sprintf("Привет, %s!\n%s", ctx.Sender().FirstName, helpText))
-		})
+// 					err = locDlg.Open(telctx)
+// 					if err != nil {
+// 						return err
+// 					}
 
-		bot.Handle(tele.OnLocation, func(telctx tele.Context) error {
-			l := slog.With(
-				"command", "start",
-				"sender id", telctx.Sender().ID,
-			)
+// 					return nil
+// 				}
 
-			ctx, cancel := context.WithCancel(baseContext())
-			defer cancel()
+// 				l.Error("error finding a user", "error", err)
 
-			lon, lat := telctx.Message().Location.Lng, telctx.Message().Location.Lat
+// 				return fmt.Errorf("cannot find a user on start: %w", err)
+// 			}
 
-			locName := tzf.GetTimezoneName(float64(lon), float64(lat))
+// 			return telctx.Send("Чего желаешь в этот раз?")
+// 		})
 
-			tz := model_user.Timezone{
-				Name: locName,
-				Lon:  float64(lon),
-				Lat:  float64(lat),
-			}
+// 		bot.Handle("/help", func(ctx tele.Context) error {
+// 			logger.Info("handling", "command", "help", "chat id", ctx.Chat().ID)
 
-			l.Info("figured out a time zone", "timezone", tz)
+// 			return ctx.Send(fmt.Sprintf("Привет, %s!\n%s", ctx.Sender().FirstName, helpText))
+// 		})
 
-			acc, err := accounting.FindUserByTelegramID(ctx, int(telctx.Sender().ID))
-			if err != nil {
-				l.Error("error updating a timezone", "error", err)
+// 		bot.Handle(tele.OnLocation, func(telctx tele.Context) error {
+// 			l := logger.With(
+// 				"command", "start",
+// 				"sender id", telctx.Sender().ID,
+// 			)
 
-				return fmt.Errorf("cannot update a timezone on location: %w", err)
-			}
+// 			ctx, cancel := context.WithCancel(baseContext())
+// 			defer cancel()
 
-			accounting.UpdateUser(ctx, acc.ID, &model_user.User{Timezone: tz})
-			if err != nil {
-				l.Error("error updating a timezone", "error", err)
+// 			lon, lat := telctx.Message().Location.Lng, telctx.Message().Location.Lat
 
-				return fmt.Errorf("cannot update a timezone on location: %w", err)
-			}
+// 			locName := tzf.GetTimezoneName(float64(lon), float64(lat))
 
-			return telctx.Send(fmt.Sprintf("Спасибо! Хорошего дня в %s!", locName), tele.RemoveKeyboard)
-		})
+// 			tz := model_user.Timezone{
+// 				Name: locName,
+// 				Lon:  float64(lon),
+// 				Lat:  float64(lat),
+// 			}
 
-		restricted := bot.Group()
-		restricted.Use(NewVerifyTimezone(accounting, locDlg))
+// 			l.Info("figured out a time zone", "timezone", tz)
 
-		restricted.Handle("/note", noteCtrl.Handle)
+// 			acc, err := accounting.FindUserByTelegramID(ctx, int(telctx.Sender().ID))
+// 			if err != nil {
+// 				l.Error("error updating a timezone", "error", err)
 
-		restricted.Handle("/notes", func(telctx tele.Context) error {
-			tid := tgid{telctx}.Get()
+// 				return fmt.Errorf("cannot update a timezone on location: %w", err)
+// 			}
 
-			l := slog.With(
-				"command", "/notes",
-				"sender id", tid,
-			)
+// 			accounting.UpdateUser(ctx, acc.ID, &model_user.User{Timezone: tz})
+// 			if err != nil {
+// 				l.Error("error updating a timezone", "error", err)
 
-			l.Info("handling", "args", telctx.Args())
+// 				return fmt.Errorf("cannot update a timezone on location: %w", err)
+// 			}
 
-			ctx, cancel := context.WithCancel(baseContext())
-			defer cancel()
+// 			return telctx.Send(fmt.Sprintf("Спасибо! Хорошего дня в %s!", locName), tele.RemoveKeyboard)
+// 		})
 
-			u, err := accounting.FindUserByTelegramID(ctx, tid)
-			if err != nil {
-				return err
-			}
+// 		restricted := bot.Group()
+// 		restricted.Use(NewVerifyTimezone(accounting, locDlg))
 
-			var view notelist.NoteList = notelist.NewTelegramMarkdownView(telctx, u.ID, conf.TelegramMaxMsgSize)
+// 		restricted.Handle("/note", noteCtrl.Handle)
 
-			var presenter pnl.NoteList = pnl.NewStandard(noting, view)
+// 		restricted.Handle("/notes", func(telctx tele.Context) error {
+// 			tid := tgid{telctx}.Get()
 
-			return presenter.UpdateNoteList(ctx)
-		})
+// 			l := logger.With(
+// 				"command", "/notes",
+// 				"sender id", tid,
+// 			)
 
-		restricted.Handle(tele.OnText, dynamicCtrl.Handler())
+// 			l.Info("handling", "args", telctx.Args())
 
-		go func() {
-			defer cancel()
+// 			ctx, cancel := context.WithCancel(baseContext())
+// 			defer cancel()
 
-			bot.Start()
-		}()
+// 			u, err := accounting.FindUserByTelegramID(ctx, tid)
+// 			if err != nil {
+// 				return err
+// 			}
 
-		notifyCtx, notify := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
-		defer notify()
+// 			var view notelist.NoteList = notelist.NewTelegramMarkdownView(telctx, u.ID, conf.TelegramMaxMsgSize)
 
-		go func() {
-			defer cancel()
+// 			var presenter pnl.NoteList = pnl.NewStandard(noting, view)
 
-			<-notifyCtx.Done()
+// 			return presenter.UpdateNoteList(ctx)
+// 		})
 
-			closer := make(chan struct{})
+// 		// restricted.Handle(tele.OnText, func(telectx tele.Context) error {
 
-			go func() {
-				bot.Stop()
+// 		// })
 
-				closer <- struct{}{}
-			}()
+// 		go func() {
+// 			defer cancel()
 
-			shutdownCtx, shutdown := context.WithTimeout(context.Background(), conf.Timeout)
-			defer shutdown()
+// 			bot.Start()
+// 		}()
 
-			runtime.Gosched()
+// 		notifyCtx, notify := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+// 		defer notify()
 
-			select {
-			case <-closer:
-				slog.Info("gently shutdown")
+// 		go func() {
+// 			defer cancel()
 
-			case <-shutdownCtx.Done():
-				slog.Error("forcing shutdown")
-			}
-		}()
+// 			<-notifyCtx.Done()
 
-		slog.Info("started")
+// 			closer := make(chan struct{})
 
-		<-ctx.Done()
+// 			go func() {
+// 				bot.Stop()
 
-		slog.Info("shutting down")
+// 				closer <- struct{}{}
+// 			}()
 
-		cancel()
+// 			shutdownCtx, shutdown := context.WithTimeout(context.Background(), conf.Timeout)
+// 			defer shutdown()
 
-		return nil
-	}(context.Background())
-	if err != nil {
-		slog.Error("error running a bot", "error", err)
-		os.Exit(1)
-	}
-}
+// 			runtime.Gosched()
 
-// func setupDB(dbAddr string) (*note.NoteRepo, *reminder.ReminderRepo, *user.UserRepo) {
-// 	conn, err := pgxpool.Connect(context.Background(), dbAddr)
+// 			select {
+// 			case <-closer:
+// 				logger.Info("gently shutdown")
+
+// 			case <-shutdownCtx.Done():
+// 				logger.Error("forcing shutdown")
+// 			}
+// 		}()
+
+// 		logger.Info("started")
+
+// 		<-ctx.Done()
+
+// 		logger.Info("shutting down")
+
+// 		cancel()
+
+// 		return nil
+// 	}(context.Background())
 // 	if err != nil {
-// 		log.Fatal().Err(err).Msg("failed to connect db")
+// 		logger.Error("error running a bot", "error", err)
+// 		os.Exit(1)
 // 	}
-
-// 	noteEditor := note.New(conn)
-// 	reminderEditor := reminder.New(conn)
-// 	userEditor := user.New(conn)
-
-// 	return noteEditor, reminderEditor, userEditor
 // }
 
-// func setupCache() (*timezone_cache.TimezoneCache, *user_cache.UserCache) {
-// 	tzCache := timezone_cache.New()
-// 	userCache := user_cache.New()
+// // func setupDB(dbAddr string) (*note.NoteRepo, *reminder.ReminderRepo, *user.UserRepo) {
+// // 	conn, err := pgxpool.Connect(context.Background(), dbAddr)
+// // 	if err != nil {
+// // 		log.Fatal().Err(err).Msg("failed to connect db")
+// // 	}
 
-// 	return tzCache, userCache
+// // 	noteEditor := note.New(conn)
+// // 	reminderEditor := reminder.New(conn)
+// // 	userEditor := user.New(conn)
+
+// // 	return noteEditor, reminderEditor, userEditor
+// // }
+
+// // func setupCache() (*timezone_cache.TimezoneCache, *user_cache.UserCache) {
+// // 	tzCache := timezone_cache.New()
+// // 	userCache := user_cache.New()
+
+// // 	return tzCache, userCache
+// // }
+
+// func setup() {
+// 	// conf
+// 	// conf, err := config.LoadConfig(`../..`)
+// 	// if err != nil {
+// 	// 	log.Fatal().Err(err).Msg("failed to load config")
+// 	// }
+
+// 	// // bot
+// 	// pref := tele.Settings{
+// 	// 	Token:  conf.Token,
+// 	// 	Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+// 	// }
+// 	// b, err := tele.NewBot(pref)
+// 	// if err != nil {
+// 	// 	log.Fatal().Err(err).Msg("failed to create bot")
+// 	// }
+
+// 	// server
+// 	// logger := logger.New()
+// 	// noteEditor, remiderEditor, userEditor := setupDB(conf.DBAddress)
+
+// 	// logger.Info().Msg(`successfully connected db`)
+
+// 	// tzCache, userCache := setupCache()
+
+// 	// srv := server.New(noteEditor, remiderEditor, userEditor, tzCache, userCache)
+
+// 	// // contoller
+// 	// controller := controller.New(b, logger, srv)
+
+// 	// if err := controller.SetupBot(); err != nil {
+// 	// 	logger.Fatal().Err(err).Msg("failed to start bot")
+// 	// }
 // }
-
-func setup() {
-	// conf
-	// conf, err := config.LoadConfig(`../..`)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("failed to load config")
-	// }
-
-	// // bot
-	// pref := tele.Settings{
-	// 	Token:  conf.Token,
-	// 	Poller: &tele.LongPoller{Timeout: 10 * time.Second},
-	// }
-	// b, err := tele.NewBot(pref)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("failed to create bot")
-	// }
-
-	// server
-	// logger := logger.New()
-	// noteEditor, remiderEditor, userEditor := setupDB(conf.DBAddress)
-
-	// logger.Info().Msg(`successfully connected db`)
-
-	// tzCache, userCache := setupCache()
-
-	// srv := server.New(noteEditor, remiderEditor, userEditor, tzCache, userCache)
-
-	// // contoller
-	// controller := controller.New(b, logger, srv)
-
-	// if err := controller.SetupBot(); err != nil {
-	// 	logger.Fatal().Err(err).Msg("failed to start bot")
-	// }
-}
