@@ -21,6 +21,17 @@ func (c *TimezoneCache) Save(ctx context.Context, id int64, tz *user.Timezone) e
 	return nil
 }
 
+func (c *TimezoneCache) GetAll(ctx context.Context) ([]*user.User, error) {
+	res := make([]*user.User, 0)
+	c.data.Range(func(key, value interface{}) bool {
+		u := value.(*user.User)
+		res = append(res, u)
+		return true
+	})
+
+	return res, nil
+}
+
 func (c *TimezoneCache) Get(ctx context.Context, id int64) (*user.Timezone, error) {
 	val, ok := c.data.Load(id)
 	if !ok {

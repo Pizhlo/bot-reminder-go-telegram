@@ -9,18 +9,21 @@ import (
 
 func (c *Controller) Start(ctx context.Context, telectx tele.Context) error {
 	if !c.CheckUser(ctx, telectx.Chat().ID) {
-		locMenu := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
-
-		locBtn := locMenu.Location("Отправить геолокацию")
-		rejectBtn := locMenu.Text("Отказаться")
-
-		locMenu.Reply(
-			locMenu.Row(locBtn),
-			locMenu.Row(rejectBtn),
-		)
-
-		return telectx.Send(messages.StartMessageLocation, locMenu)
+		return c.Location(ctx, telectx)
 	}
+	return telectx.Send(messages.StartMessage, tele.RemoveKeyboard)
+}
 
-	return telectx.Send(messages.StartMessage)
+func (c *Controller) Location(ctx context.Context, telectx tele.Context) error {
+	locMenu := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
+
+	locBtn := locMenu.Location("Отправить геолокацию")
+	rejectBtn := locMenu.Text("Отказаться")
+
+	locMenu.Reply(
+		locMenu.Row(locBtn),
+		locMenu.Row(rejectBtn),
+	)
+
+	return telectx.Send(messages.StartMessageLocation, locMenu)
 }

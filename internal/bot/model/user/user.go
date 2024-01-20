@@ -15,6 +15,7 @@ func (p *User) HasTimezone() bool {
 }
 
 type Timezone struct {
+	TGID int64
 	Name string
 	Lon  float64
 	Lat  float64

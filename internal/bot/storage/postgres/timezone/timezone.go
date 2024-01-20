@@ -48,3 +48,26 @@ func (db *TimezoneRepo) Save(ctx context.Context, id int64, timezone *user.Timez
 func (db *TimezoneRepo) Get(ctx context.Context, userID int64) (*user.Timezone, error) {
 	return &user.Timezone{}, nil
 }
+
+func (db *TimezoneRepo) GetAll(ctx context.Context) ([]*user.User, error) {
+	res := make([]*user.User, 0)
+
+	rows, err := db.db.QueryContext(ctx, `select * from users.timezones`)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("error while getting all users from DB: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		u := &user.User{}
+
+		err = rows.Scan(&u.ID, &u.TGID, &u.Timezone.Name, &u.Timezone.Lon, &u.Timezone.Lat)
+		if err != nil {
+			return nil, fmt.Errorf("error while scanning user: %w", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}

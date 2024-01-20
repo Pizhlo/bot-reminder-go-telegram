@@ -22,6 +22,6 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 		return err
 	}
 
-	msg := fmt.Sprintf(messages.LocationMessage, u.Timezone)
+	msg := fmt.Sprintf(messages.LocationMessage, u.Timezone.Name)
 	return telectx.Send(msg)
 }

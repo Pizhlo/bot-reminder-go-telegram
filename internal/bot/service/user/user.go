@@ -21,16 +21,46 @@ type UserService struct {
 type userEditor interface {
 	Get(ctx context.Context, userID int64) (*user.User, error)
 	Save(ctx context.Context, id int64, u *user.User) error
+	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
 }
 
 type timezoneEditor interface {
 	Get(ctx context.Context, userID int64) (*user.Timezone, error)
 	Save(ctx context.Context, id int64, tz *user.Timezone) error
+	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
 }
 
 func New(userEditor userEditor, userCache userEditor, timezoneCache timezoneEditor, timezoneEditor timezoneEditor) *UserService {
-	return &UserService{userEditor: userEditor, userCache: userCache, logger: logger.New(),
+	srv := &UserService{userEditor: userEditor, userCache: userCache, logger: logger.New(),
 		timezoneCache: timezoneCache, timezoneEditor: timezoneEditor}
+
+	srv.logger.Debugf("Loading all users from DB to cache...\n")
+
+	users, err := userEditor.GetAll(context.Background())
+	if err != nil {
+		srv.logger.Fatalf("unable to load all users from DB on start: %v\n", err)
+	}
+
+	for _, user := range users {
+		srv.userCache.Save(context.Background(), user.TGID, user)
+	}
+
+	srv.logger.Debugf("Successfully saved %d user(s) to cache\n", len(users))
+
+	srv.logger.Debugf("Loading all users' timezones from DB to cache...\n")
+
+	tzs, err := srv.timezoneEditor.GetAll(context.Background())
+	if err != nil {
+		srv.logger.Fatalf("unable to load all timezones from DB on start: %v\n", err)
+	}
+
+	for _, tz := range tzs {
+		srv.timezoneCache.Save(context.Background(), tz.TGID, &tz.Timezone)
+	}
+
+	srv.logger.Debugf("Successfully saved %d users' timezone(s) to cache\n", len(users))
+
+	return srv
 }
 
 func (s *UserService) SaveUser(ctx context.Context, userID int64, u *user.User) error {

@@ -51,6 +51,19 @@ func (p *Memory) Get(ctx context.Context, id int64) (*user.User, error) {
 	return nil, user.ErrNotFound
 }
 
+func (p *Memory) GetAll(ctx context.Context) ([]*user.User, error) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	res := make([]*user.User, 0)
+
+	for _, v := range p.store {
+		res = append(res, v)
+	}
+
+	return res, nil
+}
+
 func (p *Memory) Update(ctx context.Context, id int, updFun func(*user.User) (*user.User, error)) (*user.User, error) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
