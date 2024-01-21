@@ -38,12 +38,12 @@ func (c *TimezoneCache) Get(ctx context.Context, id int64) (*user.Timezone, erro
 		return nil, errors.ErrUserNotFound
 	}
 
-	var userTZ user.Timezone
+	var userTZ *user.Timezone
 
-	userTZ, ok = val.(user.Timezone)
+	userTZ, ok = val.(*user.Timezone)
 	if !ok {
-		return nil, errors.ErrUserNotFound
+		return nil, errors.ErrUnableCastVariable
 	}
 
-	return &userTZ, nil
+	return userTZ, nil
 }

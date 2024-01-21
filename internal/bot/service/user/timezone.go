@@ -51,9 +51,11 @@ func (s *UserService) GetTimezone(ctx context.Context, userID int64) (*user.Time
 
 	userTimezone, err = s.timezoneCache.Get(ctx, userID)
 	if err != nil {
-		s.logger.Errorf("Error while looking for timezone in cache. User ID: %d\n", userID)
+		s.logger.Errorf("Error while looking for timezone in cache. User ID: %d. Error: %v\n", userID, err)
 		return s.timezoneEditor.Get(ctx, userID)
 	}
+
+	s.logger.Debugf("Found user's timezone: %+v\n", userTimezone)
 
 	return userTimezone, nil
 }

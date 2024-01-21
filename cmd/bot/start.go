@@ -73,7 +73,7 @@ func Start(confName, path string) {
 		userSrv := user_srv.New(userRepo, u_cache, tz, tzRepo)
 		noteSrv := note_srv.New(noteRepo)
 
-		controller := controller.NewMyController(userSrv, noteSrv)
+		controller := controller.New(userSrv, noteSrv)
 
 		// bot
 		bot, err := tele.NewBot(tele.Settings{

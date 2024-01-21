@@ -45,7 +45,7 @@ func New(userEditor userEditor, userCache userEditor, timezoneCache timezoneEdit
 		srv.userCache.Save(context.Background(), user.TGID, user)
 	}
 
-	srv.logger.Debugf("Successfully saved %d user(s) to cache\n", len(users))
+	srv.logger.Debugf("Successfully saved %d user(s) to cache: %v\n", len(users), users)
 
 	srv.logger.Debugf("Loading all users' timezones from DB to cache...\n")
 
@@ -58,9 +58,14 @@ func New(userEditor userEditor, userCache userEditor, timezoneCache timezoneEdit
 		srv.timezoneCache.Save(context.Background(), tz.TGID, &tz.Timezone)
 	}
 
-	srv.logger.Debugf("Successfully saved %d users' timezone(s) to cache\n", len(users))
+	srv.logger.Debugf("Successfully saved %d users' timezone(s) to cache: %v\n", len(tzs), tzs)
 
 	return srv
+}
+
+func (s *UserService) GetAll(ctx context.Context) []*user.User {
+	u, _ := s.userCache.GetAll(ctx)
+	return u
 }
 
 func (s *UserService) SaveUser(ctx context.Context, userID int64, u *user.User) error {

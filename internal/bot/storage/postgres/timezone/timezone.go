@@ -52,7 +52,7 @@ func (db *TimezoneRepo) Get(ctx context.Context, userID int64) (*user.Timezone, 
 func (db *TimezoneRepo) GetAll(ctx context.Context) ([]*user.User, error) {
 	res := make([]*user.User, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select * from users.timezones`)
+	rows, err := db.db.QueryContext(ctx, `select users.users.tg_id, users.timezones.timezone, users.timezones.lon, users.timezones.lat from users.timezones join users.users on users.users.id = users.timezones.user_id`)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("error while getting all users from DB: %w", err)
 	}
@@ -61,7 +61,7 @@ func (db *TimezoneRepo) GetAll(ctx context.Context) ([]*user.User, error) {
 	for rows.Next() {
 		u := &user.User{}
 
-		err = rows.Scan(&u.ID, &u.TGID, &u.Timezone.Name, &u.Timezone.Lon, &u.Timezone.Lat)
+		err = rows.Scan(&u.TGID, &u.Timezone.Name, &u.Timezone.Lon, &u.Timezone.Lat)
 		if err != nil {
 			return nil, fmt.Errorf("error while scanning user: %w", err)
 		}
