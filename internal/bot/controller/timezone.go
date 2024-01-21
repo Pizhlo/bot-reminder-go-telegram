@@ -11,6 +11,8 @@ import (
 )
 
 func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) error {
+	c.logger.Debugf("Handling location\n")
+
 	loc := model.UserTimezone{
 		Lat:  telectx.Message().Location.Lat,
 		Long: telectx.Message().Location.Lng,

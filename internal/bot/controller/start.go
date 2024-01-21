@@ -8,9 +8,14 @@ import (
 )
 
 func (c *Controller) Start(ctx context.Context, telectx tele.Context) error {
+	c.logger.Debugf("Handling /start. Checking user...\n")
+
 	if !c.CheckUser(ctx, telectx.Chat().ID) {
+		c.logger.Debugf("User is unknown. Sending location request...\n")
 		return c.Location(ctx, telectx)
 	}
+
+	c.logger.Debugf("User is known. Sending start message...\n")
 	return telectx.Send(messages.StartMessage, tele.RemoveKeyboard)
 }
 

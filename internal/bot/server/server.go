@@ -6,8 +6,10 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/fsm"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/middleware"
 )
 
 type Server struct {
@@ -35,6 +37,7 @@ func (s *Server) Start(ctx context.Context) {
 
 func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Use(logger.Logging(ctx, s.logger))
+	s.bot.Use(middleware.AutoRespond())
 
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
@@ -49,15 +52,53 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	restricted := s.bot.Group()
-	restricted.Use(s.Middleware(ctx), logger.Logging(ctx, s.logger))
+	restricted.Use(s.Middleware(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
 
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
 		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 	})
 
 	// restricted.Handle(notesCommand, func(telectx tele.Context) error {
-
+	// 	return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 	// })
+
+	// inline
+
+	s.bot.Handle(&view.BtnNextPg, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			return err
+		}
+
+		return s.controller.NextPageNotes(ctx, c)
+	})
+
+	s.bot.Handle(&view.BtnPrevPg, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			return err
+		}
+
+		return s.controller.PrevPageNotes(ctx, c)
+	})
+
+	s.bot.Handle(&view.BtnLastPg, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			return err
+		}
+
+		return s.controller.LastPageNotes(ctx, c)
+	})
+
+	s.bot.Handle(&view.BtnFirstPg, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			return err
+		}
+
+		return s.controller.FirstPageNotes(ctx, c)
+	})
 }
 
 func (s *Server) RegisterUser(userID int64, known bool) {

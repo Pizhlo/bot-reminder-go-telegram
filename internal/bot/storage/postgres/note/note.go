@@ -86,6 +86,29 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 	return tx.Commit()
 }
 
+func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.Note, error) {
+	notes := make([]model.Note, 0)
+
+	rows, err := db.db.QueryContext(ctx, `select text, created from notes.notes where user_id = (select id from users.users where tg_id = $1)`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting all notes from DB by user ID %d: %w", userID, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		note := model.Note{}
+
+		err := rows.Scan(&note.Text, &note.Created)
+		if err != nil {
+			return nil, fmt.Errorf("error while scanning note: %w", err)
+		}
+
+		notes = append(notes, note)
+	}
+
+	return notes, nil
+}
+
 type SearchParams struct {
 	UserID int
 	Terms  []string
