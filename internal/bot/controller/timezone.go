@@ -21,9 +21,12 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 	u, err := c.userSrv.ProcessTimezone(ctx, telectx.Chat().ID, loc)
 	if err != nil {
 		c.logger.Errorf("Error while processing user's location: %v\n", err)
+
+		c.handleError(telectx, err)
+
 		return err
 	}
 
 	msg := fmt.Sprintf(messages.LocationMessage, u.Timezone.Name)
-	return telectx.Send(msg)
+	return telectx.Send(msg, tele.RemoveKeyboard)
 }

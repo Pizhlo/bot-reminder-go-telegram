@@ -7,10 +7,10 @@ import (
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	"gopkg.in/telebot.v3"
+	tele "gopkg.in/telebot.v3"
 )
 
-func (c *Controller) CreateNote(ctx context.Context, telectx telebot.Context) error {
+func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Saving note. Sender: %d\n", telectx.Chat().ID)
 
 	c.logger.Debugf("Getting user's timezone. User ID: %d\n", telectx.Chat().ID)
@@ -18,6 +18,9 @@ func (c *Controller) CreateNote(ctx context.Context, telectx telebot.Context) er
 	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
 	if err != nil {
 		c.logger.Errorf("Error while getting user timezone. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
+
+		c.handleError(telectx, err)
+
 		return fmt.Errorf("error while getting user timezone. User ID: %d. Error: %v", telectx.Chat().ID, err)
 	}
 
@@ -26,6 +29,9 @@ func (c *Controller) CreateNote(ctx context.Context, telectx telebot.Context) er
 	loc, err := time.LoadLocation(tz.Name)
 	if err != nil {
 		c.logger.Errorf("Error while loading location. Location: %s. Error: %v\n", tz.Name, err)
+
+		c.handleError(telectx, err)
+
 		return fmt.Errorf("error while loading location. Location: %s. Error: %v", tz.Name, err)
 	}
 
@@ -38,8 +44,13 @@ func (c *Controller) CreateNote(ctx context.Context, telectx telebot.Context) er
 	err = c.noteSrv.Save(ctx, note)
 	if err != nil {
 		c.logger.Errorf("Error while saving note. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
+
+		c.handleError(telectx, err)
+
 		return fmt.Errorf("error while saving note. User ID: %d. Error: %v", telectx.Chat().ID, err)
 	}
 
-	return telectx.Send(messages.SuccessfullyCreatedNoteMessage)
+	return telectx.Send(messages.SuccessfullyCreatedNoteMessage, &tele.SendOptions{
+		ParseMode: htmlParseMode,
+	})
 }

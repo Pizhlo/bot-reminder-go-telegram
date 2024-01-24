@@ -10,6 +10,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	note_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	user_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
@@ -65,6 +66,12 @@ func Start(confName, path string) {
 			return fmt.Errorf("cannot create note timezone: %w", err)
 		}
 
+		// bot
+		bot, err := tele.NewBot(tele.Settings{
+			Token:  conf.Token,
+			Poller: &tele.LongPoller{Timeout: conf.Timeout},
+		})
+
 		// cache
 		u_cache := user_cache.New()
 		tz := tz_cache.New()
@@ -73,13 +80,8 @@ func Start(confName, path string) {
 		userSrv := user_srv.New(userRepo, u_cache, tz, tzRepo)
 		noteSrv := note_srv.New(noteRepo)
 
-		controller := controller.New(userSrv, noteSrv)
+		controller := controller.New(userSrv, noteSrv, bot)
 
-		// bot
-		bot, err := tele.NewBot(tele.Settings{
-			Token:  conf.Token,
-			Poller: &tele.LongPoller{Timeout: conf.Timeout},
-		})
 		if err != nil {
 			return fmt.Errorf("cannot create a bot: %w", err)
 		}
@@ -95,7 +97,7 @@ func Start(confName, path string) {
 
 		go func() {
 			//defer cancel()
-			_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, "#запуск\nБот запущен")
+			_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, messages.StartBotMessage)
 			if msgErr != nil {
 				logger.Errorf("Error while sending message 'Бот запущен': %v\n", err)
 			}
@@ -126,7 +128,7 @@ func Start(confName, path string) {
 
 			select {
 			case <-closer:
-				_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, "#запуск\nБот выключается")
+				_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, messages.ShutDownMessage)
 				if msgErr != nil {
 					logger.Errorf("Error while sending message 'Бот запущен': %v\n", err)
 				}

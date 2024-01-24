@@ -11,6 +11,10 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 
 	message, kb, err := c.noteSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {
+		c.logger.Errorf("Error while handling /notes command. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
+
+		c.handleError(telectx, err)
+
 		return err
 	}
 
