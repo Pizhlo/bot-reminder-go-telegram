@@ -114,12 +114,30 @@ func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.N
 	return notes, nil
 }
 
+func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
+	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+		ReadOnly:  false,
+	})
+	if err != nil {
+		return fmt.Errorf("error while creating transaction: %w", err)
+	}
+
+	_, err = tx.Exec(`delete from notes.notes where user_id = (select id from users.users where tg_id = $1)`, userID)
+	if err != nil {
+		return fmt.Errorf("error while deleting all notes by user ID: %w", err)
+	}
+
+	return tx.Commit()
+}
+
 type SearchParams struct {
 	UserID int
 	Terms  []string
 }
 
 func (db *NoteRepo) FindByParams(ctx context.Context, params *note.SearchParams) ([]*note.Note, error) {
+
 	return nil, nil
 }
 

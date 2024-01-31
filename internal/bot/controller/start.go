@@ -8,15 +8,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Start обрабатывает команду старт: проверяет, зарегистрирован ли пользователь,
+// и в зависимости от этого либо запрашивает геолокацию, либо отправляет приветственное сообщение
 func (c *Controller) Start(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Handling /start. Checking user...\n")
+	c.logger.Debugf("Controller: handling /start. Checking user...\n")
 
 	if !c.CheckUser(ctx, telectx.Chat().ID) {
-		c.logger.Debugf("User is unknown. Sending location request...\n")
+		c.logger.Debugf("Controller: user is unknown. Sending location request...\n")
 		return c.Location(ctx, telectx)
 	}
 
-	c.logger.Debugf("User is known. Sending start message...\n")
+	c.logger.Debugf("Controller: user is known. Sending start message...\n")
 
 	text := fmt.Sprintf(messages.StartMessage, telectx.Chat().FirstName)
 
@@ -25,6 +27,7 @@ func (c *Controller) Start(ctx context.Context, telectx tele.Context) error {
 	})
 }
 
+// Location запрашивает геолокацию у пользователя
 func (c *Controller) Location(ctx context.Context, telectx tele.Context) error {
 	locMenu := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
 

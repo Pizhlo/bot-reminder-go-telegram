@@ -10,8 +10,9 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// AcceptTimezone обрабатывает геолокацию пользователя
 func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Handling location\n")
+	c.logger.Debugf("Controller: handling location\n")
 
 	loc := model.UserTimezone{
 		Lat:  telectx.Message().Location.Lat,
@@ -20,7 +21,7 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 
 	u, err := c.userSrv.ProcessTimezone(ctx, telectx.Chat().ID, loc)
 	if err != nil {
-		c.logger.Errorf("Error while processing user's location: %v\n", err)
+		c.logger.Errorf("Controller: error while processing user's location: %v\n", err)
 
 		c.HandleError(telectx, err)
 

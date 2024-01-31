@@ -6,6 +6,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// ListNotes возвращает все заметки пользователя и отправляет ему
 func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Controller: handling /notes command.\n")
 
@@ -18,10 +19,11 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 		return err
 	}
 
-	c.logger.Debugf("Successfully got all user's notes. Sending message to user...\n")
+	c.logger.Debugf("Controller: successfully got all user's notes. Sending message to user...\n")
 	return telectx.Send(message, kb)
 }
 
+// NextPageNotes обрабатывает кнопку переключения на следующую страницу
 func (c *Controller) NextPageNotes(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Controller: handling next notes page command.\n")
 	next, kb := c.noteSrv.NextPage(telectx.Chat().ID)
@@ -29,6 +31,7 @@ func (c *Controller) NextPageNotes(ctx context.Context, telectx tele.Context) er
 	return telectx.Edit(next, kb)
 }
 
+// NextPageNotes обрабатывает кнопку переключения на предыдущую страницу
 func (c *Controller) PrevPageNotes(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Controller: handling previous notes page command.\n")
 	next, kb := c.noteSrv.PrevPage(telectx.Chat().ID)
@@ -36,6 +39,7 @@ func (c *Controller) PrevPageNotes(ctx context.Context, telectx tele.Context) er
 	return telectx.Edit(next, kb)
 }
 
+// NextPageNotes обрабатывает кнопку переключения на последнюю страницу
 func (c *Controller) LastPageNotes(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Controller: handling last notes page command.\n")
 	next, kb := c.noteSrv.LastPage(telectx.Chat().ID)
@@ -43,6 +47,7 @@ func (c *Controller) LastPageNotes(ctx context.Context, telectx tele.Context) er
 	return telectx.Edit(next, kb)
 }
 
+// NextPageNotes обрабатывает кнопку переключения на первую страницу
 func (c *Controller) FirstPageNotes(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Controller: handling first notes page command.\n")
 	next, kb := c.noteSrv.FirstPage(telectx.Chat().ID)

@@ -35,23 +35,30 @@ func (c *Controller) CheckUser(ctx context.Context, tgID int64) bool {
 	return c.userSrv.CheckUser(ctx, tgID)
 }
 
+// GetAllUsers возвращает всех зарегистрированных пользователей
 func (c *Controller) GetAllUsers(ctx context.Context) []*user_model.User {
 	return c.userSrv.GetAll(ctx)
 }
 
-// HandleError сообщает об ошибке в канал
+// HandleError сообщает об ошибке в канал.
+// Также сообщает пользователю об ошибке - редактирует сообщение
 func (c *Controller) HandleError(ctx tele.Context, err error) {
 	msg := fmt.Sprintf(messages.ErrorMessageChannel, ctx.Message().Text, err)
 
-	sendErr := ctx.Send(messages.ErrorMessageUser)
-	if sendErr != nil {
-		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", sendErr)
+	// sendErr := ctx.Send(messages.ErrorMessageUser)
+	// if sendErr != nil {
+	// 	c.logger.Errorf("Error while sending error message to user. Error: %+v\n", sendErr)
+	// }
+
+	editErr := ctx.Edit(messages.ErrorMessageUser)
+	if editErr != nil {
+		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", editErr)
 	}
 
 	_, channelErr := c.bot.Send(&tele.Chat{ID: -1001890622926}, msg, &tele.SendOptions{
 		ParseMode: markdownParseMode,
 	})
 	if channelErr != nil {
-		c.logger.Errorf("Error while sending error message to channel. Error: %+v\n", sendErr)
+		c.logger.Errorf("Error while sending error message to channel. Error: %+v\n", editErr)
 	}
 }

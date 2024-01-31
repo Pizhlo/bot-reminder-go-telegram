@@ -135,3 +135,8 @@ func (v *View) Keyboard() *tele.ReplyMarkup {
 
 	return selector
 }
+
+// SetCurrentToFirst устанавливает текущий номер страницы на 1
+func (v *View) SetCurrentToFirst() {
+	v.currentPage = 0
+}

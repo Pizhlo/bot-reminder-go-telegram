@@ -10,25 +10,26 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// CreateNote создает новую заметку пользователя
 func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Saving note. Sender: %d\n", telectx.Chat().ID)
+	c.logger.Debugf("Controller: saving note. Sender: %d\n", telectx.Chat().ID)
 
-	c.logger.Debugf("Getting user's timezone. User ID: %d\n", telectx.Chat().ID)
+	c.logger.Debugf("Controller: getting user's timezone. User ID: %d\n", telectx.Chat().ID)
 
 	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
 	if err != nil {
-		c.logger.Errorf("Error while getting user timezone. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
+		c.logger.Errorf("Controller: error while getting user timezone. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
 
 		c.HandleError(telectx, err)
 
 		return fmt.Errorf("error while getting user timezone. User ID: %d. Error: %v", telectx.Chat().ID, err)
 	}
 
-	c.logger.Debug("Successfully got user's timezone")
+	c.logger.Debug("Controller: successfully got user's timezone")
 
 	loc, err := time.LoadLocation(tz.Name)
 	if err != nil {
-		c.logger.Errorf("Error while loading location. Location: %s. Error: %v\n", tz.Name, err)
+		c.logger.Errorf("Controller: error while loading location. Location: %s. Error: %v\n", tz.Name, err)
 
 		c.HandleError(telectx, err)
 
@@ -43,7 +44,7 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 
 	err = c.noteSrv.Save(ctx, note)
 	if err != nil {
-		c.logger.Errorf("Error while saving note. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
+		c.logger.Errorf("Controller: error while saving note. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
 
 		c.HandleError(telectx, err)
 

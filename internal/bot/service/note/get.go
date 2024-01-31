@@ -2,43 +2,41 @@ package note
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
-	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	tele "gopkg.in/telebot.v3"
 )
 
 // GetAll возвращает все заметки пользователя
 func (s *NoteService) GetAll(ctx context.Context, userID int64) (string, *tele.ReplyMarkup, error) {
-	s.logger.Debugf("Getting all user's notes. User ID: %d\n", userID)
+	s.logger.Debugf("Note service: getting all user's notes. User ID: %d\n", userID)
 
 	notes, err := s.noteEditor.GetAllByUserID(ctx, userID)
 	if err != nil {
-		if errors.Is(err, api_errors.ErrNotesNotFound) {
-			return messages.NotesNotFoundMessage, nil, nil
-		}
-
-		s.logger.Errorf("error while getting all notes by user ID %d: %v\n", userID, err)
-		return "", nil, fmt.Errorf("error while getting all notes by user ID %d: %w", userID, err)
+		s.logger.Errorf("Note service: error while getting all notes by user ID %d: %v\n", userID, err)
+		return "", nil, err
 	}
+
+	s.logger.Debugf("Note service: got %d user's notes\n", len(notes))
 
 	return s.viewsMap[userID].Message(notes), s.viewsMap[userID].Keyboard(), nil
 }
 
+// NextPage обрабатывает кнопку переключения на следующую страницу
 func (s *NoteService) NextPage(userID int64) (string, *tele.ReplyMarkup) {
 	return s.viewsMap[userID].Next(), s.viewsMap[userID].Keyboard()
 }
 
+// PrevPage обрабатывает кнопку переключения на предыдущую страницу
 func (s *NoteService) PrevPage(userID int64) (string, *tele.ReplyMarkup) {
 	return s.viewsMap[userID].Previous(), s.viewsMap[userID].Keyboard()
 }
 
+// LastPage обрабатывает кнопку переключения на последнюю страницу
 func (s *NoteService) LastPage(userID int64) (string, *tele.ReplyMarkup) {
 	return s.viewsMap[userID].Last(), s.viewsMap[userID].Keyboard()
 }
 
+// FirstPage обрабатывает кнопку переключения на первую страницу
 func (s *NoteService) FirstPage(userID int64) (string, *tele.ReplyMarkup) {
 	return s.viewsMap[userID].First(), s.viewsMap[userID].Keyboard()
 }
