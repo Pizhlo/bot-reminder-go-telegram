@@ -2,7 +2,10 @@ package controller
 
 import (
 	"context"
+	"errors"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -12,6 +15,10 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 
 	message, kb, err := c.noteSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {
+		if errors.Is(err, api_errors.ErrNotesNotFound) {
+			return telectx.Send(messages.NotesNotFoundMessage)
+		}
+
 		c.logger.Errorf("Error while handling /notes command. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
 
 		c.HandleError(telectx, err)
