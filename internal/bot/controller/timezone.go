@@ -22,11 +22,13 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 	if err != nil {
 		c.logger.Errorf("Error while processing user's location: %v\n", err)
 
-		c.handleError(telectx, err)
+		c.HandleError(telectx, err)
 
 		return err
 	}
 
 	msg := fmt.Sprintf(messages.LocationMessage, u.Timezone.Name)
-	return telectx.Send(msg, tele.RemoveKeyboard)
+	return telectx.Send(msg, tele.RemoveKeyboard, &tele.SendOptions{
+		ParseMode: htmlParseMode,
+	})
 }

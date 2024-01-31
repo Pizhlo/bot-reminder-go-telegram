@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	tele "gopkg.in/telebot.v3"
@@ -16,7 +17,12 @@ func (c *Controller) Start(ctx context.Context, telectx tele.Context) error {
 	}
 
 	c.logger.Debugf("User is known. Sending start message...\n")
-	return telectx.Send(messages.StartMessage, tele.RemoveKeyboard)
+
+	text := fmt.Sprintf(messages.StartMessage, telectx.Chat().FirstName)
+
+	return telectx.Send(text, tele.RemoveKeyboard, &tele.SendOptions{
+		ParseMode: htmlParseMode,
+	})
 }
 
 func (c *Controller) Location(ctx context.Context, telectx tele.Context) error {
@@ -30,5 +36,7 @@ func (c *Controller) Location(ctx context.Context, telectx tele.Context) error {
 		locMenu.Row(rejectBtn),
 	)
 
-	return telectx.Send(messages.StartMessageLocation, locMenu)
+	txt := fmt.Sprintf(messages.StartMessageLocation, telectx.Chat().FirstName)
+
+	return telectx.Send(txt, locMenu)
 }

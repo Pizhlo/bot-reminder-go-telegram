@@ -22,12 +22,14 @@ func newLocationState(FSM *FSM, controller *controller.Controller) *location {
 
 // Обрабатываем геолокацию пользователя
 func (n *location) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: location. Message: %s\n", telectx.Message().Text)
+	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	err := n.controller.AcceptTimezone(ctx, telectx)
 	if err != nil {
 		return telectx.Send("Во время обработки произошла ошибка. Повтори попытку позднее")
 	}
+
+	n.fsm.SetState(n.fsm.defaultState)
 
 	return nil
 }

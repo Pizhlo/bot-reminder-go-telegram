@@ -2,8 +2,11 @@ package note
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -13,6 +16,10 @@ func (s *NoteService) GetAll(ctx context.Context, userID int64) (string, *tele.R
 
 	notes, err := s.noteEditor.GetAllByUserID(ctx, userID)
 	if err != nil {
+		if errors.Is(err, api_errors.ErrNotesNotFound) {
+			return messages.NotesNotFoundMessage, nil, nil
+		}
+
 		s.logger.Errorf("error while getting all notes by user ID %d: %v\n", userID, err)
 		return "", nil, fmt.Errorf("error while getting all notes by user ID %d: %w", userID, err)
 	}

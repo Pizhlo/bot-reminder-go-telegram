@@ -20,7 +20,10 @@ type Controller struct {
 	noteSrv *note.NoteService
 }
 
-const htmlParseMode = "HTML"
+const (
+	htmlParseMode     = "HTML"
+	markdownParseMode = "markdown"
+)
 
 func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot) *Controller {
 	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot}
@@ -36,8 +39,8 @@ func (c *Controller) GetAllUsers(ctx context.Context) []*user_model.User {
 	return c.userSrv.GetAll(ctx)
 }
 
-// handleError сообщает об ошибке в канал
-func (c *Controller) handleError(ctx tele.Context, err error) {
+// HandleError сообщает об ошибке в канал
+func (c *Controller) HandleError(ctx tele.Context, err error) {
 	msg := fmt.Sprintf(messages.ErrorMessageChannel, ctx.Message().Text, err)
 
 	sendErr := ctx.Send(messages.ErrorMessageUser)
@@ -45,7 +48,9 @@ func (c *Controller) handleError(ctx tele.Context, err error) {
 		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", sendErr)
 	}
 
-	_, channelErr := c.bot.Send(&tele.Chat{ID: -1001890622926}, msg)
+	_, channelErr := c.bot.Send(&tele.Chat{ID: -1001890622926}, msg, &tele.SendOptions{
+		ParseMode: markdownParseMode,
+	})
 	if channelErr != nil {
 		c.logger.Errorf("Error while sending error message to channel. Error: %+v\n", sendErr)
 	}

@@ -19,7 +19,7 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 	if err != nil {
 		c.logger.Errorf("Error while getting user timezone. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
 
-		c.handleError(telectx, err)
+		c.HandleError(telectx, err)
 
 		return fmt.Errorf("error while getting user timezone. User ID: %d. Error: %v", telectx.Chat().ID, err)
 	}
@@ -30,7 +30,7 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 	if err != nil {
 		c.logger.Errorf("Error while loading location. Location: %s. Error: %v\n", tz.Name, err)
 
-		c.handleError(telectx, err)
+		c.HandleError(telectx, err)
 
 		return fmt.Errorf("error while loading location. Location: %s. Error: %v", tz.Name, err)
 	}
@@ -45,7 +45,7 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 	if err != nil {
 		c.logger.Errorf("Error while saving note. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
 
-		c.handleError(telectx, err)
+		c.HandleError(telectx, err)
 
 		return fmt.Errorf("error while saving note. User ID: %d. Error: %v", telectx.Chat().ID, err)
 	}

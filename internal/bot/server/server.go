@@ -64,40 +64,68 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// inline
 
-	s.bot.Handle(&view.BtnNextPg, func(c tele.Context) error {
+	s.bot.Handle(&view.BtnNextPgNotes, func(c tele.Context) error {
 		err := c.Respond()
 		if err != nil {
+			s.controller.HandleError(c, err)
 			return err
 		}
 
-		return s.controller.NextPageNotes(ctx, c)
+		err = s.controller.NextPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
 	})
 
-	s.bot.Handle(&view.BtnPrevPg, func(c tele.Context) error {
+	s.bot.Handle(&view.BtnPrevPgNotes, func(c tele.Context) error {
 		err := c.Respond()
 		if err != nil {
+			s.controller.HandleError(c, err)
 			return err
 		}
 
-		return s.controller.PrevPageNotes(ctx, c)
+		err = s.controller.PrevPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
 	})
 
-	s.bot.Handle(&view.BtnLastPg, func(c tele.Context) error {
+	s.bot.Handle(&view.BtnLastPgNotes, func(c tele.Context) error {
 		err := c.Respond()
 		if err != nil {
+			s.controller.HandleError(c, err)
 			return err
 		}
 
-		return s.controller.LastPageNotes(ctx, c)
+		err = s.controller.LastPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
 	})
 
-	s.bot.Handle(&view.BtnFirstPg, func(c tele.Context) error {
+	s.bot.Handle(&view.BtnFirstPgNotes, func(c tele.Context) error {
 		err := c.Respond()
 		if err != nil {
+			s.controller.HandleError(c, err)
 			return err
 		}
 
-		return s.controller.FirstPageNotes(ctx, c)
+		err = s.controller.FirstPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
 	})
 }
 

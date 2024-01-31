@@ -28,7 +28,7 @@ func newDefaultState(controller *controller.Controller, FSM *FSM, start state) *
 }
 
 func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: default. Message: %s\n", telectx.Message().Text)
+	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	msg := telectx.Message().Text
 

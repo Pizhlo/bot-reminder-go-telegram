@@ -24,7 +24,7 @@ func newStartState(FSM *FSM, controller *controller.Controller, location state, 
 
 // Отправляем пользователю запрос геолокации
 func (n *start) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: start. Message: %s. Checking user...\n", telectx.Message().Text)
+	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	// если пользователь неизвестен - следующим шагом будет геолокация
 	if !n.controller.CheckUser(ctx, telectx.Chat().ID) {

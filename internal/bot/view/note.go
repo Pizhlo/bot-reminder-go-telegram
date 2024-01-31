@@ -4,24 +4,30 @@ import (
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 const (
-	dateFormat       = "02.01.2006 15:04:05 MST Mon"
+	dateFormat       = "02.01.2006 15:04:05"
 	noteCountPerPage = 5
+	maxMessageLen    = 4096
 )
 
 var (
 	selector = &tele.ReplyMarkup{}
 
-	BtnPrevPg = selector.Data("<", "prev")
-	BtnNextPg = selector.Data(">", "next")
+	// inline кнопка для переключения на предыдущую страницу (заметки)
+	BtnPrevPgNotes = selector.Data("<", "prev")
+	// inline кнопка для переключения на следующую страницу (заметки)
+	BtnNextPgNotes = selector.Data(">", "next")
 
-	BtnFirstPg = selector.Data("<<", "start")
-	BtnLastPg  = selector.Data(">>", "end")
+	// inline кнопка для переключения на первую страницу (заметки)
+	BtnFirstPgNotes = selector.Data("<<", "start")
+	// inline кнопка для переключения на последнюю страницу (заметки)
+	BtnLastPgNotes = selector.Data(">>", "end")
 )
 
 type View struct {
@@ -38,18 +44,22 @@ func New() *View {
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
 func (v *View) Message(notes []model.Note) string {
 	if len(notes) == 0 {
-		return "У тебя пока нет заметок. Чтобы создать, просто пришли мне текст/фото, и я сохраню это!"
+		return messages.NotesNotFoundMessage
 	}
 
 	var res = ""
 	v.messages = make([]string, 0)
 
 	for i, note := range notes {
-		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n", i+1, note.Created.Format(dateFormat), i+1, note.Text)
-		if i%noteCountPerPage == 0 && i > 0 {
+		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n", i+1, note.Created.Format(dateFormat), note.ID, note.Text)
+		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.messages = append(v.messages, res)
 			res = ""
 		}
+	}
+
+	if len(v.messages) < 5 && res != "" {
+		v.messages = append(v.messages, res)
 	}
 
 	return v.messages[0]
@@ -59,7 +69,7 @@ func (v *View) Message(notes []model.Note) string {
 func (v *View) Next() string {
 	v.logger.Debugf("View: getting next page. Current: %d\n", v.currentPage)
 
-	if v.currentPage == len(v.messages)-1 {
+	if v.currentPage == v.total()-1 {
 		v.logger.Debugf("View: current page is the last. Setting current page to 0.\n")
 		v.currentPage = 0
 	} else {
@@ -75,8 +85,8 @@ func (v *View) Previous() string {
 	v.logger.Debugf("View: getting previous page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == 0 {
-		v.logger.Debugf("View: previous page is the last. Setting current page to maximum: %d.\n", len(v.messages))
-		v.currentPage = len(v.messages) - 1
+		v.logger.Debugf("View: previous page is the last. Setting current page to maximum: %d.\n", v.total())
+		v.currentPage = v.total() - 1
 	} else {
 		v.currentPage--
 		v.logger.Debugf("View: decrementing current page. New value: %d\n", v.currentPage)
@@ -89,7 +99,7 @@ func (v *View) Previous() string {
 func (v *View) Last() string {
 	v.logger.Debugf("View: getting the last page. Current: %d\n", v.currentPage)
 
-	v.currentPage = len(v.messages) - 1
+	v.currentPage = v.total() - 1
 
 	return v.messages[v.currentPage]
 }
@@ -120,7 +130,7 @@ func (v *View) Keyboard() *tele.ReplyMarkup {
 	btn := selector.Data(text, "")
 
 	selector.Inline(
-		selector.Row(BtnFirstPg, BtnPrevPg, btn, BtnNextPg, BtnLastPg),
+		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
 	)
 
 	return selector

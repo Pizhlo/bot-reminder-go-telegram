@@ -17,13 +17,28 @@ create table if not exists users.timezones (
 CREATE SCHEMA notes;
 
 create table if not exists notes.notes (
-	id serial not null primary key,
+	id serial not null,
 	user_id int not null,
-	"text" text,
-	foreign key (user_id) references users.users(id) on delete cascade,
+	"text" text,	
 	created timestamp not null,
-	unique(id, user_id)
+	unique(id, user_id),
+	primary key(id, user_id),
+	foreign key (user_id) references users.users(id) on delete cascade,
 );
+
+CREATE SCHEMA notes;
+
+CREATE TABLE IF NOT EXISTS notes.notes (
+    id SERIAL NOT NULL,
+    user_id INT NOT NULL,
+    "text" TEXT,
+    created TIMESTAMP NOT NULL,
+    PRIMARY KEY (id, user_id),
+    FOREIGN KEY (user_id) REFERENCES users.users(id) ON DELETE CASCADE
+);
+
+
+
 
 -- Создание триггера для заполнения таблицы "users.timezones" при внесении записи в "users.users"
 -- CREATE OR REPLACE FUNCTION insert_into_timezone() RETURNS TRIGGER AS $$

@@ -22,8 +22,7 @@ func newListNoteState(FSM *FSM, controller *controller.Controller) *listNote {
 }
 
 func (n *listNote) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: list note. Message: %s\n", telectx.Message().Text)
-
+	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 	msg := telectx.Message().Text
 
 	if !strings.HasPrefix(msg, "/del") {

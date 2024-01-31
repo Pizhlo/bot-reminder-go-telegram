@@ -21,7 +21,7 @@ func newCreateNoteState(controller *controller.Controller, FSM *FSM) *createNote
 }
 
 func (n *createNote) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: create note. Message: %s\n", telectx.Message().Text)
+	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 	return n.controller.CreateNote(ctx, telectx)
 }
 
