@@ -3,6 +3,7 @@ package note
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -70,6 +71,7 @@ type Note struct {
 	UpdatedAt time.Time
 }
 
+// Save сохраняет заметку в базе данных. Для сохранения требуется: ID пользователя, содержимое заметки, дата создания
 func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
@@ -87,6 +89,7 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 	return tx.Commit()
 }
 
+// GetAllByUserID достает из базы все заметки пользователя по ID
 func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.Note, error) {
 	notes := make([]model.Note, 0)
 
@@ -114,6 +117,7 @@ func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.N
 	return notes, nil
 }
 
+// DeleteAllByUserID удаляет все заметки пользователя по user ID
 func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
@@ -131,13 +135,47 @@ func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
 	return tx.Commit()
 }
 
+// DeleteNoteByID удаляет одну заметку. Для удаления необходим ID заметки и пользователя
+func (db *NoteRepo) DeleteNoteByID(ctx context.Context, userID int64, noteID int) error {
+	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+		ReadOnly:  false,
+	})
+	if err != nil {
+		return fmt.Errorf("error while creating transaction: %w", err)
+	}
+
+	_, err = tx.Exec(`delete from notes.notes where user_id = (select id from users.users where tg_id = $1) and id = $2`, userID, noteID)
+	if err != nil {
+		return fmt.Errorf("error while deleting all notes by user ID: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+// GetByID возвращает заметку с переданным ID. Если такой заметки нет, возвращает ErrNotesNotFound
+func (db *NoteRepo) GetByID(ctx context.Context, userID int64, noteID int) (*model.Note, error) {
+	note := model.Note{}
+
+	row := db.db.QueryRowContext(ctx, `select id, text, created from notes.notes where user_id = (select id from users.users where tg_id = $1) and id = $2`, userID, noteID)
+
+	err := row.Scan(&note.ID, &note.Text, &note.Created)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, api_errors.ErrNotesNotFound
+		}
+		return nil, err
+	}
+
+	return &note, nil
+}
+
 type SearchParams struct {
 	UserID int
 	Terms  []string
 }
 
 func (db *NoteRepo) FindByParams(ctx context.Context, params *note.SearchParams) ([]*note.Note, error) {
-
 	return nil, nil
 }
 

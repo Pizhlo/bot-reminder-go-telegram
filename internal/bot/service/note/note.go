@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// NoteService отвечает за заметки: удаление, создание, выдача
 type NoteService struct {
 	noteEditor noteEditor
 	logger     *logrus.Logger
@@ -16,9 +17,20 @@ type NoteService struct {
 }
 
 type noteEditor interface {
+	// Save сохраняет заметку в базе данных. Для сохранения требуется: ID пользователя, содержимое заметки, дата создания
 	Save(ctx context.Context, note model.Note) error
+
+	// GetAllByUserID достает из базы все заметки пользователя по ID
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Note, error)
+
+	// DeleteAllByUserID удаляет все заметки пользователя по user ID
 	DeleteAllByUserID(ctx context.Context, userID int64) error
+
+	// DeleteNoteByID удаляет одну заметку. Для удаления необходим ID заметки и пользователя
+	DeleteNoteByID(ctx context.Context, userID int64, noteID int) error
+
+	// GetByID возвращает заметку с переданным ID. Если такой заметки нет, возвращает ErrNotesNotFound
+	GetByID(ctx context.Context, userID int64, noteID int) (*model.Note, error)
 }
 
 func New(noteEditor noteEditor) *NoteService {

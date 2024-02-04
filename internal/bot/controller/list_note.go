@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"strings"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
@@ -11,7 +12,14 @@ import (
 
 // ListNotes возвращает все заметки пользователя и отправляет ему
 func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Controller: handling /notes command.\n")
+	c.logger.Debugf("Controller: handling %s command.\n", telectx.Message().Text)
+
+	text := telectx.Message().Text
+
+	// проверяем, не пришла ли команда удалить конкретную заметку
+	if strings.HasPrefix(text, "/del") {
+		return c.DeleteNoteByID(ctx, telectx)
+	}
 
 	message, kb, err := c.noteSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {

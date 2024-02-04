@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// UserService отвечает за информацию о пользователях: айди, часовой пояс и т.п.
 type UserService struct {
 	logger         *logrus.Logger
 	userCache      userEditor

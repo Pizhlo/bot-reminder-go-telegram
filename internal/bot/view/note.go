@@ -125,6 +125,11 @@ func (v *View) total() int {
 
 // Keyboard делает клавиатуру для навигации по страницам
 func (v *View) Keyboard() *tele.ReplyMarkup {
+	// если страниц 1, клавиатура не нужна
+	if v.total() == 1 {
+		return &tele.ReplyMarkup{}
+	}
+
 	text := fmt.Sprintf("%d / %d", v.current(), v.total())
 
 	btn := selector.Data(text, "")

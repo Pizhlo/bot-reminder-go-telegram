@@ -38,7 +38,7 @@ func (c *Controller) ConfirmDeleteAllNotes(ctx context.Context, telectx tele.Con
 		selector.Row(BtnDeleteAllNotes, BtnNotDeleteAllNotes),
 	)
 
-	return telectx.Send(messages.ConfirmDeleteNotesmessage, selector)
+	return telectx.Send(messages.ConfirmDeleteNotesMessage, selector)
 }
 
 // DeleteAllNotes удаляет все заметки пользователя
