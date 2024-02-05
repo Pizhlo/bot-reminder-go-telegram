@@ -3,39 +3,175 @@ package server
 import (
 	"context"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/fsm"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
+	tele "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/middleware"
 )
 
-// communicates with db
 type Server struct {
-	noteEditor          noteEditor
-	reminderEditor      reminderEditor
-	userEditor          userEditor
-	timezoneCacheEditor timezoneCacheEditor
-	userCacheEditor     userCacheEditor
+	bot        *tele.Bot
+	fsm        map[int64]*fsm.FSM
+	controller *controller.Controller
+	logger     *logrus.Logger
 }
 
-// db
-type noteEditor interface {
-	SaveNote(ctx context.Context, note model.Note) error
-	GetAllNotes(ctx context.Context, id int) ([]model.Note, error)
-}
-type reminderEditor interface{}
-type userEditor interface {
-	GetUser(ctx context.Context, tgID int64) (model.User, error)
-	SaveUser(ctx context.Context, telegramID int64) (int, error)
+const (
+	startCommand          = "/start"
+	notesCommand          = "/notes"
+	deleteAllNotesCommand = "/notes_del"
+)
+
+func New(bot *tele.Bot, controller *controller.Controller) *Server {
+	return &Server{bot: bot, fsm: make(map[int64]*fsm.FSM, 0),
+		controller: controller,
+		logger:     logger.New()}
 }
 
-// cache
-type timezoneCacheEditor interface {
-	GetUserTimezone(id int64) (model.UserTimezone, error)
-	SaveUserTimezone(id int64, tz model.UserTimezone)
-}
-type userCacheEditor interface {
-	GetUser(ctx context.Context, tgID int64) (model.User, error)
-	SaveUser(ctx context.Context, id int, tgID int64)
+func (s *Server) Start(ctx context.Context) {
+	s.loadFSM(ctx)
+	s.setupBot(ctx)
 }
 
-func New(noteEditor noteEditor, reminderEditor reminderEditor, userEditor userEditor, tzCache timezoneCacheEditor, userCacheEditor userCacheEditor) *Server {
-	return &Server{noteEditor, reminderEditor, userEditor, tzCache, userCacheEditor}
+func (s *Server) setupBot(ctx context.Context) {
+	s.bot.Use(logger.Logging(ctx, s.logger))
+	s.bot.Use(middleware.AutoRespond())
+
+	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	s.bot.Handle(startCommand, func(telectx tele.Context) error {
+		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+			s.RegisterUser(telectx.Chat().ID, false)
+		}
+
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	restricted := s.bot.Group()
+	restricted.Use(s.Middleware(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
+
+	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
+		s.logger.Debugf("on text")
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	restricted.Handle(notesCommand, func(telectx tele.Context) error {
+		s.logger.Debugf("notesCommand")
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	restricted.Handle(deleteAllNotesCommand, func(telectx tele.Context) error {
+		s.logger.Debugf("deleteAllNotesCommand")
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	// inline
+
+	s.bot.Handle(&view.BtnNextPgNotes, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		err = s.controller.NextPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	s.bot.Handle(&view.BtnPrevPgNotes, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		err = s.controller.PrevPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	s.bot.Handle(&view.BtnLastPgNotes, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		err = s.controller.LastPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	s.bot.Handle(&view.BtnFirstPgNotes, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		err = s.controller.FirstPageNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	s.bot.Handle(&controller.BtnDeleteAllNotes, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		err = s.controller.DeleteAllNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	s.bot.Handle(&controller.BtnNotDeleteAllNotes, func(c tele.Context) error {
+		err := c.Respond()
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return c.Edit(messages.NotDeleteMessage)
+	})
+}
+
+func (s *Server) RegisterUser(userID int64, known bool) {
+	s.fsm[userID] = fsm.NewFSM(s.controller, known)
+}
+
+func (s *Server) loadFSM(ctx context.Context) {
+	users := s.controller.GetAllUsers(ctx)
+
+	for _, user := range users {
+		s.RegisterUser(user.TGID, true)
+	}
 }

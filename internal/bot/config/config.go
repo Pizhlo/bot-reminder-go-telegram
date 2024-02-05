@@ -2,24 +2,26 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	DBUser    string `mapstructure:"DB_USER,required"`
-	DBPass    string `mapstructure:"DB_PASS,required"`
-	DBName    string `mapstructure:"DB_NAME,required"`
-	DBHost    string `mapstructure:"DB_HOST,required"`
-	DBPort    string `mapstructure:"DB_PORT,required"`
-	DBAddress string
-	Token     string
+	DBUser             string        `mapstructure:"POSTGRES_USER,required"`
+	DBPass             string        `mapstructure:"POSTGRES_PASSWORD,required"`
+	DBName             string        `mapstructure:"POSTGRES_DB,required"`
+	DBHost             string        `mapstructure:"POSTGRES_HOST,required"`
+	DBPort             string        `mapstructure:"POSTGRES_PORT,required"`
+	Timeout            time.Duration `mapstructure:"TIMEOUT,required"`
+	TelegramMaxMsgSize int           `mapstructure:"MAX_MSG_SIZE,required"`
+	DBAddress          string
+	Token              string `mapstructure:"TOKEN,required"`
 }
 
-func LoadConfig(path string) (*Config, error) {
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+func LoadConfig(file, path string) (*Config, error) {
+	viper.SetConfigFile(file)
 	viper.AddConfigPath(path)
 	viper.AutomaticEnv()
 

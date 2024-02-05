@@ -1,10 +1,11 @@
 package cache
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
 
 type TimezoneCache struct {
@@ -15,21 +16,33 @@ func New() *TimezoneCache {
 	return &TimezoneCache{}
 }
 
-func (c *TimezoneCache) SaveUserTimezone(id int64, tz model.UserTimezone) {
+func (c *TimezoneCache) Save(ctx context.Context, id int64, tz *user.Timezone) error {
 	c.data.Store(id, tz)
+	return nil
 }
 
-func (c *TimezoneCache) GetUserTimezone(id int64) (model.UserTimezone, error) {
+func (c *TimezoneCache) GetAll(ctx context.Context) ([]*user.User, error) {
+	res := make([]*user.User, 0)
+	c.data.Range(func(key, value interface{}) bool {
+		u := value.(*user.User)
+		res = append(res, u)
+		return true
+	})
+
+	return res, nil
+}
+
+func (c *TimezoneCache) Get(ctx context.Context, id int64) (*user.Timezone, error) {
 	val, ok := c.data.Load(id)
 	if !ok {
-		return model.UserTimezone{}, errors.ErrUserNotFound
+		return nil, errors.ErrUserNotFound
 	}
 
-	var userTZ model.UserTimezone
+	var userTZ *user.Timezone
 
-	userTZ, ok = val.(model.UserTimezone)
+	userTZ, ok = val.(*user.Timezone)
 	if !ok {
-		return model.UserTimezone{}, errors.ErrUserNotFound
+		return nil, errors.ErrUnableCastVariable
 	}
 
 	return userTZ, nil

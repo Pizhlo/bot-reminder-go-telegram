@@ -1,10 +1,10 @@
 services:
-  db:
-    image: postgres:15-bullseye
+  postgres:
+    image: postgres:latest
     restart: always
     environment:
-      POSTGRES_DB: bot-reminder
-      POSTGRES_USER: "root"
-      POSTGRES_PASSWORD: "secret"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"

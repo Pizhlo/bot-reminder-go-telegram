@@ -1,19 +1,25 @@
 package logger
 
 import (
-	"os"
+	"path"
+	"runtime"
+	"strconv"
 
-	"github.com/rs/zerolog/log"
-
-	"github.com/rs/zerolog"
+	"github.com/sirupsen/logrus"
 )
 
-type Logger struct {
-	zerolog.Logger
-}
+func New() *logrus.Logger {
+	l := logrus.New()
+	l.SetLevel(logrus.DebugLevel)
+	l.SetReportCaller(true)
 
-func New() *Logger {
-	l := log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	l.SetFormatter(&logrus.TextFormatter{
+		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+			fileName := path.Base(frame.File) + ":" + strconv.Itoa(frame.Line)
+			//return frame.Function, fileName
+			return "", fileName
+		},
+	})
 
-	return &Logger{l}
+	return l
 }
