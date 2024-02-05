@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"sync/atomic"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
@@ -13,7 +12,7 @@ type Memory struct {
 	store map[int]*user.User   // хранить по тг базы
 	uniq  map[int64]*user.User // хранить по тг айди
 	lock  *sync.RWMutex
-	seq   atomic.Int64
+	//seq   atomic.Int64
 }
 
 //var _ user.Repo = (*Memory)(nil)
