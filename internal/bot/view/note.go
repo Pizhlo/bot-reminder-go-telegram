@@ -69,7 +69,7 @@ func (v *View) Message(notes []model.Note) string {
 func (v *View) Next() string {
 	v.logger.Debugf("View: getting next page. Current: %d\n", v.currentPage)
 
-	if v.currentPage == v.total()-1 {
+	if v.currentPage == v.Total()-1 {
 		v.logger.Debugf("View: current page is the last. Setting current page to 0.\n")
 		v.currentPage = 0
 	} else {
@@ -85,8 +85,8 @@ func (v *View) Previous() string {
 	v.logger.Debugf("View: getting previous page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == 0 {
-		v.logger.Debugf("View: previous page is the last. Setting current page to maximum: %d.\n", v.total())
-		v.currentPage = v.total() - 1
+		v.logger.Debugf("View: previous page is the last. Setting current page to maximum: %d.\n", v.Total())
+		v.currentPage = v.Total() - 1
 	} else {
 		v.currentPage--
 		v.logger.Debugf("View: decrementing current page. New value: %d\n", v.currentPage)
@@ -99,7 +99,7 @@ func (v *View) Previous() string {
 func (v *View) Last() string {
 	v.logger.Debugf("View: getting the last page. Current: %d\n", v.currentPage)
 
-	v.currentPage = v.total() - 1
+	v.currentPage = v.Total() - 1
 
 	return v.messages[v.currentPage]
 }
@@ -118,19 +118,19 @@ func (v *View) current() int {
 	return v.currentPage + 1
 }
 
-// total возвращает общее количество страниц
-func (v *View) total() int {
+// Total возвращает общее количество страниц
+func (v *View) Total() int {
 	return len(v.messages)
 }
 
 // Keyboard делает клавиатуру для навигации по страницам
 func (v *View) Keyboard() *tele.ReplyMarkup {
 	// если страниц 1, клавиатура не нужна
-	if v.total() == 1 {
+	if v.Total() == 1 {
 		return &tele.ReplyMarkup{}
 	}
 
-	text := fmt.Sprintf("%d / %d", v.current(), v.total())
+	text := fmt.Sprintf("%d / %d", v.current(), v.Total())
 
 	btn := selector.Data(text, "")
 

@@ -22,6 +22,7 @@ require (
 	github.com/paulmach/orb v0.10.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/ringsaturn/tzf-rel v0.0.2023-b // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/tidwall/geoindex v1.7.0 // indirect
 	github.com/tidwall/geojson v1.4.3 // indirect
 	github.com/tidwall/rtree v1.10.0 // indirect

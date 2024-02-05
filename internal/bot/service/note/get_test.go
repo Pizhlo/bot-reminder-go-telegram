@@ -12,8 +12,9 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	tele "gopkg.in/telebot.v3"
 )
 
 func TestGetAll_Positive(t *testing.T) {
@@ -64,8 +65,13 @@ func TestGetAll_Positive(t *testing.T) {
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(tt.notes, nil)
 
-		actualText, _, err := srv.GetAll(context.Background(), 1)
+		actualText, kb, err := srv.GetAll(context.Background(), 1)
 		require.NoError(t, err)
+
+		// проверяем, что если страница одна - пустая клава
+		if view.Total() < 2 {
+			assert.Equal(t, kb, &tele.ReplyMarkup{})
+		}
 
 		assert.Equal(t, actualText, tt.expectedText, fmt.Sprintf("texts are not equal. Expected:======\n\n %s. Actual:======\n\n %s.", tt.expectedText, actualText))
 	}
@@ -137,9 +143,10 @@ func TestGetAll_DBError(t *testing.T) {
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(nil, tt.err)
 
-		actualText, _, err := srv.GetAll(context.Background(), 1)
+		actualText, kb, err := srv.GetAll(context.Background(), 1)
 
 		assert.Equal(t, actualText, "")
-		assert.Equal(t, err, sql.ErrNoRows)
+		assert.EqualError(t, err, sql.ErrNoRows.Error())
+		assert.Nil(t, kb)
 	}
 }
