@@ -6,7 +6,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-// GetAll возвращает все заметки пользователя
+// GetAll обрабатывает запрос всех заметки пользователя. Возвращает: первую страницу заметок (в виде целого сообщения),
+// клавиатуру и ошибку
 func (s *NoteService) GetAll(ctx context.Context, userID int64) (string, *tele.ReplyMarkup, error) {
 	s.logger.Debugf("Note service: getting all user's notes. User ID: %d\n", userID)
 

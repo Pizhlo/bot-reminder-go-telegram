@@ -20,4 +20,7 @@ test:
 bot:
 	go run .
 
+mocks:
+	go generate ./...
+
 .PHONY: initdb dropdb test
