@@ -93,7 +93,7 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.Note, error) {
 	notes := make([]model.Note, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select id, text, created from notes.notes where user_id = (select id from users.users where tg_id = $1)`, userID)
+	rows, err := db.db.QueryContext(ctx, `select id, text, created from notes.notes where user_id = (select id from users.users where tg_id = $1) order by created ASC`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting all notes from DB by user ID %d: %w", userID, err)
 	}
