@@ -11,9 +11,9 @@ import (
 )
 
 type FSM struct {
-	listNote     state
+	ListNote     state
 	createNote   state
-	defaultState state
+	DefaultState state
 	Start        state
 	location     state
 	current      state
@@ -31,21 +31,21 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 
 	fsm.location = newLocationState(fsm, controller)
 
-	start := newStartState(fsm, controller, fsm.location, fsm.defaultState)
+	start := newStartState(fsm, controller, fsm.location, fsm.DefaultState)
 	fsm.Start = start
 
 	defaultState := newDefaultState(controller, fsm, fsm.Start)
-	fsm.defaultState = defaultState
+	fsm.DefaultState = defaultState
 
 	fsm.createNote = newCreateNoteState(controller, fsm)
 
-	fsm.listNote = newListNoteState(fsm, controller)
+	fsm.ListNote = newListNoteState(fsm, controller)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	if !known {
 		fsm.current = fsm.Start
 	} else {
-		fsm.current = fsm.defaultState
+		fsm.current = fsm.DefaultState
 	}
 
 	return fsm

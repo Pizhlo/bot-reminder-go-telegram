@@ -53,8 +53,38 @@ func (s *Server) setupBot(ctx context.Context) {
 		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 	})
 
+	// main menu
+	s.bot.Handle(&view.BtnProfile, func(ctx tele.Context) error {
+		s.logger.Debugf("Profile btn")
+		return nil
+	})
+
+	s.bot.Handle(&view.BtnSettings, func(ctx tele.Context) error {
+		s.logger.Debugf("Settings btn")
+		return nil
+	})
+
+	s.bot.Handle(&view.BtnNotes, func(telectx tele.Context) error {
+		s.logger.Debugf("Notes btn")
+		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	s.bot.Handle(&view.BtnReminders, func(ctx tele.Context) error {
+		s.logger.Debugf("Reminders btn")
+		return nil
+	})
+
+	s.bot.Handle(&view.BtnMenu, func(telectx tele.Context) error {
+		s.logger.Debugf("Menu btn")
+		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].DefaultState)
+		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+	})
+
+	// restricted: only known users
+
 	restricted := s.bot.Group()
-	restricted.Use(s.Middleware(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
+	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
 
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
 		s.logger.Debugf("on text")
@@ -74,13 +104,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	// inline
 
 	s.bot.Handle(&view.BtnNextPgNotes, func(c tele.Context) error {
-		err := c.Respond()
-		if err != nil {
-			s.controller.HandleError(c, err)
-			return err
-		}
-
-		err = s.controller.NextPageNotes(ctx, c)
+		err := s.controller.NextPageNotes(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err)
 			return err
@@ -90,13 +114,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	s.bot.Handle(&view.BtnPrevPgNotes, func(c tele.Context) error {
-		err := c.Respond()
-		if err != nil {
-			s.controller.HandleError(c, err)
-			return err
-		}
-
-		err = s.controller.PrevPageNotes(ctx, c)
+		err := s.controller.PrevPageNotes(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err)
 			return err
@@ -106,13 +124,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	s.bot.Handle(&view.BtnLastPgNotes, func(c tele.Context) error {
-		err := c.Respond()
-		if err != nil {
-			s.controller.HandleError(c, err)
-			return err
-		}
-
-		err = s.controller.LastPageNotes(ctx, c)
+		err := s.controller.LastPageNotes(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err)
 			return err
@@ -122,13 +134,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	s.bot.Handle(&view.BtnFirstPgNotes, func(c tele.Context) error {
-		err := c.Respond()
-		if err != nil {
-			s.controller.HandleError(c, err)
-			return err
-		}
-
-		err = s.controller.FirstPageNotes(ctx, c)
+		err := s.controller.FirstPageNotes(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err)
 			return err
@@ -138,13 +144,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	s.bot.Handle(&controller.BtnDeleteAllNotes, func(c tele.Context) error {
-		err := c.Respond()
-		if err != nil {
-			s.controller.HandleError(c, err)
-			return err
-		}
-
-		err = s.controller.DeleteAllNotes(ctx, c)
+		err := s.controller.DeleteAllNotes(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err)
 			return err
@@ -154,12 +154,6 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	s.bot.Handle(&controller.BtnNotDeleteAllNotes, func(c tele.Context) error {
-		err := c.Respond()
-		if err != nil {
-			s.controller.HandleError(c, err)
-			return err
-		}
-
 		return c.Edit(messages.NotDeleteMessage)
 	})
 }

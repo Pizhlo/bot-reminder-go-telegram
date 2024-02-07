@@ -37,19 +37,21 @@ func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
 	switch msg {
 	case notesCommand:
 		n.logger.Debugf("Default state: got /notes command. Calling controller.ListNotes(). Message: %s\n", msg)
-		n.fsm.SetState(n.fsm.listNote)
+		n.fsm.SetState(n.fsm.ListNote)
 		return n.controller.ListNotes(ctx, telectx)
 	case startCommand:
 		//n.fsm.SetState(n.start)
-		n.logger.Debugf("Default state: got /start command. Calling controller.CreateNote(). Message: %s\n", msg)
+		n.logger.Debugf("Default state: got /start command. Calling controller.Start(). Message: %s\n", msg)
 		return n.fsm.Start.Handle(ctx, telectx)
 	case deleteAllNotesCommand:
 		n.logger.Debugf("Default state: got /notes_del command. Calling controller.ConfirmDeleteAllNotes(). Message: %s\n", msg)
 		//n.fsm.SetState(n.fsm.listNote)
 		return n.controller.ConfirmDeleteAllNotes(ctx, telectx)
 	default:
-		n.logger.Debugf("Default state: got usual text. Calling controller.CreateNote(). Message: %s\n", msg)
-		return n.controller.CreateNote(ctx, telectx)
+		// n.logger.Debugf("Default state: got usual text. Calling controller.CreateNote(). Message: %s\n", msg)
+		// return n.controller.CreateNote(ctx, telectx)
+
+		return n.fsm.Start.Handle(ctx, telectx)
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -34,8 +35,10 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 		return err
 	}
 
+	kb.Inline(kb.Row(view.BtnMenu))
+
 	c.logger.Debugf("Controller: successfully got all user's notes. Sending message to user...\n")
-	return telectx.Send(message, kb)
+	return telectx.Edit(message, kb)
 }
 
 // NextPageNotes обрабатывает кнопку переключения на следующую страницу

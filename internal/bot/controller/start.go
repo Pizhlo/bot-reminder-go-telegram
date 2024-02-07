@@ -20,11 +20,15 @@ func (c *Controller) Start(ctx context.Context, telectx tele.Context) error {
 
 	c.logger.Debugf("Controller: user is known. Sending start message...\n")
 
+	kb := c.navSrv.MainMenu(telectx.Chat().ID)
+
 	text := fmt.Sprintf(messages.StartMessage, telectx.Chat().FirstName)
 
-	return telectx.Send(text, tele.RemoveKeyboard, &tele.SendOptions{
-		ParseMode: htmlParseMode,
-	})
+	if telectx.Message().Sender != telectx.Bot().Me {
+		return telectx.Send(text, kb)
+	}
+
+	return telectx.Edit(text, kb)
 }
 
 // Location запрашивает геолокацию у пользователя

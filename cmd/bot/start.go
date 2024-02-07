@@ -12,6 +12,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/navigation"
 	note_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	user_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	tz_cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
@@ -79,8 +80,9 @@ func Start(confName, path string) {
 		// services
 		userSrv := user_srv.New(userRepo, u_cache, tz, tzRepo)
 		noteSrv := note_srv.New(noteRepo)
+		navigationSrv := navigation.New()
 
-		controller := controller.New(userSrv, noteSrv, bot)
+		controller := controller.New(userSrv, noteSrv, bot, navigationSrv)
 
 		if err != nil {
 			return fmt.Errorf("cannot create a bot: %w", err)

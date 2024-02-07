@@ -70,12 +70,12 @@ func (s *UserService) GetAll(ctx context.Context) []*user.User {
 }
 
 func (s *UserService) SaveUser(ctx context.Context, userID int64, u *user.User) error {
-	s.logger.Debugf("Saving user in cache... Key: %d. Value: %v\n", userID, u)
+	s.logger.Debugf("User service: Saving user in cache... Key: %d. Value: %v\n", userID, u)
 	s.userCache.Save(ctx, userID, u)
 
-	s.logger.Debugf("Successfully saved user in cache. Key: %d. Value: %v\n", userID, u)
+	s.logger.Debugf("User service: Successfully saved user in cache. Key: %d. Value: %v\n", userID, u)
 
-	s.logger.Debugf("Saving user in DB... Value: %v\n", u)
+	s.logger.Debugf("User service: Saving user in DB... Value: %v\n", u)
 	return s.userEditor.Save(ctx, userID, u)
 }
 
@@ -87,33 +87,33 @@ func (s *UserService) CheckUser(ctx context.Context, tgID int64) bool {
 }
 
 func (s *UserService) checkInCache(ctx context.Context, tgID int64) bool {
-	s.logger.Debugf("Checking user in cache. ID: %d\n", tgID)
+	s.logger.Debugf("User service: Checking user in cache. ID: %d\n", tgID)
 
 	u, err := s.userCache.Get(ctx, tgID)
 	if err != nil {
-		s.logger.Errorf("Error while checking user in cache: %v\n", err)
+		s.logger.Errorf("User service: Error while checking user in cache: %v\n", err)
 	} else {
-		s.logger.Debugf("Found user in cache: %+v\n", u)
+		s.logger.Debugf("User service: Found user in cache: %+v\n", u)
 	}
 
 	if u == nil {
-		s.logger.Debugf("User not found in cache: %d\n", tgID)
+		s.logger.Debugf("User service: User not found in cache: %d\n", tgID)
 	}
 
 	return u != nil
 }
 
 func (s *UserService) checkInRepo(ctx context.Context, tgID int64) bool {
-	s.logger.Debugf("Checking user in DB. ID: %d\n", tgID)
+	s.logger.Debugf("User service: Checking user in DB. ID: %d\n", tgID)
 
 	u, err := s.userEditor.Get(ctx, tgID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			s.logger.Errorf("Error while checking user in DB: %v\n", err)
+			s.logger.Errorf("User service: Error while checking user in DB: %v\n", err)
 		}
-		s.logger.Debugf("User not found in DB: %d\n", tgID)
+		s.logger.Debugf("User service: User not found in DB: %d\n", tgID)
 	} else {
-		s.logger.Debugf("Found user in DB: %+v\n", u)
+		s.logger.Debugf("User service: Found user in DB: %+v\n", u)
 	}
 
 	return u != nil

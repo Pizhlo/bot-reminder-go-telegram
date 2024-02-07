@@ -7,6 +7,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/navigation"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	"github.com/sirupsen/logrus"
@@ -14,10 +15,14 @@ import (
 )
 
 type Controller struct {
-	logger  *logrus.Logger
-	bot     *tele.Bot
+	logger *logrus.Logger
+	bot    *tele.Bot
+	// отвечает за информацию о пользователях
 	userSrv *user.UserService
+	// отвечает за обработку заметок
 	noteSrv *note.NoteService
+	// отвечает за навигацию по боту
+	navSrv *navigation.NavigationService
 }
 
 const (
@@ -25,13 +30,14 @@ const (
 	markdownParseMode = "markdown"
 )
 
-func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot) *Controller {
-	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot}
+func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, mainSrv *navigation.NavigationService) *Controller {
+	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot, navSrv: mainSrv}
 }
 
 // CheckUser проверяет, известен ли пользователь боту
 func (c *Controller) CheckUser(ctx context.Context, tgID int64) bool {
 	c.noteSrv.SaveUser(tgID)
+	c.navSrv.SaveUser(tgID)
 	return c.userSrv.CheckUser(ctx, tgID)
 }
 
