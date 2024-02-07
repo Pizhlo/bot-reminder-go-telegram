@@ -1,23 +1,17 @@
 package fsm
 
-import (
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
-	"github.com/sirupsen/logrus"
-)
+// type start struct {
+// 	controller   *controller.Controller
+// 	fsm          *FSM
+// 	location     state
+// 	defaultState state
+// 	logger       *logrus.Logger
+// 	name         string
+// }
 
-type start struct {
-	controller   *controller.Controller
-	fsm          *FSM
-	location     state
-	defaultState state
-	logger       *logrus.Logger
-	name         string
-}
-
-func newStartState(FSM *FSM, controller *controller.Controller, location state, defaultState state) *start {
-	return &start{controller, FSM, location, defaultState, logger.New(), "start"}
-}
+// func newStartState(FSM *FSM, controller *controller.Controller, location state, defaultState state) *start {
+// 	return &start{controller, FSM, location, defaultState, logger.New(), "start"}
+// }
 
 // Отправляем пользователю запрос геолокации
 // func (n *start) Handle(ctx context.Context, telectx tele.Context) error {
@@ -36,6 +30,6 @@ func newStartState(FSM *FSM, controller *controller.Controller, location state, 
 // 	return n.controller.StartCmd(ctx, telectx)
 // }
 
-func (n *start) Name() string {
-	return n.name
-}
+// func (n *start) Name() string {
+// 	return n.name
+// }
