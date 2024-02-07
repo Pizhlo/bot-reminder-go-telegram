@@ -136,6 +136,7 @@ func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 
 	selector.Inline(
 		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		selector.Row(BtnBackToMenu),
 	)
 
 	return selector

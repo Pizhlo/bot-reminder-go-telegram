@@ -35,8 +35,6 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 		return err
 	}
 
-	kb.Inline(kb.Row(view.BtnBackToMenu))
-
 	c.logger.Debugf("Controller: successfully got all user's notes. Sending message to user...\n")
 	return telectx.Edit(message, kb)
 }

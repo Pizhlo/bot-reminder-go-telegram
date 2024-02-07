@@ -9,6 +9,7 @@ import (
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -54,7 +55,7 @@ func (c *Controller) HandleError(ctx tele.Context, err error) {
 	// 	c.logger.Errorf("Error while sending error message to user. Error: %+v\n", sendErr)
 	// }
 
-	editErr := ctx.Edit(messages.ErrorMessageUser)
+	editErr := ctx.Edit(messages.ErrorMessageUser, view.BackToMenuBtn())
 	if editErr != nil {
 		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", editErr)
 	}
