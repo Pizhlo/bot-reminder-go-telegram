@@ -13,7 +13,7 @@ import (
 type NoteService struct {
 	noteEditor noteEditor
 	logger     *logrus.Logger
-	viewsMap   map[int64]*view.View
+	viewsMap   map[int64]*view.NoteView
 }
 
 //go:generate mockgen -source ./note.go -destination=./mocks/note_editor.go
@@ -35,7 +35,7 @@ type noteEditor interface {
 }
 
 func New(noteEditor noteEditor) *NoteService {
-	return &NoteService{noteEditor: noteEditor, logger: logger.New(), viewsMap: make(map[int64]*view.View)}
+	return &NoteService{noteEditor: noteEditor, logger: logger.New(), viewsMap: make(map[int64]*view.NoteView)}
 }
 
 // SaveUser сохраняет пользователя в мапе view
@@ -43,7 +43,7 @@ func (n *NoteService) SaveUser(userID int64) {
 	n.logger.Debugf("Note service: checking if user saved in the views map...\n")
 	if _, ok := n.viewsMap[userID]; !ok {
 		n.logger.Debugf("Note service: user not found in the views map. Saving...\n")
-		n.viewsMap[userID] = view.New()
+		n.viewsMap[userID] = view.NewNote()
 	} else {
 		n.logger.Debugf("Note service: user already saved in the views map.\n")
 	}

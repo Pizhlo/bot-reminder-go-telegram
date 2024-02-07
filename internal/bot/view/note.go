@@ -16,6 +16,16 @@ const (
 	maxMessageLen    = 4096
 )
 
+type NoteView struct {
+	pages       []string
+	currentPage int
+	logger      *logrus.Logger
+}
+
+func NewNote() *NoteView {
+	return &NoteView{pages: make([]string, 0), currentPage: 0, logger: logger.New()}
+}
+
 var (
 	selector = &tele.ReplyMarkup{}
 
@@ -30,101 +40,91 @@ var (
 	BtnLastPgNotes = selector.Data(">>", "end")
 )
 
-type View struct {
-	messages    []string
-	currentPage int
-	logger      *logrus.Logger
-}
-
-func New() *View {
-	return &View{messages: make([]string, 0), currentPage: 0, logger: logger.New()}
-}
-
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
-func (v *View) Message(notes []model.Note) string {
+func (v *NoteView) Message(notes []model.Note) string {
 	if len(notes) == 0 {
 		return messages.NotesNotFoundMessage
 	}
 
 	var res = ""
-	v.messages = make([]string, 0)
+	v.pages = make([]string, 0)
 
 	for i, note := range notes {
 		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n", i+1, note.Created.Format(dateFormat), note.ID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
-			v.messages = append(v.messages, res)
+			v.pages = append(v.pages, res)
 			res = ""
 		}
 	}
 
-	if len(v.messages) < 5 && res != "" {
-		v.messages = append(v.messages, res)
+	if len(v.pages) < 5 && res != "" {
+		v.pages = append(v.pages, res)
 	}
 
-	return v.messages[0]
+	return v.pages[0]
 }
 
 // Next возвращает следующую страницу сообщений
-func (v *View) Next() string {
-	v.logger.Debugf("View: getting next page. Current: %d\n", v.currentPage)
+func (v *NoteView) Next() string {
+	v.logger.Debugf("noteView: getting next page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == v.total()-1 {
-		v.logger.Debugf("View: current page is the last. Setting current page to 0.\n")
+		v.logger.Debugf("noteView: current page is the last. Setting current page to 0.\n")
 		v.currentPage = 0
 	} else {
 		v.currentPage++
-		v.logger.Debugf("View: incrementing current page. New value: %d\n", v.currentPage)
+		v.logger.Debugf("noteView: incrementing current page. New value: %d\n", v.currentPage)
 	}
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // Previous возвращает предыдущую страницу сообщений
-func (v *View) Previous() string {
-	v.logger.Debugf("View: getting previous page. Current: %d\n", v.currentPage)
+func (v *NoteView) Previous() string {
+	v.logger.Debugf("noteView: getting previous page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == 0 {
-		v.logger.Debugf("View: previous page is the last. Setting current page to maximum: %d.\n", v.total())
+		v.logger.Debugf("noteView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
 		v.currentPage = v.total() - 1
 	} else {
 		v.currentPage--
-		v.logger.Debugf("View: decrementing current page. New value: %d\n", v.currentPage)
+		v.logger.Debugf("noteView: decrementing current page. New value: %d\n", v.currentPage)
 	}
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // Last возвращает последнюю страницу сообщений
-func (v *View) Last() string {
-	v.logger.Debugf("View: getting the last page. Current: %d\n", v.currentPage)
+func (v *NoteView) Last() string {
+	v.logger.Debugf("noteView: getting the last page. Current: %d\n", v.currentPage)
 
 	v.currentPage = v.total() - 1
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // First возвращает первую страницу сообщений
-func (v *View) First() string {
-	v.logger.Debugf("View: getting the first page. Current: %d\n", v.currentPage)
+func (v *NoteView) First() string {
+	v.logger.Debugf("noteView: getting the first page. Current: %d\n", v.currentPage)
 
 	v.currentPage = 0
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // current возвращает номер текущей страницы
-func (v *View) current() int {
+func (v *NoteView) current() int {
 	return v.currentPage + 1
 }
 
 // total возвращает общее количество страниц
-func (v *View) total() int {
-	return len(v.messages)
+func (v *NoteView) total() int {
+	return len(v.pages)
 }
 
 // Keyboard делает клавиатуру для навигации по страницам
-func (v *View) Keyboard() *tele.ReplyMarkup {
+func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {
 		return &tele.ReplyMarkup{}
@@ -136,12 +136,13 @@ func (v *View) Keyboard() *tele.ReplyMarkup {
 
 	selector.Inline(
 		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		selector.Row(BtnBackToMenu),
 	)
 
 	return selector
 }
 
 // SetCurrentToFirst устанавливает текущий номер страницы на 1
-func (v *View) SetCurrentToFirst() {
+func (v *NoteView) SetCurrentToFirst() {
 	v.currentPage = 0
 }

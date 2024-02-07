@@ -29,7 +29,7 @@ func (n *location) Handle(ctx context.Context, telectx tele.Context) error {
 		return telectx.Send("Во время обработки произошла ошибка. Повтори попытку позднее")
 	}
 
-	n.fsm.SetState(n.fsm.defaultState)
+	n.fsm.SetState(n.fsm.DefaultState)
 
 	return nil
 }

@@ -3,14 +3,12 @@ module github.com/Pizhlo/bot-reminder-go-telegram
 go 1.21
 
 require (
-	github.com/rs/zerolog v1.31.0
-	github.com/zsefvlol/timezonemapper v1.0.0
+	github.com/golang/mock v1.6.0
 	gopkg.in/telebot.v3 v3.1.3
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/golang/mock v1.6.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -35,10 +33,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/lib/pq v1.10.9
-	github.com/looplab/fsm v1.0.1
 	github.com/magiconair/properties v1.8.7 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1

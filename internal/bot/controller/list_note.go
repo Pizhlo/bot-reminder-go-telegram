@@ -7,6 +7,7 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -24,7 +25,7 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 	message, kb, err := c.noteSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
-			return telectx.Send(messages.NotesNotFoundMessage)
+			return telectx.Edit(messages.NotesNotFoundMessage, view.BackToMenuBtn())
 		}
 
 		c.logger.Errorf("Error while handling /notes command. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
@@ -35,7 +36,7 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 	}
 
 	c.logger.Debugf("Controller: successfully got all user's notes. Sending message to user...\n")
-	return telectx.Send(message, kb)
+	return telectx.Edit(message, kb)
 }
 
 // NextPageNotes обрабатывает кнопку переключения на следующую страницу

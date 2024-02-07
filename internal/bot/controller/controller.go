@@ -9,15 +9,20 @@ import (
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 type Controller struct {
-	logger  *logrus.Logger
-	bot     *tele.Bot
+	logger *logrus.Logger
+	bot    *tele.Bot
+	// отвечает за информацию о пользователях
 	userSrv *user.UserService
+	// отвечает за обработку заметок
 	noteSrv *note.NoteService
+	// последнее отправленное сообщение (для редактирования)
+	lastMsg map[int64]*tele.Message
 }
 
 const (
@@ -26,7 +31,7 @@ const (
 )
 
 func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot) *Controller {
-	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot}
+	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot, lastMsg: make(map[int64]*tele.Message)}
 }
 
 // CheckUser проверяет, известен ли пользователь боту
@@ -50,7 +55,7 @@ func (c *Controller) HandleError(ctx tele.Context, err error) {
 	// 	c.logger.Errorf("Error while sending error message to user. Error: %+v\n", sendErr)
 	// }
 
-	editErr := ctx.Edit(messages.ErrorMessageUser)
+	editErr := ctx.Edit(messages.ErrorMessageUser, view.BackToMenuBtn())
 	if editErr != nil {
 		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", editErr)
 	}
@@ -61,4 +66,8 @@ func (c *Controller) HandleError(ctx tele.Context, err error) {
 	if channelErr != nil {
 		c.logger.Errorf("Error while sending error message to channel. Error: %+v\n", editErr)
 	}
+}
+
+func (c *Controller) SaveLastMsg(user int64, msg *tele.Message) {
+	c.lastMsg[user] = msg
 }

@@ -10,6 +10,23 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// RequestLocation запрашивает геолокацию у пользователя
+func (c *Controller) RequestLocation(ctx context.Context, telectx tele.Context) error {
+	locMenu := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
+
+	locBtn := locMenu.Location("Отправить геолокацию")
+	rejectBtn := locMenu.Text("Отказаться")
+
+	locMenu.Reply(
+		locMenu.Row(locBtn),
+		locMenu.Row(rejectBtn),
+	)
+
+	txt := fmt.Sprintf(messages.StartMessageLocation, telectx.Chat().FirstName)
+
+	return telectx.Send(txt, locMenu)
+}
+
 // AcceptTimezone обрабатывает геолокацию пользователя
 func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Controller: handling location\n")

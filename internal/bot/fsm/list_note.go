@@ -2,7 +2,6 @@ package fsm
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
@@ -23,12 +22,12 @@ func newListNoteState(FSM *FSM, controller *controller.Controller) *listNote {
 
 func (n *listNote) Handle(ctx context.Context, telectx tele.Context) error {
 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
-	msg := telectx.Message().Text
+	//msg := telectx.Message().Text
 
-	if !strings.HasPrefix(msg, "/del") {
-		n.fsm.SetState(n.fsm.defaultState)
-		return n.fsm.Handle(ctx, telectx)
-	}
+	// if !strings.HasPrefix(msg, "/del") {
+	// 	n.fsm.SetState(n.fsm.defaultState)
+	// 	return n.fsm.Handle(ctx, telectx)
+	// }
 
 	return n.controller.ListNotes(ctx, telectx)
 }

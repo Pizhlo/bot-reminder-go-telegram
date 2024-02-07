@@ -23,4 +23,4 @@ bot:
 mocks:
 	go generate ./...
 
-.PHONY: initdb dropdb test
+.PHONY: initdb dropdb test bot mocks
