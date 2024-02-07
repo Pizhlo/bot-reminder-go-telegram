@@ -42,7 +42,8 @@ func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
 	case startCommand:
 		//n.fsm.SetState(n.start)
 		n.logger.Debugf("Default state: got /start command. Calling controller.Start(). Message: %s\n", msg)
-		return n.fsm.Start.Handle(ctx, telectx)
+		//return n.fsm.Start.Handle(ctx, telectx)
+		return nil
 	case deleteAllNotesCommand:
 		n.logger.Debugf("Default state: got /notes_del command. Calling controller.ConfirmDeleteAllNotes(). Message: %s\n", msg)
 		//n.fsm.SetState(n.fsm.listNote)
@@ -51,7 +52,8 @@ func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
 		// n.logger.Debugf("Default state: got usual text. Calling controller.CreateNote(). Message: %s\n", msg)
 		// return n.controller.CreateNote(ctx, telectx)
 
-		return n.fsm.Start.Handle(ctx, telectx)
+		//return n.fsm.Start.Handle(ctx, telectx)
+		return nil
 	}
 }
 

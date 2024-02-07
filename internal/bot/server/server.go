@@ -45,22 +45,26 @@ func (s *Server) setupBot(ctx context.Context) {
 		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 	})
 
-	s.bot.Handle(startCommand, func(telectx tele.Context) error {
-		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-			s.RegisterUser(telectx.Chat().ID, false)
+	// main menu
+	s.bot.Handle(&view.BtnProfile, func(telectx tele.Context) error {
+		s.logger.Debugf("Profile btn")
+		err := s.controller.Profile(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
 		}
 
-		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-	})
-
-	// main menu
-	s.bot.Handle(&view.BtnProfile, func(ctx tele.Context) error {
-		s.logger.Debugf("Profile btn")
 		return nil
 	})
 
-	s.bot.Handle(&view.BtnSettings, func(ctx tele.Context) error {
+	s.bot.Handle(&view.BtnSettings, func(telectx tele.Context) error {
 		s.logger.Debugf("Settings btn")
+		err := s.controller.Settings(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
+		}
+
 		return nil
 	})
 
@@ -70,15 +74,29 @@ func (s *Server) setupBot(ctx context.Context) {
 		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 	})
 
-	s.bot.Handle(&view.BtnReminders, func(ctx tele.Context) error {
+	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
 		s.logger.Debugf("Reminders btn")
+		err := s.controller.Reminders(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
+		}
+
 		return nil
 	})
 
-	s.bot.Handle(&view.BtnMenu, func(telectx tele.Context) error {
+	s.bot.Handle(&view.BtnBackToMenu, func(telectx tele.Context) error {
 		s.logger.Debugf("Menu btn")
-		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].DefaultState)
-		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
+		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+
+		err := s.controller.StartCmd(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
 	})
 
 	// restricted: only known users
@@ -86,9 +104,18 @@ func (s *Server) setupBot(ctx context.Context) {
 	restricted := s.bot.Group()
 	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
 
+	restricted.Handle(startCommand, func(telectx tele.Context) error {
+		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+			s.RegisterUser(telectx.Chat().ID, false)
+		}
+
+		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		return s.controller.StartCmd(ctx, telectx)
+	})
+
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
 		s.logger.Debugf("on text")
-		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		return s.controller.CreateNote(ctx, telectx)
 	})
 
 	restricted.Handle(notesCommand, func(telectx tele.Context) error {

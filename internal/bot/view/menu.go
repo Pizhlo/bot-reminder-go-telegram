@@ -2,14 +2,8 @@ package view
 
 import tele "gopkg.in/telebot.v3"
 
-type NavigationView struct{}
-
-func NewNavigation() *NavigationView {
-	return &NavigationView{}
-}
-
 var (
-	mainMenu = &tele.ReplyMarkup{}
+	//mainMenu = &tele.ReplyMarkup{}
 
 	// inline кнопка для просмотра профиля
 	BtnProfile = selector.Data("👤Профиль", "profile")
@@ -22,16 +16,41 @@ var (
 	BtnReminders = selector.Data("⏰Напоминания", "reminders")
 
 	// inline кнопка для возвращения в меню
-	BtnMenu = selector.Data("⬅️Меню", "menu")
+	BtnBackToMenu = selector.Data("⬅️Меню", "menu")
 )
+
+// BackToMenuBtn возвращает кнопку возврата в меню
+func BackToMenuBtn() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
 
 // MainMenu возвращает главное меню.
 // Кнопки: Профиль, Настройки, Заметки, Напоминания
-func (v *NavigationView) MainMenu() *tele.ReplyMarkup {
-	mainMenu.Inline(
-		mainMenu.Row(BtnProfile, BtnSettings),
-		mainMenu.Row(BtnNotes, BtnReminders),
+func MainMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnProfile, BtnSettings),
+		menu.Row(BtnNotes, BtnReminders),
 	)
 
-	return mainMenu
+	return menu
+}
+
+// NotesAndMenuBtns возвращает меню с двумя кнопками: Заметки и назад в меню
+func NotesAndMenuBtns() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnNotes),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
 }

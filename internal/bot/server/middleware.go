@@ -13,7 +13,7 @@ func (s *Server) CheckUser(contxt context.Context) tele.MiddlewareFunc {
 		return func(ctx tele.Context) error {
 			if !s.controller.CheckUser(contxt, ctx.Chat().ID) {
 				s.RegisterUser(ctx.Chat().ID, false)
-				return s.controller.Location(contxt, ctx)
+				return s.controller.RequestLocation(contxt, ctx)
 			}
 			return next(ctx)
 		}

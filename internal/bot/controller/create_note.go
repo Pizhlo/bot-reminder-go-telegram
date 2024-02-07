@@ -7,6 +7,7 @@ import (
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -51,7 +52,7 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 		return fmt.Errorf("error while saving note. User ID: %d. Error: %v", telectx.Chat().ID, err)
 	}
 
-	return telectx.Send(messages.SuccessfullyCreatedNoteMessage, &tele.SendOptions{
-		ParseMode: htmlParseMode,
-	})
+	kb := view.NotesAndMenuBtns()
+
+	return telectx.Send(messages.SuccessfullyCreatedNoteMessage, kb)
 }

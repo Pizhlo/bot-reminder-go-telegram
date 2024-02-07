@@ -14,11 +14,11 @@ type FSM struct {
 	ListNote     state
 	createNote   state
 	DefaultState state
-	Start        state
-	location     state
-	current      state
-	mu           sync.RWMutex
-	logger       *logrus.Logger
+	//Start        state
+	location state
+	current  state
+	mu       sync.RWMutex
+	logger   *logrus.Logger
 }
 
 type state interface {
@@ -31,11 +31,11 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 
 	fsm.location = newLocationState(fsm, controller)
 
-	start := newStartState(fsm, controller, fsm.location, fsm.DefaultState)
-	fsm.Start = start
+	//start := newStartState(fsm, controller, fsm.location, fsm.DefaultState)
+	//fsm.Start = start
 
-	defaultState := newDefaultState(controller, fsm, fsm.Start)
-	fsm.DefaultState = defaultState
+	//defaultState := newDefaultState(controller, fsm)
+	//fsm.DefaultState = defaultState
 
 	fsm.createNote = newCreateNoteState(controller, fsm)
 
@@ -43,7 +43,7 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	if !known {
-		fsm.current = fsm.Start
+		//fsm.current = fsm.Start
 	} else {
 		fsm.current = fsm.DefaultState
 	}

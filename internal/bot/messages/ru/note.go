@@ -1,7 +1,7 @@
 package messages
 
 // SAVE
-const SuccessfullyCreatedNoteMessage = "Отличная заметка, я уже сохранил!👍\n\nПосмотреть все заметки: /notes"
+const SuccessfullyCreatedNoteMessage = "Отличная заметка, я уже сохранил!👍\n\n"
 
 // SEARCH
 const SearchNotesByTextMessage = "Введи текст, который нужно найти"
