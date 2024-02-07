@@ -11,7 +11,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -122,7 +122,7 @@ func TestGetAll_DBError(t *testing.T) {
 		actualText, _, err := srv.GetAll(context.Background(), 1)
 
 		assert.Equal(t, actualText, "")
-		assert.Equal(t, err, sql.ErrNoRows)
+		assert.Equal(t, err, tt.err)
 	}
 }
 
