@@ -57,7 +57,7 @@ func TestGetAll_Positive(t *testing.T) {
 
 		srv.SaveUser(tt.userID)
 
-		tt.notes = random.GenerateNotes(tt.notesNum)
+		tt.notes = random.Notes(tt.notesNum)
 
 		tt.expectedText = view.Message(tt.notes)
 
@@ -113,7 +113,7 @@ func TestGetAll_DBError(t *testing.T) {
 
 		srv.SaveUser(tt.userID)
 
-		tt.notes = random.GenerateNotes(tt.notesNum)
+		tt.notes = random.Notes(tt.notesNum)
 		tt.err = sql.ErrNoRows
 		tt.expectedText = view.Message(tt.notes)
 
@@ -168,7 +168,7 @@ func TestNextPage_Positive(t *testing.T) {
 
 		srv.SaveUser(tt.userID)
 
-		tt.notes = random.GenerateNotes(tt.notesNum)
+		tt.notes = random.Notes(tt.notesNum)
 		view.Message(tt.notes)
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(tt.notes, nil)
@@ -226,7 +226,7 @@ func TestPrevPage_Positive(t *testing.T) {
 
 		srv.SaveUser(tt.userID)
 
-		tt.notes = random.GenerateNotes(tt.notesNum)
+		tt.notes = random.Notes(tt.notesNum)
 		view.Message(tt.notes)
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(tt.notes, nil)
@@ -284,7 +284,7 @@ func TestLastPage_Positive(t *testing.T) {
 
 		srv.SaveUser(tt.userID)
 
-		tt.notes = random.GenerateNotes(tt.notesNum)
+		tt.notes = random.Notes(tt.notesNum)
 		view.Message(tt.notes)
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(tt.notes, nil)
@@ -342,7 +342,7 @@ func TestFirstPage_Positive(t *testing.T) {
 
 		srv.SaveUser(tt.userID)
 
-		tt.notes = random.GenerateNotes(tt.notesNum)
+		tt.notes = random.Notes(tt.notesNum)
 		view.Message(tt.notes)
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(tt.notes, nil)
