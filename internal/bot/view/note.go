@@ -123,8 +123,8 @@ func (v *NoteView) total() int {
 	return len(v.pages)
 }
 
-// Keyboard делает клавиатуру для навигации по страницам
-func (v *NoteView) Keyboard() *tele.ReplyMarkup {
+// NoteKeyboard делает клавиатуру для навигации по страницам
+func (v *NoteView) NoteKeyboard() *tele.ReplyMarkup {
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {
 		return &tele.ReplyMarkup{}
@@ -136,6 +136,7 @@ func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 
 	selector.Inline(
 		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		selector.Row(BtnDeleteAllNotes),
 		selector.Row(BtnBackToMenu),
 	)
 
