@@ -48,11 +48,13 @@ func (v *NoteView) Message(notes []model.Note) string {
 	}
 
 	var res = ""
+
 	v.pages = make([]string, 0)
 
 	for i, note := range notes {
 		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n", i+1, note.Created.Format(dateFormat), note.ID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
+			v.pages = append(v.pages, res)
 			v.pages = append(v.pages, res)
 			res = ""
 		}
@@ -60,6 +62,10 @@ func (v *NoteView) Message(notes []model.Note) string {
 
 	if len(v.pages) < 5 && res != "" {
 		v.pages = append(v.pages, res)
+		if len(v.pages) < 5 && res != "" {
+			v.pages = append(v.pages, res)
+		}
+
 	}
 
 	return v.pages[0]
