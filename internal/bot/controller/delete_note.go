@@ -9,6 +9,7 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -39,7 +40,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
 			msg := fmt.Sprintf(messages.NoNoteFoundMessage, noteID)
-			return telectx.Send(msg)
+			return telectx.EditOrSend(msg, view.BackToMenuBtn())
 		}
 
 		err := fmt.Errorf("error while deleting note by ID %d: %w", noteID, err)
@@ -51,7 +52,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 	c.logger.Debugf("Controller: successfully deleted user's note by ID %d\n", noteID)
 
 	msg := fmt.Sprintf(messages.NoteDeletedSuccessMessage, noteID)
-	return telectx.Send(msg, &tele.SendOptions{
+	return telectx.EditOrSend(msg, &tele.SendOptions{
 		ParseMode: htmlParseMode,
-	})
+	}, view.BackToMenuBtn())
 }

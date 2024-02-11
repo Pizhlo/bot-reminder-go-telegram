@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/fsm"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
@@ -19,12 +20,6 @@ type Server struct {
 	controller *controller.Controller
 	logger     *logrus.Logger
 }
-
-const (
-	startCommand          = "/start"
-	notesCommand          = "/notes"
-	deleteAllNotesCommand = "/notes_del"
-)
 
 func New(bot *tele.Bot, controller *controller.Controller) *Server {
 	return &Server{bot: bot, fsm: make(map[int64]*fsm.FSM, 0),
@@ -70,8 +65,9 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	s.bot.Handle(&view.BtnNotes, func(telectx tele.Context) error {
 		s.logger.Debugf("Notes btn")
-		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
-		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
+		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		return s.controller.ListNotes(ctx, telectx)
 	})
 
 	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
@@ -104,7 +100,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	restricted := s.bot.Group()
 	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
 
-	restricted.Handle(startCommand, func(telectx tele.Context) error {
+	restricted.Handle(commands.StartCommand, func(telectx tele.Context) error {
 		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
 			s.RegisterUser(telectx.Chat().ID, false)
 		}
@@ -115,16 +111,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
 		s.logger.Debugf("on text")
-		return s.controller.CreateNote(ctx, telectx)
-	})
-
-	restricted.Handle(notesCommand, func(telectx tele.Context) error {
-		s.logger.Debugf("notesCommand")
-		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-	})
-
-	restricted.Handle(deleteAllNotesCommand, func(telectx tele.Context) error {
-		s.logger.Debugf("deleteAllNotesCommand")
+		//return s.controller.CreateNote(ctx, telectx)
 		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 	})
 
@@ -170,6 +157,18 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// удалить все заметки - спросить а точно ли
+	s.bot.Handle(&view.BtnDeleteAllNotes, func(c tele.Context) error {
+		err := s.controller.ConfirmDeleteAllNotes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// согласие удалить все заметки
 	s.bot.Handle(&controller.BtnDeleteAllNotes, func(c tele.Context) error {
 		err := s.controller.DeleteAllNotes(ctx, c)
 		if err != nil {
@@ -180,8 +179,9 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// отказ удалить все заметки
 	s.bot.Handle(&controller.BtnNotDeleteAllNotes, func(c tele.Context) error {
-		return c.Edit(messages.NotDeleteMessage)
+		return c.Edit(messages.NotDeleteMessage, view.BackToMenuBtn())
 	})
 }
 
@@ -194,5 +194,8 @@ func (s *Server) loadFSM(ctx context.Context) {
 
 	for _, user := range users {
 		s.RegisterUser(user.TGID, true)
+
 	}
+
+	s.controller.SaveUsers(ctx, users)
 }

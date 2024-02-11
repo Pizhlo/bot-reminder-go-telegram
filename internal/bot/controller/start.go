@@ -17,7 +17,5 @@ func (c *Controller) StartCmd(ctx context.Context, telectx tele.Context) error {
 
 	text := fmt.Sprintf(messages.StartMessage, telectx.Chat().FirstName)
 
-	c.logger.Debugf("Conroller: Editing message. Message: %+v\n", telectx.Message())
 	return telectx.EditOrSend(text, kb)
-
 }

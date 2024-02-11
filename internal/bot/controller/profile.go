@@ -9,5 +9,5 @@ import (
 )
 
 func (c *Controller) Profile(ctx context.Context, telectx tele.Context) error {
-	return telectx.EditOrSend(messages.ProfileMessage, view.Profile())
+	return telectx.EditOrSend(messages.ProfileMessage, view.ProfileMenu())
 }
