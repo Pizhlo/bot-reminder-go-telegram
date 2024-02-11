@@ -37,7 +37,13 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Use(middleware.AutoRespond())
 
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
-		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
 	})
 
 	// main menu
@@ -65,9 +71,15 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	s.bot.Handle(&view.BtnNotes, func(telectx tele.Context) error {
 		s.logger.Debugf("Notes btn")
-		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
+		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		return s.controller.ListNotes(ctx, telectx)
+		err := s.controller.ListNotes(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
 	})
 
 	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
@@ -85,6 +97,8 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Menu btn")
 		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+
+		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].DefaultState)
 
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
@@ -106,13 +120,25 @@ func (s *Server) setupBot(ctx context.Context) {
 		}
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		return s.controller.StartCmd(ctx, telectx)
+		err := s.controller.StartCmd(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
 	})
 
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
 		s.logger.Debugf("on text")
 		//return s.controller.CreateNote(ctx, telectx)
-		return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		if err != nil {
+			s.controller.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
 	})
 
 	// inline
@@ -157,6 +183,19 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// поиск заметок по тексту
+	s.bot.Handle(&view.BtnSearchNotesByText, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteByText)
+
+		err := s.controller.AskTextForSearch(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// удалить все заметки - спросить а точно ли
 	s.bot.Handle(&view.BtnDeleteAllNotes, func(c tele.Context) error {
 		err := s.controller.ConfirmDeleteAllNotes(ctx, c)
@@ -181,7 +220,13 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// отказ удалить все заметки
 	s.bot.Handle(&controller.BtnNotDeleteAllNotes, func(c tele.Context) error {
-		return c.Edit(messages.NotDeleteMessage, view.BackToMenuBtn())
+		err := c.Edit(messages.NotDeleteMessage, view.BackToMenuBtn())
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
 	})
 }
 

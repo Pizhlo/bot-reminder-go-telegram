@@ -62,7 +62,7 @@ func TestDeleteByID_Positive(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestDeleteByID_NoNotesFound(t *testing.T) {
+func TestDeleteByID_NotesNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

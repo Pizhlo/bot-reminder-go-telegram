@@ -32,6 +32,9 @@ type noteEditor interface {
 
 	// GetByID возвращает заметку с переданным ID. Если такой заметки нет, возвращает ErrNotesNotFound
 	GetByID(ctx context.Context, userID int64, noteID int) (*model.Note, error)
+
+	// SearchByText производит поиск по заметок по тексту. Если таких заметок нет, возвращает ErrNotesNotFound
+	SearchByText(ctx context.Context, searchNote model.SearchNoteByText) ([]model.Note, error)
 }
 
 func New(noteEditor noteEditor) *NoteService {

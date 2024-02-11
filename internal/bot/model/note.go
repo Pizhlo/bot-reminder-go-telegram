@@ -11,7 +11,7 @@ type Note struct {
 }
 
 // for searching notes by text
-type SearchNote struct {
+type SearchNoteByText struct {
 	TgID   int64
 	UserID int // id in db!
 	Text   string

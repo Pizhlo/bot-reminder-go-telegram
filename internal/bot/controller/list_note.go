@@ -25,7 +25,7 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 	message, kb, err := c.noteSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
-			return telectx.Edit(messages.NotesNotFoundMessage, view.BackToMenuBtn())
+			return telectx.Edit(messages.UserDoesntHaveNotesMessage, view.BackToMenuBtn())
 		}
 
 		c.logger.Errorf("Error while handling /notes command. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)

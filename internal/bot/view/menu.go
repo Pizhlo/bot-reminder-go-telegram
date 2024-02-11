@@ -19,10 +19,16 @@ var (
 	BtnBackToMenu = selector.Data("⬅️Меню", "menu")
 
 	// --------------- профиль --------------
+
+	// inline кнопка просмотра информации по подписке
 	BtnSubscription = selector.Data("🖊Подписка", "subscription")
 
 	// --------------- заметки --------------
-	BtnDeleteAllNotes = selector.Data("❌Удалить все", "delete_notes")
+
+	// inline кнопка для удаления всех заметок
+	BtnDeleteAllNotes    = selector.Data("❌Удалить все", "delete_notes")
+	BtnSearchNotesByText = selector.Data("🔍Поиск по тексту", "search_notes_by_text")
+	BtnSearchNotesByDate = selector.Data("🔍Поиск по дате", "search_notes_by_text")
 )
 
 // BackToMenuBtn возвращает кнопку возврата в меню
@@ -67,6 +73,7 @@ func DeleteAllNotesAndBackToMenu() *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnDeleteAllNotes),
+		menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
 		menu.Row(BtnBackToMenu),
 	)
 
