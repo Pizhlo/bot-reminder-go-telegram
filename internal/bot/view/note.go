@@ -44,7 +44,7 @@ var (
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
 func (v *NoteView) Message(notes []model.Note) string {
 	if len(notes) == 0 {
-		return messages.NotesNotFoundMessage
+		return messages.UserDoesntHaveNotesMessage
 	}
 
 	var res = ""
@@ -130,6 +130,7 @@ func (v *NoteView) NoteKeyboard() *tele.ReplyMarkup {
 	if v.total() == 1 {
 		menu := &tele.ReplyMarkup{}
 		menu.Inline(
+			menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
 			menu.Row(BtnDeleteAllNotes),
 			menu.Row(BtnBackToMenu),
 		)
@@ -142,6 +143,7 @@ func (v *NoteView) NoteKeyboard() *tele.ReplyMarkup {
 
 	selector.Inline(
 		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		selector.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
 		selector.Row(BtnDeleteAllNotes),
 		selector.Row(BtnBackToMenu),
 	)

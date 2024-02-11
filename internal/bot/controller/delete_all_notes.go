@@ -29,7 +29,7 @@ func (c *Controller) ConfirmDeleteAllNotes(ctx context.Context, telectx tele.Con
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
 			c.logger.Errorf("Controller: cannot delete all user's notes: user doesn't have any notes yet. User ID: %d.\n", telectx.Chat().ID)
-			return telectx.EditOrSend(messages.NotesNotFoundMessage, view.BackToMenuBtn())
+			return telectx.EditOrSend(messages.UserDoesntHaveNotesMessage, view.BackToMenuBtn())
 		}
 		c.logger.Errorf("Controller: error while handling /notes_del command: checking if user has notes. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
 		return err

@@ -39,7 +39,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 	err = c.noteSrv.DeleteByID(ctx, telectx.Chat().ID, noteID)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
-			msg := fmt.Sprintf(messages.NoNoteFoundMessage, noteID)
+			msg := fmt.Sprintf(messages.NoNoteFoundByNumberMessage, noteID)
 			return telectx.EditOrSend(msg, view.BackToMenuBtn())
 		}
 
