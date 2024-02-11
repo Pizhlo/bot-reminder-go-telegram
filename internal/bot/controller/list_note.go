@@ -52,7 +52,23 @@ func (c *Controller) PrevPageNotes(ctx context.Context, telectx tele.Context) er
 	c.logger.Debugf("Controller: handling previous notes page command.\n")
 	next, kb := c.noteSrv.PrevPage(telectx.Chat().ID)
 
-	return telectx.Edit(next, kb)
+	err := telectx.Edit(next, kb)
+
+	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
+	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
+	// то же самое происходит и с последней страницей
+	if err != nil {
+		switch t := err.(type) {
+		case *tele.Error:
+			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
+				break
+			}
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 // NextPageNotes обрабатывает кнопку переключения на последнюю страницу
@@ -60,7 +76,23 @@ func (c *Controller) LastPageNotes(ctx context.Context, telectx tele.Context) er
 	c.logger.Debugf("Controller: handling last notes page command.\n")
 	next, kb := c.noteSrv.LastPage(telectx.Chat().ID)
 
-	return telectx.Edit(next, kb)
+	err := telectx.Edit(next, kb)
+
+	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
+	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
+	// то же самое происходит и с последней страницей
+	if err != nil {
+		switch t := err.(type) {
+		case *tele.Error:
+			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
+				break
+			}
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 // NextPageNotes обрабатывает кнопку переключения на первую страницу
@@ -68,5 +100,22 @@ func (c *Controller) FirstPageNotes(ctx context.Context, telectx tele.Context) e
 	c.logger.Debugf("Controller: handling first notes page command.\n")
 	next, kb := c.noteSrv.FirstPage(telectx.Chat().ID)
 
-	return telectx.Edit(next, kb)
+	err := telectx.Edit(next, kb)
+
+	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
+	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
+	// то же самое происходит и с последней страницей
+
+	if err != nil {
+		switch t := err.(type) {
+		case *tele.Error:
+			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
+				break
+			}
+		default:
+			return err
+		}
+	}
+
+	return nil
 }

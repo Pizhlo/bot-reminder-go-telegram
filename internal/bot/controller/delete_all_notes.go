@@ -6,6 +6,7 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -28,7 +29,7 @@ func (c *Controller) ConfirmDeleteAllNotes(ctx context.Context, telectx tele.Con
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
 			c.logger.Errorf("Controller: cannot delete all user's notes: user doesn't have any notes yet. User ID: %d.\n", telectx.Chat().ID)
-			return telectx.Send(messages.NotesNotFoundMessage)
+			return telectx.EditOrSend(messages.NotesNotFoundMessage, view.BackToMenuBtn())
 		}
 		c.logger.Errorf("Controller: error while handling /notes_del command: checking if user has notes. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
 		return err
@@ -38,7 +39,7 @@ func (c *Controller) ConfirmDeleteAllNotes(ctx context.Context, telectx tele.Con
 		selector.Row(BtnDeleteAllNotes, BtnNotDeleteAllNotes),
 	)
 
-	return telectx.Send(messages.ConfirmDeleteNotesMessage, selector)
+	return telectx.EditOrSend(messages.ConfirmDeleteNotesMessage, selector)
 }
 
 // DeleteAllNotes удаляет все заметки пользователя
@@ -52,5 +53,5 @@ func (c *Controller) DeleteAllNotes(ctx context.Context, telectx tele.Context) e
 	}
 
 	c.logger.Debugf("Controller: successfully delete all user's notes. Sending message to user...\n")
-	return telectx.Edit(messages.AllNotesDeletedMessage)
+	return telectx.Edit(messages.AllNotesDeletedMessage, view.BackToMenuBtn())
 }

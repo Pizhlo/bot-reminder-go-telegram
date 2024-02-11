@@ -55,17 +55,12 @@ func (v *NoteView) Message(notes []model.Note) string {
 		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n", i+1, note.Created.Format(dateFormat), note.ID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
-			v.pages = append(v.pages, res)
 			res = ""
 		}
 	}
 
 	if len(v.pages) < 5 && res != "" {
 		v.pages = append(v.pages, res)
-		if len(v.pages) < 5 && res != "" {
-			v.pages = append(v.pages, res)
-		}
-
 	}
 
 	return v.pages[0]
@@ -133,7 +128,12 @@ func (v *NoteView) total() int {
 func (v *NoteView) NoteKeyboard() *tele.ReplyMarkup {
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {
-		return &tele.ReplyMarkup{}
+		menu := &tele.ReplyMarkup{}
+		menu.Inline(
+			menu.Row(BtnDeleteAllNotes),
+			menu.Row(BtnBackToMenu),
+		)
+		return menu
 	}
 
 	text := fmt.Sprintf("%d / %d", v.current(), v.total())
@@ -152,4 +152,10 @@ func (v *NoteView) NoteKeyboard() *tele.ReplyMarkup {
 // SetCurrentToFirst устанавливает текущий номер страницы на 1
 func (v *NoteView) SetCurrentToFirst() {
 	v.currentPage = 0
+}
+
+// Clear используется когда удаляются все заметки: очищает список заметок, устанавливает текущую страницу в 0
+func (v *NoteView) Clear() {
+	v.currentPage = 0
+	v.pages = make([]string, 0)
 }

@@ -61,8 +61,20 @@ func NotesAndMenuBtns() *tele.ReplyMarkup {
 	return menu
 }
 
-// Profile возвращает меню раздела Профиль
-func Profile() *tele.ReplyMarkup {
+// DeleteAllNotesAndBackToMenu возвращает меню с двумя кнопками: удалить все заметки и назад в меню
+func DeleteAllNotesAndBackToMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnDeleteAllNotes),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// ProfileMenu возвращает меню раздела Профиль
+func ProfileMenu() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(

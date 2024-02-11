@@ -54,5 +54,5 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 
 	kb := view.NotesAndMenuBtns()
 
-	return telectx.Send(messages.SuccessfullyCreatedNoteMessage, kb)
+	return telectx.EditOrSend(messages.SuccessfullyCreatedNoteMessage, kb)
 }

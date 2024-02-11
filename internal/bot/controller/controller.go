@@ -21,8 +21,6 @@ type Controller struct {
 	userSrv *user.UserService
 	// отвечает за обработку заметок
 	noteSrv *note.NoteService
-	// последнее отправленное сообщение (для редактирования)
-	lastMsg map[int64]*tele.Message
 }
 
 const (
@@ -31,7 +29,7 @@ const (
 )
 
 func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot) *Controller {
-	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot, lastMsg: make(map[int64]*tele.Message)}
+	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot}
 }
 
 // CheckUser проверяет, известен ли пользователь боту
@@ -50,11 +48,6 @@ func (c *Controller) GetAllUsers(ctx context.Context) []*user_model.User {
 func (c *Controller) HandleError(ctx tele.Context, err error) {
 	msg := fmt.Sprintf(messages.ErrorMessageChannel, ctx.Message().Text, err)
 
-	// sendErr := ctx.Send(messages.ErrorMessageUser)
-	// if sendErr != nil {
-	// 	c.logger.Errorf("Error while sending error message to user. Error: %+v\n", sendErr)
-	// }
-
 	editErr := ctx.Edit(messages.ErrorMessageUser, view.BackToMenuBtn())
 	if editErr != nil {
 		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", editErr)
@@ -68,6 +61,10 @@ func (c *Controller) HandleError(ctx tele.Context, err error) {
 	}
 }
 
-func (c *Controller) SaveLastMsg(user int64, msg *tele.Message) {
-	c.lastMsg[user] = msg
+// SaveUsers сохраняет пользователей в note и user сервисах
+func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
+	for _, u := range users {
+		c.noteSrv.SaveUser(u.TGID)
+		c.userSrv.SaveUser(ctx, u.TGID, u)
+	}
 }

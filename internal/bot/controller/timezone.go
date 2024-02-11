@@ -24,7 +24,7 @@ func (c *Controller) RequestLocation(ctx context.Context, telectx tele.Context) 
 
 	txt := fmt.Sprintf(messages.StartMessageLocation, telectx.Chat().FirstName)
 
-	return telectx.Send(txt, locMenu)
+	return telectx.EditOrSend(txt, locMenu)
 }
 
 // AcceptTimezone обрабатывает геолокацию пользователя
@@ -46,7 +46,7 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 	}
 
 	msg := fmt.Sprintf(messages.LocationMessage, u.Timezone.Name)
-	return telectx.Send(msg, tele.RemoveKeyboard, &tele.SendOptions{
+	return telectx.EditOrSend(msg, tele.RemoveKeyboard, &tele.SendOptions{
 		ParseMode: htmlParseMode,
 	})
 }
