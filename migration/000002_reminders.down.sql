@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS reminders.reminders CASCADE;
+DROP SCHEMA IF EXISTS reminders;
