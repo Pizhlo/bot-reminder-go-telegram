@@ -8,7 +8,7 @@ export POSTGRES_PORT
 
 DB_URL=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
 
-initdb:
+db:
 	migrate -path migration -database "$(DB_URL)" -verbose up
 
 dropdb:
@@ -23,4 +23,4 @@ bot:
 mocks:
 	go generate ./...
 
-.PHONY: initdb dropdb test bot mocks
+.PHONY: db dropdb test bot mocks

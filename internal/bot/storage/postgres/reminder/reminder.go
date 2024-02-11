@@ -1,13 +1,23 @@
 package reminder
 
 import (
-	"github.com/jackc/pgx/v4/pgxpool"
+	"database/sql"
+	"fmt"
 )
 
 type ReminderRepo struct {
-	*pgxpool.Pool
+	db *sql.DB
 }
 
-func New(conn *pgxpool.Pool) *ReminderRepo {
-	return &ReminderRepo{conn}
+func New(dbURl string) (*ReminderRepo, error) {
+	db, err := sql.Open("postgres", dbURl)
+	if err != nil {
+		return nil, fmt.Errorf("connect open a db driver: %w", err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("cannot connect to a db: %w", err)
+	}
+	return &ReminderRepo{db}, nil
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 )
 
-func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchNoteByText) ([]model.Note, error) {
+func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error) {
 	var notes []model.Note
 
 	rows, err := db.db.QueryContext(ctx, `select id, text, created from notes.notes where user_id = (select id from users.users where tg_id = $1) and "text" LIKE '%' || $2 || '%'`, searchNote.TgID, searchNote.Text)

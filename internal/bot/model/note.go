@@ -10,8 +10,8 @@ type Note struct {
 	// HasPhoto bool
 }
 
-// for searching notes by text
-type SearchNoteByText struct {
+// for searching reminders and notes by text
+type SearchByText struct {
 	TgID   int64
 	UserID int // id in db!
 	Text   string

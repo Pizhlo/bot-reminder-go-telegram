@@ -11,7 +11,7 @@ import (
 
 // StartCmd отправляет приветственное сообщение и меню
 func (c *Controller) StartCmd(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Controller: handling /start\n")
+	c.logger.Debugf("Controller: handling /start (or menu btn)\n")
 
 	kb := view.MainMenu()
 

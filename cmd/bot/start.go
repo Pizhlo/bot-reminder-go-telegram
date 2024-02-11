@@ -13,10 +13,12 @@ import (
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	note_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
 	user_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	tz_cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
 	user_cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/user"
 	note_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/note"
+	reminder_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/reminder"
 	tz_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/timezone"
 	user_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/user"
 	tele "gopkg.in/telebot.v3"
@@ -58,12 +60,17 @@ func Start(confName, path string) {
 
 		tzRepo, err := tz_db.New(dbAddr)
 		if err != nil {
-			return fmt.Errorf("cannot create user timezone: %w", err)
+			return fmt.Errorf("cannot create user timezone repo: %w", err)
 		}
 
 		noteRepo, err := note_db.New(dbAddr)
 		if err != nil {
-			return fmt.Errorf("cannot create note timezone: %w", err)
+			return fmt.Errorf("cannot create note repo: %w", err)
+		}
+
+		reminderRepo, err := reminder_db.New(dbAddr)
+		if err != nil {
+			return fmt.Errorf("cannot create reminder repo: %w", err)
 		}
 
 		// bot
@@ -79,8 +86,9 @@ func Start(confName, path string) {
 		// services
 		userSrv := user_srv.New(userRepo, u_cache, tz, tzRepo)
 		noteSrv := note_srv.New(noteRepo)
+		reminderSrv := reminder.New(reminderRepo)
 
-		controller := controller.New(userSrv, noteSrv, bot)
+		controller := controller.New(userSrv, noteSrv, bot, reminderSrv)
 
 		if err != nil {
 			return fmt.Errorf("cannot create a bot: %w", err)

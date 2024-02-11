@@ -2,11 +2,22 @@ package controller
 
 import (
 	"context"
+	"errors"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	tele "gopkg.in/telebot.v3"
 )
 
 func (c *Controller) Reminders(ctx context.Context, telectx tele.Context) error {
-	return telectx.EditOrSend("Напоминания: Кнопка в разработке", view.BackToMenuBtn())
+	msg, kb, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
+	if err != nil {
+		if errors.Is(err, api_errors.ErrRemindersNotFound) {
+			return telectx.EditOrSend(messages.NoRemindersMessage, view.CreateReminderAndBackToMenu())
+		}
+		return err
+	}
+
+	return telectx.EditOrSend(msg, kb)
 }

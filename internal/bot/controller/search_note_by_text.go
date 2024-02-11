@@ -11,14 +11,9 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-// AskTextForSearch запрашивает у пользователя текст заметок для поиска
-func (c *Controller) AskTextForSearch(ctx context.Context, telectx tele.Context) error {
-	return telectx.EditOrSend(messages.SearchNotesByTextMessage, view.BackToMenuBtn())
-}
-
 // SearchNoteByText производит поиск заметок по тексту
 func (c *Controller) SearchNoteByText(ctx context.Context, telectx tele.Context) error {
-	searchNote := model.SearchNoteByText{
+	searchNote := model.SearchByText{
 		TgID: telectx.Chat().ID,
 		Text: telectx.Message().Text,
 	}

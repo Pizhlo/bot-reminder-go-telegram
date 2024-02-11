@@ -29,6 +29,10 @@ var (
 	BtnDeleteAllNotes    = selector.Data("❌Удалить все", "delete_notes")
 	BtnSearchNotesByText = selector.Data("🔍Поиск по тексту", "search_notes_by_text")
 	BtnSearchNotesByDate = selector.Data("🔍Поиск по дате", "search_notes_by_text")
+
+	// --------------- напоминания --------------
+
+	BtnCreateReminder = selector.Data("📝Создать напоминание", "create_reminder")
 )
 
 // BackToMenuBtn возвращает кнопку возврата в меню
@@ -86,6 +90,18 @@ func ProfileMenu() *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnSubscription),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// CreateReminderAndBackToMenu возвращает кнопку создания напоминания и назад в меню
+func CreateReminderAndBackToMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnCreateReminder),
 		menu.Row(BtnBackToMenu),
 	)
 
