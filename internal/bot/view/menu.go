@@ -53,8 +53,8 @@ var (
 	// тип напоминания: Раз в год
 	BtnOnceYear = selector.Data("Раз в год", "once_year")
 
-	// тип напоминания: Один раз"
-	BtnOnce = selector.Data("Выбрать дату", "once")
+	// тип напоминания: Один раз
+	BtnOnce = selector.Data("Выбрать дату", "date")
 )
 
 // BackToMenuBtn возвращает кнопку возврата в меню
