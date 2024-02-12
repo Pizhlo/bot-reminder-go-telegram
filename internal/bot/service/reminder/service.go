@@ -2,6 +2,7 @@ package reminder
 
 import (
 	"context"
+	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -14,12 +15,15 @@ type ReminderService struct {
 	reminderEditor reminderEditor
 	logger         *logrus.Logger
 	viewsMap       map[int64]*view.ReminderView
+	// для сохранения напоминаний во время создания
+	reminderMap map[int64]model.Reminder
+	mu          sync.Mutex
 }
 
 //go:generate mockgen -source ./service.go -destination=./mocks/reminder_editor.go
 type reminderEditor interface {
 	// Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
-	Save(ctx context.Context, reminder model.Reminder) error
+	Save(ctx context.Context, reminder *model.Reminder) error
 
 	// GetAllByUserID достает из базы все напоминания пользователя по ID, возвращает ErrRemindersNotFound
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error)
@@ -38,7 +42,8 @@ type reminderEditor interface {
 }
 
 func New(reminderEditor reminderEditor) *ReminderService {
-	return &ReminderService{reminderEditor: reminderEditor, logger: logger.New(), viewsMap: make(map[int64]*view.ReminderView)}
+	return &ReminderService{reminderEditor: reminderEditor, logger: logger.New(), viewsMap: make(map[int64]*view.ReminderView),
+		reminderMap: make(map[int64]model.Reminder), mu: sync.Mutex{}}
 }
 
 // SaveUser сохраняет пользователя в мапе view

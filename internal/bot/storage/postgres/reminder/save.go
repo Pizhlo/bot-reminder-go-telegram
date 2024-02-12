@@ -9,7 +9,7 @@ import (
 )
 
 // Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
-func (db *ReminderRepo) Save(ctx context.Context, reminder model.Reminder) error {
+func (db *ReminderRepo) Save(ctx context.Context, reminder *model.Reminder) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,

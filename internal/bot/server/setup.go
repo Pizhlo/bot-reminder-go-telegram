@@ -121,8 +121,9 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// inline
+	// notes
 
+	// следующая страница заметок
 	s.bot.Handle(&view.BtnNextPgNotes, func(c tele.Context) error {
 		err := s.controller.NextPageNotes(ctx, c)
 		if err != nil {
@@ -133,6 +134,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// предыдущая страница заметок
 	s.bot.Handle(&view.BtnPrevPgNotes, func(c tele.Context) error {
 		err := s.controller.PrevPageNotes(ctx, c)
 		if err != nil {
@@ -143,6 +145,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// последняя страница заметок
 	s.bot.Handle(&view.BtnLastPgNotes, func(c tele.Context) error {
 		err := s.controller.LastPageNotes(ctx, c)
 		if err != nil {
@@ -153,6 +156,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// первая страница заметок
 	s.bot.Handle(&view.BtnFirstPgNotes, func(c tele.Context) error {
 		err := s.controller.FirstPageNotes(ctx, c)
 		if err != nil {
@@ -208,4 +212,33 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		return nil
 	})
+
+	// reminders
+
+	// название напоминания
+	s.bot.Handle(&view.BtnCreateReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
+
+		err := c.EditOrSend(messages.ReminderNameMessage, view.BackToMenuBtn())
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// reminder types
+	s.bot.Handle(&view.BtnEveryDayReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := c.EditOrSend(messages.ReminderTimeMessage, view.BackToMenuBtn())
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 }
