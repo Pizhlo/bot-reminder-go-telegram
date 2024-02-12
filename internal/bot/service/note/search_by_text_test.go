@@ -20,7 +20,7 @@ func TestSearchByText_Positive(t *testing.T) {
 		userID       int64
 		notesNum     int
 		notes        []model.Note
-		searchNote   model.SearchNoteByText
+		searchNote   model.SearchByText
 		expectedText string
 	}
 
@@ -28,7 +28,7 @@ func TestSearchByText_Positive(t *testing.T) {
 		{
 			name:   "10 record",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},
@@ -37,7 +37,7 @@ func TestSearchByText_Positive(t *testing.T) {
 		{
 			name:   "6 records",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},
@@ -46,7 +46,7 @@ func TestSearchByText_Positive(t *testing.T) {
 		{
 			name:   "11 records",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},
@@ -55,7 +55,7 @@ func TestSearchByText_Positive(t *testing.T) {
 		{
 			name:   "21 records",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},
@@ -92,7 +92,7 @@ func TestSearchByText_NotesNotFound(t *testing.T) {
 		userID     int64
 		notesNum   int
 		notes      []model.Note
-		searchNote model.SearchNoteByText
+		searchNote model.SearchByText
 		err        error
 	}
 
@@ -100,7 +100,7 @@ func TestSearchByText_NotesNotFound(t *testing.T) {
 		{
 			name:   "10 record",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},
@@ -110,7 +110,7 @@ func TestSearchByText_NotesNotFound(t *testing.T) {
 		{
 			name:   "6 records",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},
@@ -120,7 +120,7 @@ func TestSearchByText_NotesNotFound(t *testing.T) {
 		{
 			name:   "11 records",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},
@@ -130,7 +130,7 @@ func TestSearchByText_NotesNotFound(t *testing.T) {
 		{
 			name:   "21 records",
 			userID: 1,
-			searchNote: model.SearchNoteByText{
+			searchNote: model.SearchByText{
 				TgID: 1,
 				Text: "test",
 			},

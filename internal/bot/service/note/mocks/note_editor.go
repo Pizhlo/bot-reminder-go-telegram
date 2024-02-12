@@ -108,7 +108,7 @@ func (mr *MocknoteEditorMockRecorder) Save(ctx, note interface{}) *gomock.Call {
 }
 
 // SearchByText mocks base method.
-func (m *MocknoteEditor) SearchByText(ctx context.Context, searchNote model.SearchNoteByText) ([]model.Note, error) {
+func (m *MocknoteEditor) SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SearchByText", ctx, searchNote)
 	ret0, _ := ret[0].([]model.Note)

@@ -29,6 +29,32 @@ var (
 	BtnDeleteAllNotes    = selector.Data("❌Удалить все", "delete_notes")
 	BtnSearchNotesByText = selector.Data("🔍Поиск по тексту", "search_notes_by_text")
 	BtnSearchNotesByDate = selector.Data("🔍Поиск по дате", "search_notes_by_text")
+
+	// --------------- напоминания --------------
+
+	// inline кнопка создания напоминания
+	BtnCreateReminder = selector.Data("📝Создать напоминание", "create_reminder")
+
+	// тип напоминания: несколько раз в день
+	BtnSeveralTimesDayReminder = selector.Data("Несколько раз в день", "several_times_day")
+
+	// тип напоминания: ежедневно
+	BtnEveryDayReminder = selector.Data("Ежедневно", "everyday")
+
+	// тип напоминания: Раз в неделю
+	BtnEveryWeekReminder = selector.Data("Раз в неделю", "every_week")
+
+	// тип напоминания: Раз в несколько дней
+	BtnSeveralDaysReminder = selector.Data("Раз в несколько дней", "once_several_days")
+
+	// тип напоминания: Раз в месяц
+	BtnOnceMonthReminder = selector.Data("Раз в месяц", "once_month")
+
+	// тип напоминания: Раз в год
+	BtnOnceYear = selector.Data("Раз в год", "once_year")
+
+	// тип напоминания: Один раз"
+	BtnOnce = selector.Data("Выбрать дату", "once")
 )
 
 // BackToMenuBtn возвращает кнопку возврата в меню
@@ -86,6 +112,33 @@ func ProfileMenu() *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnSubscription),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// CreateReminderAndBackToMenu возвращает кнопку создания напоминания и назад в меню
+func CreateReminderAndBackToMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnCreateReminder),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// ReminderTypes возвращает меню с типами напоминаний
+func ReminderTypes() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnSeveralTimesDayReminder, BtnEveryDayReminder),
+		menu.Row(BtnEveryWeekReminder, BtnSeveralDaysReminder),
+		menu.Row(BtnOnceMonthReminder, BtnOnceYear),
+		menu.Row(BtnOnce),
 		menu.Row(BtnBackToMenu),
 	)
 

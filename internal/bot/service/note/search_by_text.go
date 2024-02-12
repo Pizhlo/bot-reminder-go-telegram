@@ -8,13 +8,13 @@ import (
 )
 
 // SearchByText ищет заметки по тексту. Возвращает сообщение с заметками, клавиатуру, ошибку
-func (s *NoteService) SearchByText(ctx context.Context, note model.SearchNoteByText) (string, *tele.ReplyMarkup, error) {
-	s.logger.Debugf("Note service: saving user's note. Model: %+v\n", note)
+func (s *NoteService) SearchByText(ctx context.Context, note model.SearchByText) (string, *tele.ReplyMarkup, error) {
+	s.logger.Debugf("Note service: looking for note. Model: %+v\n", note)
 
 	notes, err := s.noteEditor.SearchByText(ctx, note)
 	if err != nil {
 		return "", nil, err
 	}
 
-	return s.viewsMap[note.TgID].Message(notes), s.viewsMap[note.TgID].NoteKeyboard(), nil
+	return s.viewsMap[note.TgID].Message(notes), s.viewsMap[note.TgID].Keyboard(), nil
 }

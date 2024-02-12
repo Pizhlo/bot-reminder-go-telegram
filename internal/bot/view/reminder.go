@@ -10,40 +10,32 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-const (
-	dateFormat       = "02.01.2006 15:04:05"
-	noteCountPerPage = 5
-	maxMessageLen    = 4096
-)
-
-type NoteView struct {
+type ReminderView struct {
 	pages       []string
 	currentPage int
 	logger      *logrus.Logger
 }
 
-func NewNote() *NoteView {
-	return &NoteView{pages: make([]string, 0), currentPage: 0, logger: logger.New()}
+func NewReminder() *ReminderView {
+	return &ReminderView{pages: make([]string, 0), currentPage: 0, logger: logger.New()}
 }
 
 var (
-	selector = &tele.ReplyMarkup{}
-
 	// inline кнопка для переключения на предыдущую страницу (заметки)
-	BtnPrevPgNotes = selector.Data("<", "prev")
+	BtnPrevPgReminders = selector.Data("<", "prev")
 	// inline кнопка для переключения на следующую страницу (заметки)
-	BtnNextPgNotes = selector.Data(">", "next")
+	BtnNextPgReminders = selector.Data(">", "next")
 
 	// inline кнопка для переключения на первую страницу (заметки)
-	BtnFirstPgNotes = selector.Data("<<", "start")
+	BtnFirstPgReminders = selector.Data("<<", "start")
 	// inline кнопка для переключения на последнюю страницу (заметки)
-	BtnLastPgNotes = selector.Data(">>", "end")
+	BtnLastPgReminders = selector.Data(">>", "end")
 )
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
-func (v *NoteView) Message(notes []model.Note) string {
-	if len(notes) == 0 {
+func (v *ReminderView) Message(reminders []model.Reminder) string {
+	if len(reminders) == 0 {
 		return messages.UserDoesntHaveNotesMessage
 	}
 
@@ -51,8 +43,8 @@ func (v *NoteView) Message(notes []model.Note) string {
 
 	v.pages = make([]string, 0)
 
-	for i, note := range notes {
-		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n", i+1, note.Created.Format(dateFormat), note.ID, note.Text)
+	for i, reminder := range reminders {
+		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n%s", i+1, reminder.Created.Format(dateFormat), reminder.ID, reminder.Text, reminder.Type+reminder.Date+reminder.Time)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""
@@ -67,38 +59,38 @@ func (v *NoteView) Message(notes []model.Note) string {
 }
 
 // Next возвращает следующую страницу сообщений
-func (v *NoteView) Next() string {
-	v.logger.Debugf("noteView: getting next page. Current: %d\n", v.currentPage)
+func (v *ReminderView) Next() string {
+	v.logger.Debugf("ReminderView: getting next page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == v.total()-1 {
-		v.logger.Debugf("noteView: current page is the last. Setting current page to 0.\n")
+		v.logger.Debugf("ReminderView: current page is the last. Setting current page to 0.\n")
 		v.currentPage = 0
 	} else {
 		v.currentPage++
-		v.logger.Debugf("noteView: incrementing current page. New value: %d\n", v.currentPage)
+		v.logger.Debugf("ReminderView: incrementing current page. New value: %d\n", v.currentPage)
 	}
 
 	return v.pages[v.currentPage]
 }
 
 // Previous возвращает предыдущую страницу сообщений
-func (v *NoteView) Previous() string {
-	v.logger.Debugf("noteView: getting previous page. Current: %d\n", v.currentPage)
+func (v *ReminderView) Previous() string {
+	v.logger.Debugf("ReminderView: getting previous page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == 0 {
-		v.logger.Debugf("noteView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
+		v.logger.Debugf("ReminderView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
 		v.currentPage = v.total() - 1
 	} else {
 		v.currentPage--
-		v.logger.Debugf("noteView: decrementing current page. New value: %d\n", v.currentPage)
+		v.logger.Debugf("ReminderView: decrementing current page. New value: %d\n", v.currentPage)
 	}
 
 	return v.pages[v.currentPage]
 }
 
 // Last возвращает последнюю страницу сообщений
-func (v *NoteView) Last() string {
-	v.logger.Debugf("noteView: getting the last page. Current: %d\n", v.currentPage)
+func (v *ReminderView) Last() string {
+	v.logger.Debugf("ReminderView: getting the last page. Current: %d\n", v.currentPage)
 
 	v.currentPage = v.total() - 1
 
@@ -106,8 +98,8 @@ func (v *NoteView) Last() string {
 }
 
 // First возвращает первую страницу сообщений
-func (v *NoteView) First() string {
-	v.logger.Debugf("noteView: getting the first page. Current: %d\n", v.currentPage)
+func (v *ReminderView) First() string {
+	v.logger.Debugf("ReminderView: getting the first page. Current: %d\n", v.currentPage)
 
 	v.currentPage = 0
 
@@ -115,17 +107,17 @@ func (v *NoteView) First() string {
 }
 
 // current возвращает номер текущей страницы
-func (v *NoteView) current() int {
+func (v *ReminderView) current() int {
 	return v.currentPage + 1
 }
 
 // total возвращает общее количество страниц
-func (v *NoteView) total() int {
+func (v *ReminderView) total() int {
 	return len(v.pages)
 }
 
 // Keyboard делает клавиатуру для навигации по страницам
-func (v *NoteView) Keyboard() *tele.ReplyMarkup {
+func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {
 		menu := &tele.ReplyMarkup{}
@@ -152,12 +144,12 @@ func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 }
 
 // SetCurrentToFirst устанавливает текущий номер страницы на 1
-func (v *NoteView) SetCurrentToFirst() {
+func (v *ReminderView) SetCurrentToFirst() {
 	v.currentPage = 0
 }
 
 // Clear используется когда удаляются все заметки: очищает список заметок, устанавливает текущую страницу в 0
-func (v *NoteView) Clear() {
+func (v *ReminderView) Clear() {
 	v.currentPage = 0
 	v.pages = make([]string, 0)
 }

@@ -16,7 +16,7 @@ type NoteService struct {
 	viewsMap   map[int64]*view.NoteView
 }
 
-//go:generate mockgen -source ./note.go -destination=./mocks/note_editor.go
+//go:generate mockgen -source ./service.go -destination=./mocks/note_editor.go
 type noteEditor interface {
 	// Save сохраняет заметку в базе данных. Для сохранения требуется: ID пользователя, содержимое заметки, дата создания
 	Save(ctx context.Context, note model.Note) error
@@ -34,7 +34,7 @@ type noteEditor interface {
 	GetByID(ctx context.Context, userID int64, noteID int) (*model.Note, error)
 
 	// SearchByText производит поиск по заметок по тексту. Если таких заметок нет, возвращает ErrNotesNotFound
-	SearchByText(ctx context.Context, searchNote model.SearchNoteByText) ([]model.Note, error)
+	SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error)
 }
 
 func New(noteEditor noteEditor) *NoteService {
