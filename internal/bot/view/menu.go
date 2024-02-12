@@ -93,6 +93,18 @@ func NotesAndMenuBtns() *tele.ReplyMarkup {
 	return menu
 }
 
+// RemindersAndMenuBtns возвращает меню с двумя кнопками: Напоминания и назад в меню
+func RemindersAndMenuBtns() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnReminders),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
 // DeleteAllNotesAndBackToMenu возвращает меню с двумя кнопками: удалить все заметки и назад в меню
 func DeleteAllNotesAndBackToMenu() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}

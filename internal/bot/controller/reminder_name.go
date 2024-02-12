@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
@@ -12,5 +13,10 @@ import (
 func (c *Controller) ReminderName(ctx context.Context, telectx telebot.Context) error {
 	c.reminderSrv.SaveReminderName(telectx.Chat().ID, telectx.Message().Text)
 
-	return telectx.EditOrSend(messages.TypeOfReminderMessage, view.ReminderTypes())
+	txt := fmt.Sprintf(messages.TypeOfReminderMessage, telectx.Message().Text)
+
+	return telectx.EditOrSend(txt, &telebot.SendOptions{
+		ParseMode:   htmlParseMode,
+		ReplyMarkup: view.ReminderTypes(),
+	})
 }

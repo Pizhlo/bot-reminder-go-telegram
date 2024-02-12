@@ -52,7 +52,7 @@ func (c *Controller) GetAllUsers(ctx context.Context) []*user_model.User {
 func (c *Controller) HandleError(ctx tele.Context, err error) {
 	msg := fmt.Sprintf(messages.ErrorMessageChannel, ctx.Message().Text, err)
 
-	editErr := ctx.Edit(messages.ErrorMessageUser, view.BackToMenuBtn())
+	editErr := ctx.EditOrSend(messages.ErrorMessageUser, view.BackToMenuBtn())
 	if editErr != nil {
 		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", editErr)
 	}

@@ -18,8 +18,13 @@ func (db *ReminderRepo) Save(ctx context.Context, reminder *model.Reminder) erro
 		return fmt.Errorf("error while creating transaction: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, `insert into reminders.reminders (user_id, text, created, type, date, time) values((select id from users.users where tg_id=$1), $2, $3, $4, $5) returning id`,
-		reminder.TgID, reminder.Text, reminder.Created, reminder.Type, reminder.Date, reminder.Time)
+	_, err = tx.ExecContext(ctx,
+		`insert into reminders.reminders (user_id, text, created, type, date, time) 
+	values(
+		(select id from users.users where tg_id=$1), 
+		$2, $3, (select id from reminders.types where name = $4), 
+		$5, $6)`,
+		reminder.TgID, reminder.Name, reminder.Created, reminder.Type, reminder.Date, reminder.Time)
 	if err != nil {
 		return fmt.Errorf("error inserting reminder: %w", err)
 	}

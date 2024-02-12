@@ -53,6 +53,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 
 	msg := fmt.Sprintf(messages.NoteDeletedSuccessMessage, noteID)
 	return telectx.EditOrSend(msg, &tele.SendOptions{
-		ParseMode: htmlParseMode,
-	}, view.BackToMenuBtn())
+		ParseMode:   htmlParseMode,
+		ReplyMarkup: view.BackToMenuBtn(),
+	})
 }

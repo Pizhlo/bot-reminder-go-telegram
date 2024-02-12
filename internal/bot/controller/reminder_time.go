@@ -11,6 +11,7 @@ import (
 
 // ReminderTime обрабатывает время напоминания
 func (c *Controller) ReminderTime(ctx context.Context, telectx telebot.Context) error {
+	// проверяем время на валидность и сохраняем если проверка прошла успешно
 	err := c.reminderSrv.ProcessTime(telectx.Chat().ID, telectx.Message().Text)
 	if err != nil {
 		switch err.(type) {
@@ -21,5 +22,6 @@ func (c *Controller) ReminderTime(ctx context.Context, telectx telebot.Context) 
 		}
 	}
 
-	return telectx.EditOrSend(messages.TypeOfReminderMessage, view.ReminderTypes())
+	// сохраняем напоминание, потому что назначение времени - последний этап
+	return c.SaveReminder(ctx, telectx)
 }

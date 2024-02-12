@@ -9,23 +9,25 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-type reminderTime struct {
+type finishReminder struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
 }
 
-func newReminderTimeState(controller *controller.Controller, FSM *FSM) *reminderTime {
-	return &reminderTime{controller, FSM, logger.New(), "reminder time"}
+func newFinishReminderState(controller *controller.Controller, FSM *FSM) *finishReminder {
+	return &finishReminder{controller, FSM, logger.New(), "finish reminder"}
 }
 
-func (n *reminderTime) Handle(ctx context.Context, telectx tele.Context) error {
+func (n *finishReminder) Handle(ctx context.Context, telectx tele.Context) error {
 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
-	n.fsm.SetState(n.fsm.FinishReminder)
-	return n.controller.ReminderTime(ctx, telectx)
+
+	n.fsm.SetState(n.fsm.DefaultState)
+
+	return n.controller.FinishReminder(ctx, telectx)
 }
 
-func (n *reminderTime) Name() string {
+func (n *finishReminder) Name() string {
 	return n.name
 }

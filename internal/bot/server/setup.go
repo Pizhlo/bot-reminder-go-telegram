@@ -229,10 +229,12 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	// reminder types
+
+	// everydya
 	s.bot.Handle(&view.BtnEveryDayReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := c.EditOrSend(messages.ReminderTimeMessage, view.BackToMenuBtn())
+		err := s.controller.EverydayReminder(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err)
 			return err
