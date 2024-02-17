@@ -19,12 +19,12 @@ CREATE TABLE IF NOT EXISTS reminders.reminders (
     id SERIAL NOT NULL,
     user_id INT NOT NULL,
     "text" TEXT,
-    type int not null,
+    type_id int not null,
     date text not null,
     time text not null,
     created TIMESTAMP NOT NULL,
-    PRIMARY KEY (id),
+    PRIMARY KEY (id, user_id),
     unique(id, user_id),
-    FOREIGN KEY (user_id) REFERENCES users.users(id) ON DELETE CASCADE,
+    FOREIGN KEY (id, user_id) REFERENCES users.users(id) ON DELETE CASCADE,
     FOREIGN KEY (type) REFERENCES reminders.types(id) ON DELETE CASCADE
 );

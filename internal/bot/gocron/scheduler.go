@@ -54,3 +54,8 @@ func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncPar
 
 	return j.ID(), nil
 }
+
+// DeleteJob удаляет задачу
+func (s *Scheduler) DeleteJob(id uuid.UUID) {
+	s.RemoveJob(id)
+}

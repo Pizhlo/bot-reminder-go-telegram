@@ -34,5 +34,5 @@ func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, userID
 
 	s.logger.Debugf("Reminder service: saving user's job. Model: %+v\n", r)
 
-	return s.reminderEditor.SaveJob(ctx, r.ID, jobID)
+	return s.reminderEditor.SaveJob(ctx, userID, r.ID, jobID)
 }

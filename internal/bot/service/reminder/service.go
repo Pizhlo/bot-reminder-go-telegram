@@ -30,13 +30,19 @@ type reminderEditor interface {
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error)
 
 	// SaveJob сохраняет задачу в базе
-	SaveJob(ctx context.Context, reminderID int64, jobID uuid.UUID) error
+	SaveJob(ctx context.Context, userID, reminderID int64, jobID uuid.UUID) error
 
-	// // DeleteAllByUserID удаляет все напоминания пользователя по user ID
-	// DeleteAllByUserID(ctx context.Context, userID int64) error
+	// DeleteAllByUserID удаляет все напоминания пользователя по user ID
+	DeleteAllByUserID(ctx context.Context, userID int64) error
 
-	// // DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания и пользователя
-	// DeleteReminderByID(ctx context.Context, userID int64, noteID int) error
+	// GetAllJobs возвращает айди всех задач пользователя
+	GetAllJobs(ctx context.Context, userID int64) ([]uuid.UUID, error)
+
+	// GetJobID возвращает айди задачи по айди пользователя и напоминания
+	GetJobID(ctx context.Context, userID int64, reminderID int) (uuid.UUID, error)
+
+	// DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания и пользователя
+	DeleteReminderByID(ctx context.Context, userID int64, reminderID int) error
 
 	// // GetByID возвращает напоминание с переданным ID. Если такого напоминания нет, возвращает ErrRemindersNotFound
 	// GetByID(ctx context.Context, userID int64, noteID int) (*model.Reminder, error)

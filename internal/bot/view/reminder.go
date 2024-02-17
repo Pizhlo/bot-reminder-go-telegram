@@ -21,14 +21,14 @@ func NewReminder() *ReminderView {
 }
 
 var (
-	// inline кнопка для переключения на предыдущую страницу (заметки)
+	// inline кнопка для переключения на предыдущую страницу (напоминания)
 	BtnPrevPgReminders = selector.Data("<", "prev")
-	// inline кнопка для переключения на следующую страницу (заметки)
+	// inline кнопка для переключения на следующую страницу (напоминания)
 	BtnNextPgReminders = selector.Data(">", "next")
 
-	// inline кнопка для переключения на первую страницу (заметки)
+	// inline кнопка для переключения на первую страницу (напоминания)
 	BtnFirstPgReminders = selector.Data("<<", "start")
-	// inline кнопка для переключения на последнюю страницу (заметки)
+	// inline кнопка для переключения на последнюю страницу (напоминания)
 	BtnLastPgReminders = selector.Data(">>", "end")
 )
 
@@ -122,8 +122,8 @@ func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 	if v.total() == 1 {
 		menu := &tele.ReplyMarkup{}
 		menu.Inline(
-			menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
-			menu.Row(BtnDeleteAllNotes),
+			menu.Row(BtnCreateReminder),
+			selector.Row(BtnDeleteAllReminders),
 			menu.Row(BtnBackToMenu),
 		)
 		return menu
@@ -131,12 +131,11 @@ func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 
 	text := fmt.Sprintf("%d / %d", v.current(), v.total())
 
-	btn := selector.Data(text, "")
+	btn := selector.Data(text, "s")
 
 	selector.Inline(
-		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
-		selector.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
-		selector.Row(BtnDeleteAllNotes),
+		selector.Row(BtnFirstPgReminders, BtnPrevPgReminders, btn, BtnNextPgReminders, BtnLastPgReminders),
+		selector.Row(BtnDeleteAllReminders),
 		selector.Row(BtnBackToMenu),
 	)
 

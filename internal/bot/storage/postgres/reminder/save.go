@@ -22,7 +22,7 @@ func (db *ReminderRepo) Save(ctx context.Context, reminder *model.Reminder) (int
 	var id int64
 
 	err = tx.QueryRowContext(ctx,
-		`insert into reminders.reminders (user_id, text, created, type, date, time) 
+		`insert into reminders.reminders (user_id, text, created, type_id, date, time) 
 	values(
 		(select id from users.users where tg_id=$1), 
 		$2, $3, (select id from reminders.types where name = $4), 
@@ -35,7 +35,7 @@ func (db *ReminderRepo) Save(ctx context.Context, reminder *model.Reminder) (int
 	return id, tx.Commit()
 }
 
-func (db *ReminderRepo) SaveJob(ctx context.Context, reminderID int64, jobID uuid.UUID) error {
+func (db *ReminderRepo) SaveJob(ctx context.Context, userID, reminderID int64, jobID uuid.UUID) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
@@ -44,7 +44,7 @@ func (db *ReminderRepo) SaveJob(ctx context.Context, reminderID int64, jobID uui
 		return fmt.Errorf("error while creating transaction: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, `insert into reminders.jobs (job_id, reminder_id) values($1, $2)`, jobID, reminderID)
+	_, err = tx.ExecContext(ctx, `insert into reminders.jobs (job_id, reminder_id, user_id) values($1, $2, (select id from users.users where tg_id = $3))`, jobID, reminderID, userID)
 	if err != nil {
 		return fmt.Errorf("error inserting job: %w", err)
 	}

@@ -11,7 +11,8 @@ func (c *Controller) SendReminder(ctx telebot.Context, reminder model.Reminder) 
 	c.logger.Debugf("Sending reminder to: %d\n", ctx.Chat().ID)
 
 	err := ctx.EditOrSend(view.ReminderMessage(reminder), &telebot.SendOptions{
-		ParseMode: htmlParseMode,
+		ParseMode:   htmlParseMode,
+		ReplyMarkup: view.DeleteReminderBtn(reminder),
 	})
 
 	if err != nil {
