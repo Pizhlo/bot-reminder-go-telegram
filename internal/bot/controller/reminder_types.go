@@ -19,6 +19,6 @@ func (c *Controller) EverydayReminder(ctx context.Context, telectx telebot.Conte
 
 	return telectx.EditOrSend(messages.ReminderTimeMessage, &telebot.SendOptions{
 		ParseMode:   htmlParseMode,
-		ReplyMarkup: view.BackToMenuBtn(),
+		ReplyMarkup: view.BackToReminderMenuBtns(),
 	})
 }

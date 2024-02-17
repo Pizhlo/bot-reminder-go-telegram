@@ -2,25 +2,37 @@ package reminder
 
 import (
 	"context"
-	"fmt"
-	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	"github.com/google/uuid"
 )
 
-// Save сохраняет напоминание. Tz - часовой пояс пользователя (чтобы установить поле created)
-func (s *ReminderService) Save(ctx context.Context, userID int64, tz *user.Timezone) error {
-	r := s.GetFromMemory(userID)
-
-	t := time.Now()
-	utc, err := time.LoadLocation(tz.Name)
+// Save сохраняет напоминание
+func (s *ReminderService) Save(ctx context.Context, userID int64) error {
+	r, err := s.GetFromMemory(userID)
 	if err != nil {
-		return fmt.Errorf("error while setting timezone (for setting 'created' field): %w", err)
+		return err
 	}
-
-	r.Created = t.In(utc)
 
 	s.logger.Debugf("Reminder service: saving user's reminder. Model: %+v\n", r)
 
-	return s.reminderEditor.Save(ctx, r)
+	id, err := s.reminderEditor.Save(ctx, r)
+	if err != nil {
+		return err
+	}
+
+	s.SaveID(userID, id)
+
+	return nil
+}
+
+// SaveJobID сохраняет в базе ID задачи, связанной с напоминанием
+func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, userID int64) error {
+	r, err := s.GetFromMemory(userID)
+	if err != nil {
+		return err
+	}
+
+	s.logger.Debugf("Reminder service: saving user's job. Model: %+v\n", r)
+
+	return s.reminderEditor.SaveJob(ctx, r.ID, jobID)
 }

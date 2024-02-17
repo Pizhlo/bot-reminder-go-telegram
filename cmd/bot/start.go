@@ -78,6 +78,9 @@ func Start(confName, path string) {
 			Token:  conf.Token,
 			Poller: &tele.LongPoller{Timeout: conf.Timeout},
 		})
+		if err != nil {
+			return fmt.Errorf("cannot create a bot: %w", err)
+		}
 
 		// cache
 		u_cache := user_cache.New()
@@ -88,10 +91,9 @@ func Start(confName, path string) {
 		noteSrv := note_srv.New(noteRepo)
 		reminderSrv := reminder.New(reminderRepo)
 
-		controller := controller.New(userSrv, noteSrv, bot, reminderSrv)
-
+		controller, err := controller.New(userSrv, noteSrv, bot, reminderSrv)
 		if err != nil {
-			return fmt.Errorf("cannot create a bot: %w", err)
+			return fmt.Errorf("cannot create controller: %w", err)
 		}
 
 		logger.Debug("successfully created bot")

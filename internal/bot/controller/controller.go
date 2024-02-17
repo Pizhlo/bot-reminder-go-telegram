@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/gocron"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
@@ -24,6 +25,8 @@ type Controller struct {
 	noteSrv *note.NoteService
 	// отвечает за напоминания
 	reminderSrv *reminder.ReminderService
+	// scheduler вызывает функции в указанное время
+	scheduler *gocron.Scheduler
 }
 
 const (
@@ -31,8 +34,13 @@ const (
 	markdownParseMode = "markdown"
 )
 
-func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, reminderSrv *reminder.ReminderService) *Controller {
-	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot, reminderSrv: reminderSrv}
+func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, reminderSrv *reminder.ReminderService) (*Controller, error) {
+	sch, err := gocron.New()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot, reminderSrv: reminderSrv, scheduler: sch}, nil
 }
 
 // CheckUser проверяет, известен ли пользователь боту

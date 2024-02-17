@@ -24,7 +24,7 @@ const (
 )
 
 type Reminder struct {
-	ID               int
+	ID               int64
 	TgID             int64
 	Name, Date, Time string
 	Type             ReminderType

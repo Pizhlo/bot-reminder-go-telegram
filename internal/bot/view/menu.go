@@ -32,6 +32,9 @@ var (
 
 	// --------------- напоминания --------------
 
+	// inline кнопка для возвращения к выбору типа напоминания
+	BtnBackToReminderType = selector.Data("⬅️К напоминаниям", "reminder_type")
+
 	// inline кнопка создания напоминания
 	BtnCreateReminder = selector.Data("📝Создать напоминание", "create_reminder")
 
@@ -152,6 +155,17 @@ func ReminderTypes() *tele.ReplyMarkup {
 		menu.Row(BtnOnceMonthReminder, BtnOnceYear),
 		menu.Row(BtnOnce),
 		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// BackToReminderMenuBtns возвращает меню с кнопками: Назад к напоминаниям, в меню
+func BackToReminderMenuBtns() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnBackToMenu, BtnBackToReminderType),
 	)
 
 	return menu

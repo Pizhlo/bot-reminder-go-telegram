@@ -7,6 +7,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,10 +24,13 @@ type ReminderService struct {
 //go:generate mockgen -source ./service.go -destination=./mocks/reminder_editor.go
 type reminderEditor interface {
 	// Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
-	Save(ctx context.Context, reminder *model.Reminder) error
+	Save(ctx context.Context, reminder *model.Reminder) (int64, error)
 
 	// GetAllByUserID достает из базы все напоминания пользователя по ID, возвращает ErrRemindersNotFound
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error)
+
+	// SaveJob сохраняет задачу в базе
+	SaveJob(ctx context.Context, reminderID int64, jobID uuid.UUID) error
 
 	// // DeleteAllByUserID удаляет все напоминания пользователя по user ID
 	// DeleteAllByUserID(ctx context.Context, userID int64) error

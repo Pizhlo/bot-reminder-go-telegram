@@ -153,3 +153,27 @@ func (v *ReminderView) Clear() {
 	v.currentPage = 0
 	v.pages = make([]string, 0)
 }
+
+// ReminderMessage возвращает текст сообщения с напоминанием.
+// Пример:
+//
+// купить хлеб
+//
+// Напоминание сработало 23.10.2023 в 18:00
+func ReminderMessage(reminder model.Reminder) string {
+	name := reminder.Name
+
+	date := processType(reminder.Type) + " в " + reminder.Time
+
+	return fmt.Sprintf(messages.ReminderMessage, name, date)
+}
+
+// processType обрабатывает тип напоминания: everyday -> ежедневно, SeveralTimesDayType -> несколько раз в день, ...
+func processType(reminderType model.ReminderType) string {
+	switch reminderType {
+	case model.EverydayType:
+		return "ежедневно"
+	default:
+		return ""
+	}
+}
