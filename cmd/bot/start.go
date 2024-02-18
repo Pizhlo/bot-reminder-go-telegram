@@ -109,7 +109,7 @@ func Start(confName, path string) {
 			//defer cancel()
 			_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, messages.StartBotMessage)
 			if msgErr != nil {
-				logger.Errorf("Error while sending message 'Бот запущен': %v\n", err)
+				logger.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
 			}
 
 			bot.Start()
@@ -140,7 +140,7 @@ func Start(confName, path string) {
 			case <-closer:
 				_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, messages.ShutDownMessage)
 				if msgErr != nil {
-					logger.Errorf("Error while sending message 'Бот запущен': %v\n", err)
+					logger.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
 				}
 				logger.Info("gently shutdown")
 

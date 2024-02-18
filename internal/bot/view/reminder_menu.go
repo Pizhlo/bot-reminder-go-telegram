@@ -42,6 +42,14 @@ var (
 
 	// тип напоминания: Один раз
 	BtnOnce = selector.Data("Выбрать дату", "date")
+
+	// --------------- несколько раз в день --------------
+
+	// тип напоминания: Раз в несколько минут
+	BtnMinutesReminder = selector.Data("Раз в несколько минут", "minutes")
+
+	// тип напоминания: Раз в несколько часов
+	BtnHoursReminder = selector.Data("Раз в несколько часов", "hours")
 )
 
 // CreateReminderAndBackToMenu возвращает кнопку создания напоминания, удалить все и назад в меню
@@ -114,6 +122,18 @@ func DeleteReminderBtn(reminder model.Reminder) *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnDeleteReminder),
+	)
+
+	return menu
+}
+
+// SeveralTimesBtns возвращает меню с двумя кнопками: раз в несколько минут, раз в несколько часов
+func SeveralTimesBtns() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnMinutesReminder, BtnHoursReminder),
+		menu.Row(BtnBackToMenu, BtnBackToReminderType),
 	)
 
 	return menu

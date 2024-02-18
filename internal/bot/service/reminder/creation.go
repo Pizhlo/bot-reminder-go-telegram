@@ -1,7 +1,9 @@
 package reminder
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -137,4 +139,34 @@ func (n *ReminderService) GetID(userID int64) (int64, error) {
 	}
 
 	return r.ID, nil
+}
+
+// ProcessMinutes обрабатывает количество минут: валидирует (число должно быть от 1 до 59) и сохраняет
+func (n *ReminderService) ProcessMinutes(userID int64, minutes string) error {
+	// проверяем, является ли пользовательский ввод числом
+	minuesInt, err := strconv.Atoi(minutes)
+	if err != nil {
+		return err
+	}
+
+	// проверяем на соответствие требованиям
+	if minuesInt < 1 || minuesInt > 59 {
+		return errors.New("must be in within the range from 1 to 59")
+	}
+
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+	}
+
+	// сохраняем изменения
+
+	r.Time = minutes
+
+	n.reminderMap[userID] = r
+
+	return nil
 }

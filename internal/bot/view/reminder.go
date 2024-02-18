@@ -162,17 +162,23 @@ func (v *ReminderView) Clear() {
 func ReminderMessage(reminder model.Reminder) string {
 	name := reminder.Name
 
-	date := processType(reminder.Type) + " в " + reminder.Time
+	date := processType(reminder.Type, reminder.Date, reminder.Time)
 
 	return fmt.Sprintf(messages.ReminderMessage, name, date)
 }
 
 // processType обрабатывает тип напоминания: everyday -> ежедневно, SeveralTimesDayType -> несколько раз в день, ...
-func processType(reminderType model.ReminderType) string {
+func processType(reminderType model.ReminderType, date, time string) string {
 	switch reminderType {
 	case model.EverydayType:
-		return "ежедневно"
+		return fmt.Sprintf("ежедневно в %s", time)
+	case model.SeveralTimesDayType:
+		if date == "minutes" {
+			return fmt.Sprintf("раз в %s минут", time)
+		}
 	default:
 		return ""
 	}
+
+	return ""
 }

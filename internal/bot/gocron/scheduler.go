@@ -2,6 +2,7 @@ package gocron
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -58,4 +59,23 @@ func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncPar
 // DeleteJob удаляет задачу
 func (s *Scheduler) DeleteJob(id uuid.UUID) {
 	s.RemoveJob(id)
+}
+
+// CreateMinutesReminder создает напоминание один раз в несколько минут
+func (s *Scheduler) CreateMinutesReminder(minutes string, task task, params FuncParams) (uuid.UUID, error) {
+	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+
+	minuesInt, err := strconv.Atoi(minutes)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	d := time.Minute * time.Duration(minuesInt)
+
+	j, err := s.NewJob(gocron.DurationJob(d), job)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("error while creating new job: %w", err)
+	}
+
+	return j.ID(), nil
 }
