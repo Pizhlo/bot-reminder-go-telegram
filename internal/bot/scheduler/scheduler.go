@@ -105,3 +105,33 @@ func (s *Scheduler) CreateMinutesReminder(minutes string, task task, params Func
 	return result, nil
 
 }
+
+// CreateHoursReminder создает напоминание один раз в несколько часов
+func (s *Scheduler) CreateHoursReminder(hours string, task task, params FuncParams) (NextRun, error) {
+	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+
+	hoursInt, err := strconv.Atoi(hours)
+	if err != nil {
+		return NextRun{}, err
+	}
+
+	d := time.Hour * time.Duration(hoursInt)
+
+	j, err := s.NewJob(gocron.DurationJob(d), job)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while creating new job: %w", err)
+	}
+
+	run, err := j.NextRun()
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while getting next run: %w", err)
+	}
+
+	result := NextRun{
+		JobID:   j.ID(),
+		NextRun: run,
+	}
+
+	return result, nil
+
+}

@@ -56,3 +56,10 @@ func (c *Controller) OnceInMinutes(ctx context.Context, telectx telebot.Context)
 
 	return telectx.EditOrSend(messages.MinutesDurationMessage)
 }
+
+// OnceInMinutes обрабатывает кнопку "раз в несколько часов"
+func (c *Controller) OnceInHours(ctx context.Context, telectx telebot.Context) error {
+	c.reminderSrv.SaveDate(telectx.Chat().ID, "hours")
+
+	return telectx.EditOrSend(messages.HoursDurationMessage)
+}

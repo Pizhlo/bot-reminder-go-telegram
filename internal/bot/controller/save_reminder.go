@@ -77,7 +77,10 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	case model.EverydayType:
 		return c.scheduler.CreateEverydayJob(r.Time, c.SendReminder, params)
 	case model.SeveralTimesDayType:
-		return c.scheduler.CreateMinutesReminder(r.Time, c.SendReminder, params)
+		if r.Date == "minutes" {
+			return c.scheduler.CreateMinutesReminder(r.Time, c.SendReminder, params)
+		}
+		return c.scheduler.CreateHoursReminder(r.Time, c.SendReminder, params)
 	default:
 		return gocron.NextRun{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}

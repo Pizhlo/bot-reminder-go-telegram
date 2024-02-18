@@ -22,6 +22,7 @@ type FSM struct {
 	ReminderTime     state
 	SeveralTimesDay  state
 	MinutesDuration  state
+	HoursDuration    state
 	mu               sync.RWMutex
 	logger           *logrus.Logger
 }
@@ -52,6 +53,7 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 	fsm.ReminderTime = newReminderTimeState(controller, fsm)
 	fsm.SeveralTimesDay = newSeveralTimesState(controller, fsm)
 	fsm.MinutesDuration = newMinutesDurationState(controller, fsm)
+	fsm.HoursDuration = newHoursDurationState(controller, fsm)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	if !known {

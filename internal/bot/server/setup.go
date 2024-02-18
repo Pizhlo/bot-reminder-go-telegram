@@ -303,4 +303,17 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// once in N hours
+	s.bot.Handle(&view.BtnHoursReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].HoursDuration)
+
+		err := s.controller.OnceInHours(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 }

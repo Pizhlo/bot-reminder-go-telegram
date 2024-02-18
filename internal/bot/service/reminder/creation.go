@@ -170,3 +170,33 @@ func (n *ReminderService) ProcessMinutes(userID int64, minutes string) error {
 
 	return nil
 }
+
+// ProcessMinutes обрабатывает количество часов: валидирует (число должно быть от 1 до 59) и сохраняет
+func (n *ReminderService) ProcessHours(userID int64, hours string) error {
+	// проверяем, является ли пользовательский ввод числом
+	hoursInt, err := strconv.Atoi(hours)
+	if err != nil {
+		return err
+	}
+
+	// проверяем на соответствие требованиям
+	if hoursInt < 1 || hoursInt > 24 {
+		return errors.New("must be in within the range from 1 to 24")
+	}
+
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+	}
+
+	// сохраняем изменения
+
+	r.Time = hours
+
+	n.reminderMap[userID] = r
+
+	return nil
+}
