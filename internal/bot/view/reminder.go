@@ -2,6 +2,8 @@ package view
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
@@ -162,23 +164,71 @@ func (v *ReminderView) Clear() {
 func ReminderMessage(reminder model.Reminder) string {
 	name := reminder.Name
 
-	date := processType(reminder.Type, reminder.Date, reminder.Time)
+	date := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
 
 	return fmt.Sprintf(messages.ReminderMessage, name, date)
 }
 
-// processType обрабатывает тип напоминания: everyday -> ежедневно, SeveralTimesDayType -> несколько раз в день, ...
-func processType(reminderType model.ReminderType, date, time string) string {
+// ProcessTypeAndDate обрабатывает тип напоминания и дату. Пример:
+//
+// everyday 11:30 -> ежедневно в 11:30
+//
+// SeveralTimesDayType, minutes, 1 -> раз в 1 минуту
+func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) string {
 	switch reminderType {
 	case model.EverydayType:
 		return fmt.Sprintf("ежедневно в %s", time)
 	case model.SeveralTimesDayType:
 		if date == "minutes" {
-			return fmt.Sprintf("раз в %s минут", time)
+			minutesInt, _ := strconv.Atoi(time) // опускаем ошибку, потому что время уже было проавлидировано на предыдущих шагах
+			return fmt.Sprintf("один раз в %s", processMinutes(time, minutesInt))
 		}
 	default:
 		return ""
 	}
 
 	return ""
+}
+
+func processMinutes(minutesString string, minutesInt int) string {
+	if minutesInt < 10 || minutesInt >= 20 { // [1, 9], [21, ...]
+		if endsWith(minutesString, "1") { // 1, 21, 31...
+			if minutesInt == 1 {
+				return "минуту"
+			} else {
+				return fmt.Sprintf("%d минуту", minutesInt)
+			}
+
+		}
+
+		// 2, 3, 4, [22, 23, 24, 32, 33, 34, ...]
+		if endsWith(minutesString, "2", "3", "4") {
+			return fmt.Sprintf("%d минуты", minutesInt)
+		}
+
+		// 5-9, 20, 25, 35, 26, 27...
+		if endsWith(minutesString, "0", "5", "6", "7", "8", "9") {
+			return fmt.Sprintf("%d минут", minutesInt)
+		}
+	}
+
+	// [10, 19]
+	if minutesInt >= 10 && minutesInt < 20 {
+		return fmt.Sprintf("%d минут", minutesInt)
+	}
+
+	return ""
+
+}
+
+// endsWith проверяет, оканчивается ли строка на один из суффиксов
+func endsWith(s string, suff ...string) bool {
+	count := 0
+	for _, suf := range suff {
+		if strings.HasSuffix(s, suf) {
+			count++
+		}
+	}
+
+	return count > 0
 }

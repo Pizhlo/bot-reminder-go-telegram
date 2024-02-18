@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/gocron"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
-	"github.com/google/uuid"
 	"gopkg.in/telebot.v3"
 )
 
@@ -35,13 +34,13 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 	}
 
 	// создаем отложенный вызов
-	jobID, err := c.createReminder(ctx, telectx)
+	nextRun, err := c.createReminder(ctx, telectx)
 	if err != nil {
 		return err
 	}
 
 	// сохраняем задачу в базе
-	err = c.reminderSrv.SaveJobID(ctx, jobID, telectx.Chat().ID)
+	err = c.reminderSrv.SaveJobID(ctx, nextRun.JobID, telectx.Chat().ID)
 	if err != nil {
 		return err
 	}
@@ -51,15 +50,22 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 		return err
 	}
 
-	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name)
+	layout := "02.01.2006 15:04:05"
 
-	return telectx.EditOrSend(msg, view.BackToMenuBtn())
+	nextRunMsg := view.ProcessTypeAndDate(r.Type, r.Date, r.Time)
+
+	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name, nextRunMsg, nextRun.NextRun.Format(layout))
+
+	return telectx.EditOrSend(msg, &telebot.SendOptions{
+		ReplyMarkup: view.BackToMenuBtn(),
+		ParseMode:   htmlParseMode,
+	})
 }
 
-func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context) (uuid.UUID, error) {
+func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context) (gocron.NextRun, error) {
 	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
-		return uuid.UUID{}, err
+		return gocron.NextRun{}, err
 	}
 
 	params := gocron.FuncParams{
@@ -73,6 +79,6 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	case model.SeveralTimesDayType:
 		return c.scheduler.CreateMinutesReminder(r.Time, c.SendReminder, params)
 	default:
-		return uuid.UUID{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
+		return gocron.NextRun{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}
 }
