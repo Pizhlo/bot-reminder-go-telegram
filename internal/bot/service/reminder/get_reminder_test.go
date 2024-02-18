@@ -50,14 +50,6 @@ func TestGetAll_Error(t *testing.T) {
 
 	sqlErr := sql.ErrNoRows
 
-	// ожидаемые напоминания, которые возвращает база
-	expectedResult := random.Reminders(5)
-
-	// создаем view для генерации сообщения на основе данных из БД
-	view := view.NewReminder()
-	// подготавливаем сообщение - сохраняем во view
-	view.Message(expectedResult)
-
 	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return(nil, sqlErr)
 
 	msg, _, err := n.GetAll(context.Background(), userID)

@@ -32,6 +32,7 @@ func Reminder() model.Reminder {
 		Name:    String(10),
 		Date:    String(10),
 		Type:    randomType,
+		Time:    "10:10",
 		Created: time.Now(),
 	}
 }
