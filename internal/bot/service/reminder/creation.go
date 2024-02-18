@@ -7,8 +7,8 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 )
 
-// SaveReminderName сохраняет название напоминания при создании
-func (n *ReminderService) SaveReminderName(userID int64, name string) {
+// SaveName сохраняет название напоминания при создании
+func (n *ReminderService) SaveName(userID int64, name string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
@@ -27,7 +27,7 @@ func (n *ReminderService) SaveType(userID int64, reminderType model.ReminderType
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder's ID: reminder not found")
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	r.Type = reminderType
@@ -44,7 +44,7 @@ func (n *ReminderService) SaveCreatedField(userID int64, tz *time.Location) erro
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder's ID: reminder not found")
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	r.Created = time.Now().In(tz)
@@ -69,7 +69,7 @@ func (n *ReminderService) ProcessTime(userID int64, timeMsg string) error {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder's ID: reminder not found")
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	r.Time = timeMsg
@@ -86,7 +86,7 @@ func (n *ReminderService) SaveDate(userID int64, date string) error {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder's ID: reminder not found")
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	r.Date = date
@@ -103,20 +103,20 @@ func (n *ReminderService) GetFromMemory(userID int64) (*model.Reminder, error) {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return nil, fmt.Errorf("error while getting reminder's ID: reminder not found")
+		return nil, fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	return &r, nil
 }
 
-// SaveID сохраняет ID напоминания из базы
+// SaveID сохраняет ID напоминания, указанное в базе
 func (n *ReminderService) SaveID(userID int64, reminderID int64) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder's ID: reminder not found")
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	r.ID = reminderID
@@ -133,7 +133,7 @@ func (n *ReminderService) GetID(userID int64) (int64, error) {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return 0, fmt.Errorf("error while getting reminder's ID: reminder not found")
+		return 0, fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	return r.ID, nil
