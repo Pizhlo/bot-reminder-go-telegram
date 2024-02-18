@@ -2,6 +2,7 @@ package reminder
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -259,7 +260,7 @@ func TestProcessTime_InvalidTime(t *testing.T) {
 
 		err := n.ProcessTime(tt.userID, tt.timeMsg)
 
-		assert.Equal(t, true, err != nil)
+		assert.Error(t, err)
 
 		result, ok := n.reminderMap[tt.userID]
 		assert.Equal(t, true, ok)
@@ -620,4 +621,104 @@ func TestGetID_NotFound(t *testing.T) {
 	id, err := n.GetID(userID)
 	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
 	assert.Equal(t, int64(0), id)
+}
+
+func TestProcessMinutes(t *testing.T) {
+	userID := int64(1)
+	reminderName := random.String(10)
+
+	n := New(nil)
+
+	n.SaveName(userID, reminderName)
+
+	for i := 1; i < 60; i++ {
+		minutesStr := strconv.Itoa(i)
+		err := n.ProcessMinutes(userID, minutesStr)
+		assert.NoError(t, err, fmt.Sprintf("case: %d", i))
+
+		result, ok := n.reminderMap[userID]
+		assert.Equal(t, true, ok)
+
+		assert.Equal(t, userID, result.TgID)
+		assert.Equal(t, minutesStr, result.Time)
+	}
+}
+
+func TestProcessMinutes_RandomString(t *testing.T) {
+	userID := int64(1)
+	reminderName := random.String(10)
+
+	n := New(nil)
+
+	n.SaveName(userID, reminderName)
+
+	minutes := random.String(5)
+	err := n.ProcessMinutes(userID, minutes)
+	assert.Error(t, err)
+}
+
+func TestProcessMinutes_OutOfRange(t *testing.T) {
+	userID := int64(1)
+	reminderName := random.String(10)
+
+	n := New(nil)
+
+	n.SaveName(userID, reminderName)
+
+	minutes := []string{"-1", "0", "60"}
+
+	for _, min := range minutes {
+		err := n.ProcessMinutes(userID, min)
+		assert.Error(t, err)
+	}
+}
+
+func TestProcessHours(t *testing.T) {
+	userID := int64(1)
+	reminderName := random.String(10)
+
+	n := New(nil)
+
+	n.SaveName(userID, reminderName)
+
+	for i := 1; i < 25; i++ {
+		hour := strconv.Itoa(i)
+		err := n.ProcessHours(userID, hour)
+		assert.NoError(t, err, fmt.Sprintf("case: %d", i))
+
+		result, ok := n.reminderMap[userID]
+		assert.Equal(t, true, ok)
+
+		assert.Equal(t, userID, result.TgID)
+		assert.Equal(t, hour, result.Time)
+	}
+}
+
+func TestProcessHours_RandomString(t *testing.T) {
+	userID := int64(1)
+	reminderName := random.String(10)
+
+	n := New(nil)
+
+	n.SaveName(userID, reminderName)
+
+	hour := random.String(5)
+	err := n.ProcessHours(userID, hour)
+	assert.Error(t, err)
+}
+
+func TestProcessHours_OutOfRange(t *testing.T) {
+	userID := int64(1)
+	reminderName := random.String(10)
+
+	n := New(nil)
+
+	n.SaveName(userID, reminderName)
+
+	hours := []string{"-1", "0", "25"}
+
+	for _, h := range hours {
+		err := n.ProcessHours(userID, h)
+		assert.Error(t, err, fmt.Sprintf("case: %s", h))
+	}
 }

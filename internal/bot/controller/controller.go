@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/gocron"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"

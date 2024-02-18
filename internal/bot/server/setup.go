@@ -277,4 +277,43 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// several times a day (once in N minutes, once in N hours)
+	s.bot.Handle(&view.BtnSeveralTimesDayReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SeveralTimesDay)
+
+		err := s.controller.SeveralTimesADayReminder(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// once in N minutes
+	s.bot.Handle(&view.BtnMinutesReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].MinutesDuration)
+
+		err := s.controller.OnceInMinutes(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// once in N hours
+	s.bot.Handle(&view.BtnHoursReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].HoursDuration)
+
+		err := s.controller.OnceInHours(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 }

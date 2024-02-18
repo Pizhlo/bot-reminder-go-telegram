@@ -2,6 +2,8 @@ package view
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
@@ -118,12 +120,13 @@ func (v *ReminderView) total() int {
 
 // Keyboard делает клавиатуру для навигации по страницам
 func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {
-		menu := &tele.ReplyMarkup{}
 		menu.Inline(
 			menu.Row(BtnCreateReminder),
-			selector.Row(BtnDeleteAllReminders),
+			menu.Row(BtnDeleteAllReminders),
 			menu.Row(BtnBackToMenu),
 		)
 		return menu
@@ -131,15 +134,16 @@ func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 
 	text := fmt.Sprintf("%d / %d", v.current(), v.total())
 
-	btn := selector.Data(text, "s")
+	btn := menu.Data(text, "s")
 
-	selector.Inline(
-		selector.Row(BtnFirstPgReminders, BtnPrevPgReminders, btn, BtnNextPgReminders, BtnLastPgReminders),
-		selector.Row(BtnDeleteAllReminders),
-		selector.Row(BtnBackToMenu),
+	menu.Inline(
+		menu.Row(BtnFirstPgReminders, BtnPrevPgReminders, btn, BtnNextPgReminders, BtnLastPgReminders),
+		menu.Row(BtnCreateReminder),
+		menu.Row(BtnDeleteAllReminders),
+		menu.Row(BtnBackToMenu),
 	)
 
-	return selector
+	return menu
 }
 
 // SetCurrentToFirst устанавливает текущий номер страницы на 1
@@ -162,17 +166,88 @@ func (v *ReminderView) Clear() {
 func ReminderMessage(reminder model.Reminder) string {
 	name := reminder.Name
 
-	date := processType(reminder.Type) + " в " + reminder.Time
+	date := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
 
 	return fmt.Sprintf(messages.ReminderMessage, name, date)
 }
 
-// processType обрабатывает тип напоминания: everyday -> ежедневно, SeveralTimesDayType -> несколько раз в день, ...
-func processType(reminderType model.ReminderType) string {
+// ProcessTypeAndDate обрабатывает тип напоминания и дату. Пример:
+//
+// everyday 11:30 -> ежедневно в 11:30
+//
+// SeveralTimesDayType, minutes, 1 -> раз в 1 минуту
+func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) string {
 	switch reminderType {
 	case model.EverydayType:
-		return "ежедневно"
+		return fmt.Sprintf("ежедневно в %s", time)
+	case model.SeveralTimesDayType:
+		if date == "minutes" {
+			minutesInt, _ := strconv.Atoi(time) // опускаем ошибку, потому что время уже было проавлидировано на предыдущих шагах
+			return fmt.Sprintf("один раз в %s", processMinutes(time, minutesInt))
+		} else {
+			hoursInt, _ := strconv.Atoi(time)
+			return fmt.Sprintf("один раз в %s", processHours(time, hoursInt))
+		}
 	default:
 		return ""
 	}
+
+}
+
+func processHours(hoursString string, hoursInt int) string {
+	// 1 час
+	// 5...20 - часов
+	// 2..4 - часа
+
+	if hoursInt == 1 {
+		return "час"
+	}
+
+	// 21
+	if hoursInt > 20 && endsWith(hoursString, "1") {
+		return fmt.Sprintf("%d час", hoursInt)
+	}
+
+	// 5...20
+	if hoursInt >= 5 && hoursInt <= 20 {
+		return fmt.Sprintf("%d часов", hoursInt)
+	}
+
+	// [2..4], [22, 23, 24] - часа
+	return fmt.Sprintf("%d часа", hoursInt)
+}
+
+func processMinutes(minutesString string, minutesInt int) string {
+	if minutesInt == 1 {
+		return "минуту"
+	}
+
+	if minutesInt >= 20 && endsWith(minutesString, "1") { // [21, ...]
+		return fmt.Sprintf("%d минуту", minutesInt) // 21, 31...
+
+	}
+
+	// 2, 3, 4, [22, 23, 24, 32, 33, 34, ...]
+	if endsWith(minutesString, "2", "3", "4") && (minutesInt < 10 || minutesInt > 20) {
+		return fmt.Sprintf("%d минуты", minutesInt)
+	}
+
+	// 5-9, 20, 25, 35, 26, 27...
+	if endsWith(minutesString, "0", "5", "6", "7", "8", "9") || (minutesInt >= 10 && minutesInt < 20) {
+		return fmt.Sprintf("%d минут", minutesInt)
+	}
+
+	return ""
+}
+
+// endsWith проверяет, оканчивается ли строка на один из суффиксов
+func endsWith(s string, suff ...string) bool {
+	count := 0
+	for _, suf := range suff {
+		if strings.HasSuffix(s, suf) {
+			count++
+		}
+	}
+
+	return count > 0
 }
