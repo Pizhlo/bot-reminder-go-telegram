@@ -222,23 +222,18 @@ func processMinutes(minutesString string, minutesInt int) string {
 		return "минуту"
 	}
 
-	if minutesInt < 10 || minutesInt >= 20 { // [2, 9], [21, ...]
-		return fmt.Sprintf("%d минуту", minutesInt) // 1, 21, 31...
+	if minutesInt >= 20 && endsWith(minutesString, "1") { // [21, ...]
+		return fmt.Sprintf("%d минуту", minutesInt) // 21, 31...
 
 	}
 
 	// 2, 3, 4, [22, 23, 24, 32, 33, 34, ...]
-	if endsWith(minutesString, "2", "3", "4") {
+	if endsWith(minutesString, "2", "3", "4") && (minutesInt < 10 || minutesInt > 20) {
 		return fmt.Sprintf("%d минуты", minutesInt)
 	}
 
 	// 5-9, 20, 25, 35, 26, 27...
-	if endsWith(minutesString, "0", "5", "6", "7", "8", "9") {
-		return fmt.Sprintf("%d минут", minutesInt)
-	}
-
-	// [10, 19]
-	if minutesInt >= 10 && minutesInt < 20 {
+	if endsWith(minutesString, "0", "5", "6", "7", "8", "9") || (minutesInt >= 10 && minutesInt < 20) {
 		return fmt.Sprintf("%d минут", minutesInt)
 	}
 
