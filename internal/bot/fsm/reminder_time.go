@@ -22,6 +22,7 @@ func newReminderTimeState(controller *controller.Controller, FSM *FSM) *reminder
 
 func (n *reminderTime) Handle(ctx context.Context, telectx tele.Context) error {
 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+
 	return n.controller.ReminderTime(ctx, telectx)
 }
 

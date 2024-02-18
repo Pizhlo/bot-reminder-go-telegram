@@ -7,6 +7,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,16 +24,25 @@ type ReminderService struct {
 //go:generate mockgen -source ./service.go -destination=./mocks/reminder_editor.go
 type reminderEditor interface {
 	// Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
-	Save(ctx context.Context, reminder *model.Reminder) error
+	Save(ctx context.Context, reminder *model.Reminder) (int64, error)
 
 	// GetAllByUserID достает из базы все напоминания пользователя по ID, возвращает ErrRemindersNotFound
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error)
 
-	// // DeleteAllByUserID удаляет все напоминания пользователя по user ID
-	// DeleteAllByUserID(ctx context.Context, userID int64) error
+	// SaveJob сохраняет задачу в базе
+	SaveJob(ctx context.Context, userID, reminderID int64, jobID uuid.UUID) error
 
-	// // DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания и пользователя
-	// DeleteReminderByID(ctx context.Context, userID int64, noteID int) error
+	// DeleteAllByUserID удаляет все напоминания пользователя по user ID
+	DeleteAllByUserID(ctx context.Context, userID int64) error
+
+	// GetAllJobs возвращает айди всех задач пользователя
+	GetAllJobs(ctx context.Context, userID int64) ([]uuid.UUID, error)
+
+	// GetJobID возвращает айди задачи по айди пользователя и напоминания
+	GetJobID(ctx context.Context, userID int64, reminderID int) (uuid.UUID, error)
+
+	// DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания и пользователя
+	DeleteReminderByID(ctx context.Context, userID int64, reminderID int) error
 
 	// // GetByID возвращает напоминание с переданным ID. Если такого напоминания нет, возвращает ErrRemindersNotFound
 	// GetByID(ctx context.Context, userID int64, noteID int) (*model.Reminder, error)

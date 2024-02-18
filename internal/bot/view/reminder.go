@@ -21,14 +21,14 @@ func NewReminder() *ReminderView {
 }
 
 var (
-	// inline кнопка для переключения на предыдущую страницу (заметки)
+	// inline кнопка для переключения на предыдущую страницу (напоминания)
 	BtnPrevPgReminders = selector.Data("<", "prev")
-	// inline кнопка для переключения на следующую страницу (заметки)
+	// inline кнопка для переключения на следующую страницу (напоминания)
 	BtnNextPgReminders = selector.Data(">", "next")
 
-	// inline кнопка для переключения на первую страницу (заметки)
+	// inline кнопка для переключения на первую страницу (напоминания)
 	BtnFirstPgReminders = selector.Data("<<", "start")
-	// inline кнопка для переключения на последнюю страницу (заметки)
+	// inline кнопка для переключения на последнюю страницу (напоминания)
 	BtnLastPgReminders = selector.Data(">>", "end")
 )
 
@@ -44,7 +44,7 @@ func (v *ReminderView) Message(reminders []model.Reminder) string {
 	v.pages = make([]string, 0)
 
 	for i, reminder := range reminders {
-		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n%s", i+1, reminder.Created.Format(dateFormat), reminder.ID, reminder.Text, reminder.Type+reminder.Date+reminder.Time)
+		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n%s", i+1, reminder.Created.Format(dateFormat), reminder.ID, reminder.Name, string(reminder.Type)+reminder.Date+reminder.Time)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""
@@ -122,8 +122,8 @@ func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 	if v.total() == 1 {
 		menu := &tele.ReplyMarkup{}
 		menu.Inline(
-			menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
-			menu.Row(BtnDeleteAllNotes),
+			menu.Row(BtnCreateReminder),
+			selector.Row(BtnDeleteAllReminders),
 			menu.Row(BtnBackToMenu),
 		)
 		return menu
@@ -131,12 +131,11 @@ func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 
 	text := fmt.Sprintf("%d / %d", v.current(), v.total())
 
-	btn := selector.Data(text, "")
+	btn := selector.Data(text, "s")
 
 	selector.Inline(
-		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
-		selector.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
-		selector.Row(BtnDeleteAllNotes),
+		selector.Row(BtnFirstPgReminders, BtnPrevPgReminders, btn, BtnNextPgReminders, BtnLastPgReminders),
+		selector.Row(BtnDeleteAllReminders),
 		selector.Row(BtnBackToMenu),
 	)
 
@@ -152,4 +151,28 @@ func (v *ReminderView) SetCurrentToFirst() {
 func (v *ReminderView) Clear() {
 	v.currentPage = 0
 	v.pages = make([]string, 0)
+}
+
+// ReminderMessage возвращает текст сообщения с напоминанием.
+// Пример:
+//
+// купить хлеб
+//
+// Напоминание сработало 23.10.2023 в 18:00
+func ReminderMessage(reminder model.Reminder) string {
+	name := reminder.Name
+
+	date := processType(reminder.Type) + " в " + reminder.Time
+
+	return fmt.Sprintf(messages.ReminderMessage, name, date)
+}
+
+// processType обрабатывает тип напоминания: everyday -> ежедневно, SeveralTimesDayType -> несколько раз в день, ...
+func processType(reminderType model.ReminderType) string {
+	switch reminderType {
+	case model.EverydayType:
+		return "ежедневно"
+	default:
+		return ""
+	}
 }

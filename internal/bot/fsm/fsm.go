@@ -40,10 +40,12 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 	defaultState := newDefaultState(controller, fsm)
 	fsm.DefaultState = defaultState
 
+	// note
 	fsm.createNote = newCreateNoteState(controller, fsm)
-
 	fsm.ListNote = newListNoteState(fsm, controller)
 	fsm.SearchNoteByText = newSearchNoteByTextState(controller, fsm)
+
+	// reminder
 	fsm.ReminderName = newReminderNameState(controller, fsm)
 	fsm.ReminderTime = newReminderTimeState(controller, fsm)
 

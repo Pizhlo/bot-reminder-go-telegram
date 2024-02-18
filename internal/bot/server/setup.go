@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
@@ -16,6 +17,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Use(logger.Logging(ctx, s.logger))
 	s.bot.Use(middleware.AutoRespond())
 
+	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
@@ -26,7 +28,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// main menu
+	// главное меню
 	s.bot.Handle(&view.BtnProfile, func(telectx tele.Context) error {
 		s.logger.Debugf("Profile btn")
 		err := s.controller.Profile(ctx, telectx)
@@ -38,6 +40,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// меню настроек
 	s.bot.Handle(&view.BtnSettings, func(telectx tele.Context) error {
 		s.logger.Debugf("Settings btn")
 		err := s.controller.Settings(ctx, telectx)
@@ -49,6 +52,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// меню заметок
 	s.bot.Handle(&view.BtnNotes, func(telectx tele.Context) error {
 		s.logger.Debugf("Notes btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
@@ -62,6 +66,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// меню напоминаний
 	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
 		s.logger.Debugf("Reminders btn")
 		err := s.controller.Reminders(ctx, telectx)
@@ -73,6 +78,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// назад в меню
 	s.bot.Handle(&view.BtnBackToMenu, func(telectx tele.Context) error {
 		s.logger.Debugf("Menu btn")
 		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
@@ -215,6 +221,34 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// reminders
 
+	// удалить сработавшее напоминание
+	s.bot.Handle(&view.BtnDeleteReminder, func(ctx tele.Context) error {
+		uniq := ctx.Callback().Unique
+		return ctx.EditOrSend(fmt.Sprintf("Удалено: %s", uniq))
+	})
+
+	// удалить все напоминания - подтверждение
+	s.bot.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {
+		err := s.controller.ConfirmDeleteAllReminders(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// удалить все напоминания
+	s.bot.Handle(&controller.BtnDeleteAllReminders, func(c tele.Context) error {
+		err := s.controller.DeleteAllReminders(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// название напоминания
 	s.bot.Handle(&view.BtnCreateReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
@@ -229,10 +263,12 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	// reminder types
+
+	// everyday
 	s.bot.Handle(&view.BtnEveryDayReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := c.EditOrSend(messages.ReminderTimeMessage, view.BackToMenuBtn())
+		err := s.controller.EverydayReminder(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err)
 			return err

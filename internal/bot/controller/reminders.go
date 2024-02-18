@@ -10,6 +10,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Reminders показывает пользователю все его напоминания
 func (c *Controller) Reminders(ctx context.Context, telectx tele.Context) error {
 	msg, kb, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {
