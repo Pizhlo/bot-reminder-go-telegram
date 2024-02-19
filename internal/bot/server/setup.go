@@ -69,7 +69,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	// меню напоминаний
 	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
 		s.logger.Debugf("Reminders btn")
-		err := s.controller.Reminders(ctx, telectx)
+		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
 			s.controller.HandleError(telectx, err)
 			return err
@@ -220,6 +220,52 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	// reminders
+
+	// навигация по страницам
+
+	// предыдущая страница
+	s.bot.Handle(&view.BtnPrevPgReminders, func(c tele.Context) error {
+		err := s.controller.PrevPageReminders(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// следующая страница
+	s.bot.Handle(&view.BtnNextPgReminders, func(c tele.Context) error {
+		err := s.controller.NextPageReminders(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// первая страница
+	s.bot.Handle(&view.BtnFirstPgReminders, func(c tele.Context) error {
+		err := s.controller.FirstPageReminders(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// последняя страница
+	s.bot.Handle(&view.BtnLastPgReminders, func(c tele.Context) error {
+		err := s.controller.LastPageReminders(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
 
 	// назад к выбору
 	s.bot.Handle(&view.BtnBackToReminderType, func(c tele.Context) error {
