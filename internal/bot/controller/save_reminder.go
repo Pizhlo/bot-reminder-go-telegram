@@ -52,7 +52,10 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 
 	layout := "02.01.2006 15:04:05"
 
-	nextRunMsg := view.ProcessTypeAndDate(r.Type, r.Date, r.Time)
+	nextRunMsg, err := view.ProcessTypeAndDate(r.Type, r.Date, r.Time)
+	if err != nil {
+		return err
+	}
 
 	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name, nextRunMsg, nextRun.NextRun.Format(layout))
 
@@ -81,6 +84,12 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 			return c.scheduler.CreateMinutesReminder(r.Time, c.SendReminder, params)
 		}
 		return c.scheduler.CreateHoursReminder(r.Time, c.SendReminder, params)
+	case model.EveryWeekType:
+		wd, err := view.ParseWeekday(r.Date)
+		if err != nil {
+			return gocron.NextRun{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
+		}
+		return c.scheduler.CreateEveryWeekReminder(wd, r.Time, c.SendReminder, params)
 	default:
 		return gocron.NextRun{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}

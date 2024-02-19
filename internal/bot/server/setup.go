@@ -221,6 +221,18 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// reminders
 
+	// назад к выбору
+	s.bot.Handle(&view.BtnBackToReminderType, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
+		err := s.controller.ReminderName(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// удалить сработавшее напоминание
 	s.bot.Handle(&view.BtnDeleteReminder, func(ctx tele.Context) error {
 		uniq := ctx.Callback().Unique
@@ -316,4 +328,107 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// every week
+	s.bot.Handle(&view.BtnEveryWeekReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].EveryWeek)
+
+		err := s.controller.EveryWeek(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// Monday
+	s.bot.Handle(&view.MondayBtn, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.WeekDay(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// Tuesday
+	s.bot.Handle(&view.TuesdayBtn, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.WeekDay(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// Wednesday
+	s.bot.Handle(&view.WednesdayBtn, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.WeekDay(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// Thursday
+	s.bot.Handle(&view.ThursdayBtn, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.WeekDay(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// Friday
+	s.bot.Handle(&view.FridayBtn, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.WeekDay(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// Saturday
+	s.bot.Handle(&view.SaturdayBtn, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.WeekDay(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// Sunday
+	s.bot.Handle(&view.SundayBtn, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.WeekDay(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
 }
