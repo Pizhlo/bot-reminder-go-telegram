@@ -644,6 +644,18 @@ func TestProcessMinutes(t *testing.T) {
 	}
 }
 
+func TestProcessMinutes_UserNotFound(t *testing.T) {
+	userID := int64(1)
+
+	n := New(nil)
+
+	err := n.ProcessMinutes(userID, "10")
+	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+
+	_, ok := n.reminderMap[userID]
+	assert.Equal(t, false, ok)
+}
+
 func TestProcessMinutes_RandomString(t *testing.T) {
 	userID := int64(1)
 	reminderName := random.String(10)
@@ -692,6 +704,18 @@ func TestProcessHours(t *testing.T) {
 		assert.Equal(t, userID, result.TgID)
 		assert.Equal(t, hour, result.Time)
 	}
+}
+
+func TestProcessHours_UserNotFound(t *testing.T) {
+	userID := int64(1)
+
+	n := New(nil)
+
+	err := n.ProcessHours(userID, "10")
+	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+
+	_, ok := n.reminderMap[userID]
+	assert.Equal(t, false, ok)
 }
 
 func TestProcessHours_RandomString(t *testing.T) {

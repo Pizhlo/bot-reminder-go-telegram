@@ -42,14 +42,10 @@ type NextRun struct {
 
 // CreateEverydayJob создает ежедневные вызовы в указанное время
 func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncParams) (NextRun, error) {
-	layout := "15:04"
-
-	t, err := time.Parse(layout, userTime)
+	cronTime, err := s.makeTime(userTime)
 	if err != nil {
-		return NextRun{}, fmt.Errorf("error while parsing user's time %s: %w", userTime, err)
+		return NextRun{}, fmt.Errorf("error while creating gocron.AtTimes: %w", err)
 	}
-
-	cronTime := gocron.NewAtTimes(gocron.NewAtTime(uint(t.Hour()), uint(t.Minute()), 0))
 
 	job := gocron.NewTask(task, params.Ctx, params.Reminder)
 
@@ -133,5 +129,43 @@ func (s *Scheduler) CreateHoursReminder(hours string, task task, params FuncPara
 	}
 
 	return result, nil
+}
 
+// CreateEveryWeekReminder создает напоминание еженедельное напоминание
+func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime string, task task, params FuncParams) (NextRun, error) {
+	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+
+	cronTime, err := s.makeTime(userTime)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while creating gocron.AtTimes: %w", err)
+	}
+
+	j, err := s.NewJob(gocron.WeeklyJob(0, gocron.NewWeekdays(weekDay), cronTime), job)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while creating new job: %w", err)
+	}
+
+	run, err := j.NextRun()
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while getting next run: %w", err)
+	}
+
+	result := NextRun{
+		JobID:   j.ID(),
+		NextRun: run,
+	}
+
+	return result, nil
+}
+
+// makeTime принимает на вход строку вида "13:10" и возвращает gocron.AtTimes
+func (s *Scheduler) makeTime(userTime string) (gocron.AtTimes, error) {
+	layout := "15:04"
+
+	t, err := time.Parse(layout, userTime)
+	if err != nil {
+		return nil, fmt.Errorf("error while parsing user's time %s: %w", userTime, err)
+	}
+
+	return gocron.NewAtTimes(gocron.NewAtTime(uint(t.Hour()), uint(t.Minute()), 0)), nil
 }

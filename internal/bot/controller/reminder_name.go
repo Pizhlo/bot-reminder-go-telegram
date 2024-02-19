@@ -11,7 +11,9 @@ import (
 
 // ReminderName обрабатывает название напоминания
 func (c *Controller) ReminderName(ctx context.Context, telectx telebot.Context) error {
-	c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	if !telectx.Message().Sender.IsBot {
+		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	}
 
 	txt := fmt.Sprintf(messages.TypeOfReminderMessage, telectx.Message().Text)
 

@@ -20,7 +20,7 @@ var (
 	// --------------- типы --------------
 
 	// inline кнопка для возвращения к выбору типа напоминания
-	BtnBackToReminderType = selector.Data("⬅️К напоминаниям", "reminder_type")
+	BtnBackToReminderType = selector.Data("⬅️К выбору", "reminder_type")
 
 	// тип напоминания: несколько раз в день
 	BtnSeveralTimesDayReminder = selector.Data("Несколько раз в день", "several_times_day")
@@ -42,14 +42,6 @@ var (
 
 	// тип напоминания: Один раз
 	BtnOnce = selector.Data("Выбрать дату", "date")
-
-	// --------------- несколько раз в день --------------
-
-	// тип напоминания: Раз в несколько минут
-	BtnMinutesReminder = selector.Data("Раз в несколько минут", "minutes")
-
-	// тип напоминания: Раз в несколько часов
-	BtnHoursReminder = selector.Data("Раз в несколько часов", "hours")
 )
 
 // CreateReminderAndBackToMenu возвращает кнопку создания напоминания, удалить все и назад в меню
@@ -127,12 +119,62 @@ func DeleteReminderBtn(reminder model.Reminder) *tele.ReplyMarkup {
 	return menu
 }
 
+var (
+	// --------------- несколько раз в день --------------
+
+	// тип напоминания: Раз в несколько минут
+	BtnMinutesReminder = selector.Data("Раз в несколько минут", "minutes")
+
+	// тип напоминания: Раз в несколько часов
+	BtnHoursReminder = selector.Data("Раз в несколько часов", "hours")
+)
+
 // SeveralTimesBtns возвращает меню с двумя кнопками: раз в несколько минут, раз в несколько часов
 func SeveralTimesBtns() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
 		menu.Row(BtnMinutesReminder, BtnHoursReminder),
+		menu.Row(BtnBackToMenu, BtnBackToReminderType),
+	)
+
+	return menu
+}
+
+var (
+	// --------------- раз в неделю --------------
+
+	// тип напоминания: Каждый понедельник
+	MondayBtn = selector.Data("Понедельник", "monday")
+
+	// тип напоминания: Каждый вторник
+	TuesdayBtn = selector.Data("Вторник", "tuesday")
+
+	// тип напоминания: Каждую среду
+	WednesdayBtn = selector.Data("Среда", "wednesday")
+
+	// тип напоминания: Каждый четверг
+	ThursdayBtn = selector.Data("Четверг", "thursday")
+
+	// тип напоминания: Каждую пятницу
+	FridayBtn = selector.Data("Пятница", "friday")
+
+	// тип напоминания: Каждую субботу
+	SaturdayBtn = selector.Data("Суббота", "saturday")
+
+	// тип напоминания: Каждое воскресенье
+	SundayBtn = selector.Data("Воскресенье", "sunday")
+)
+
+// WeekMenu возвращает меню днями недели
+func WeekMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(MondayBtn, TuesdayBtn),
+		menu.Row(WednesdayBtn, ThursdayBtn),
+		menu.Row(FridayBtn, SaturdayBtn),
+		menu.Row(SundayBtn),
 		menu.Row(BtnBackToMenu, BtnBackToReminderType),
 	)
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
@@ -163,12 +164,15 @@ func (v *ReminderView) Clear() {
 // купить хлеб
 //
 // Напоминание сработало 23.10.2023 в 18:00
-func ReminderMessage(reminder model.Reminder) string {
+func ReminderMessage(reminder model.Reminder) (string, error) {
 	name := reminder.Name
 
-	date := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
+	date, err := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
+	if err != nil {
+		return "", err
+	}
 
-	return fmt.Sprintf(messages.ReminderMessage, name, date)
+	return fmt.Sprintf(messages.ReminderMessage, name, date), nil
 }
 
 // ProcessTypeAndDate обрабатывает тип напоминания и дату. Пример:
@@ -176,22 +180,91 @@ func ReminderMessage(reminder model.Reminder) string {
 // everyday 11:30 -> ежедневно в 11:30
 //
 // SeveralTimesDayType, minutes, 1 -> раз в 1 минуту
-func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) string {
+func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) (string, error) {
 	switch reminderType {
 	case model.EverydayType:
-		return fmt.Sprintf("ежедневно в %s", time)
+		return fmt.Sprintf("ежедневно в %s", time), nil
 	case model.SeveralTimesDayType:
 		if date == "minutes" {
 			minutesInt, _ := strconv.Atoi(time) // опускаем ошибку, потому что время уже было проавлидировано на предыдущих шагах
-			return fmt.Sprintf("один раз в %s", processMinutes(time, minutesInt))
+			return fmt.Sprintf("один раз в %s", processMinutes(time, minutesInt)), nil
 		} else {
 			hoursInt, _ := strconv.Atoi(time)
-			return fmt.Sprintf("один раз в %s", processHours(time, hoursInt))
+			return fmt.Sprintf("один раз в %s", processHours(time, hoursInt)), nil
 		}
+	case model.EveryWeekType:
+		txt, err := processWeekDay(date, time)
+		if err != nil {
+			return "", fmt.Errorf("error while processing week day: %w", err)
+		}
+
+		return txt, nil
 	default:
-		return ""
+		return "", fmt.Errorf("unknown reminder type: %s", reminderType)
 	}
 
+}
+
+func processWeekDay(date, userTime string) (string, error) {
+	wd, err := parseWeekdayRus(date)
+	if err != nil {
+		return "", fmt.Errorf("error whiel translatin week day %s: %w", date, err)
+	}
+
+	switch wd {
+	case "понедельник":
+		return fmt.Sprintf("каждый %s в %s", wd, userTime), nil
+	case "вторник":
+		return fmt.Sprintf("каждый %s в %s", wd, userTime), nil
+	case "среда":
+		return fmt.Sprintf("каждую среду в %s", userTime), nil
+	case "четверг":
+		return fmt.Sprintf("каждый %s в %s", wd, userTime), nil
+	case "пятница":
+		return fmt.Sprintf("каждую пятницу в %s", userTime), nil
+	case "суббота":
+		return fmt.Sprintf("каждую субботу в %s", userTime), nil
+	case "воскресенье":
+		return fmt.Sprintf("каждое %s в %s", wd, userTime), nil
+	default:
+		return "", fmt.Errorf("unknown week day: %s", wd)
+	}
+}
+
+func parseWeekdayRus(v string) (string, error) {
+	daysOfWeek := map[string]string{
+		"sunday":    "воскресенье",
+		"monday":    "понедельник",
+		"tuesday":   "вторник",
+		"wednesday": "среда",
+		"thursday":  "четверг",
+		"friday":    "пятница",
+		"saturday":  "суббота",
+	}
+
+	if d, ok := daysOfWeek[v]; ok {
+		return d, nil
+	}
+
+	return "", fmt.Errorf("invalid weekday '%s'", v)
+}
+
+func ParseWeekday(v string) (time.Weekday, error) {
+	daysOfWeek := map[string]time.Weekday{
+		"sunday":    time.Sunday,
+		"monday":    time.Monday,
+		"tuesday":   time.Tuesday,
+		"wednesday": time.Wednesday,
+		"thursday":  time.Thursday,
+		"friday":    time.Friday,
+		"saturday":  time.Saturday,
+	}
+
+	if d, ok := daysOfWeek[v]; ok {
+		return d, nil
+	}
+
+	return time.Sunday, fmt.Errorf("invalid weekday '%s'", v)
 }
 
 func processHours(hoursString string, hoursInt int) string {
