@@ -37,9 +37,9 @@ var (
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
-func (v *ReminderView) Message(reminders []model.Reminder) string {
+func (v *ReminderView) Message(reminders []model.Reminder) (string, error) {
 	if len(reminders) == 0 {
-		return messages.UserDoesntHaveNotesMessage
+		return messages.UserDoesntHaveNotesMessage, nil
 	}
 
 	var res = ""
@@ -47,7 +47,12 @@ func (v *ReminderView) Message(reminders []model.Reminder) string {
 	v.pages = make([]string, 0)
 
 	for i, reminder := range reminders {
-		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n%s", i+1, reminder.Created.Format(dateFormat), reminder.ID, reminder.Name, string(reminder.Type)+reminder.Date+reminder.Time)
+		txt, err := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
+		if err != nil {
+			return "", err
+		}
+
+		res += fmt.Sprintf("<b>%d. %s</b>\n\nСрабатывает: %s\nСоздано: %s\nУдалить: /del%d\n\n", i+1, reminder.Name, txt, reminder.Created.Format(dateFormat), reminder.ID)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""
@@ -58,7 +63,7 @@ func (v *ReminderView) Message(reminders []model.Reminder) string {
 		v.pages = append(v.pages, res)
 	}
 
-	return v.pages[0]
+	return v.pages[0], nil
 }
 
 // Next возвращает следующую страницу сообщений
@@ -315,12 +320,11 @@ func processMinutes(minutesString string, minutesInt int) string {
 
 // endsWith проверяет, оканчивается ли строка на один из суффиксов
 func endsWith(s string, suff ...string) bool {
-	count := 0
 	for _, suf := range suff {
 		if strings.HasSuffix(s, suf) {
-			count++
+			return true
 		}
 	}
 
-	return count > 0
+	return false
 }
