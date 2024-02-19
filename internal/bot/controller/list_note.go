@@ -36,7 +36,10 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 	}
 
 	c.logger.Debugf("Controller: successfully got all user's notes. Sending message to user...\n")
-	return telectx.Edit(message, kb)
+	return telectx.Edit(message, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
 }
 
 // NextPageNotes обрабатывает кнопку переключения на следующую страницу
@@ -52,7 +55,10 @@ func (c *Controller) PrevPageNotes(ctx context.Context, telectx tele.Context) er
 	c.logger.Debugf("Controller: handling previous notes page command.\n")
 	next, kb := c.noteSrv.PrevPage(telectx.Chat().ID)
 
-	err := telectx.Edit(next, kb)
+	err := telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
 
 	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
@@ -76,7 +82,10 @@ func (c *Controller) LastPageNotes(ctx context.Context, telectx tele.Context) er
 	c.logger.Debugf("Controller: handling last notes page command.\n")
 	next, kb := c.noteSrv.LastPage(telectx.Chat().ID)
 
-	err := telectx.Edit(next, kb)
+	err := telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
 
 	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
@@ -100,7 +109,10 @@ func (c *Controller) FirstPageNotes(ctx context.Context, telectx tele.Context) e
 	c.logger.Debugf("Controller: handling first notes page command.\n")
 	next, kb := c.noteSrv.FirstPage(telectx.Chat().ID)
 
-	err := telectx.Edit(next, kb)
+	err := telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
 
 	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".

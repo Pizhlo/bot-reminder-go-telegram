@@ -15,7 +15,12 @@ func (c *Controller) ReminderName(ctx context.Context, telectx telebot.Context) 
 		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
 	}
 
-	txt := fmt.Sprintf(messages.TypeOfReminderMessage, telectx.Message().Text)
+	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	if err != nil {
+		c.HandleError(telectx, err)
+	}
+
+	txt := fmt.Sprintf(messages.TypeOfReminderMessage, r.Name)
 
 	return telectx.EditOrSend(txt, &telebot.SendOptions{
 		ParseMode:   htmlParseMode,

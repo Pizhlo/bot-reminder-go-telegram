@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 )
 
@@ -144,7 +145,7 @@ func (n *ReminderService) GetID(userID int64) (int64, error) {
 // ProcessMinutes обрабатывает количество минут: валидирует (число должно быть от 1 до 59) и сохраняет
 func (n *ReminderService) ProcessMinutes(userID int64, minutes string) error {
 	// проверяем, является ли пользовательский ввод числом
-	minuesInt, err := strconv.Atoi(minutes)
+	minuesInt, err := n.checkIfInt(minutes)
 	if err != nil {
 		return err
 	}
@@ -174,7 +175,7 @@ func (n *ReminderService) ProcessMinutes(userID int64, minutes string) error {
 // ProcessMinutes обрабатывает количество часов: валидирует (число должно быть от 1 до 59) и сохраняет
 func (n *ReminderService) ProcessHours(userID int64, hours string) error {
 	// проверяем, является ли пользовательский ввод числом
-	hoursInt, err := strconv.Atoi(hours)
+	hoursInt, err := n.checkIfInt(hours)
 	if err != nil {
 		return err
 	}
@@ -195,6 +196,40 @@ func (n *ReminderService) ProcessHours(userID int64, hours string) error {
 	// сохраняем изменения
 
 	r.Time = hours
+
+	n.reminderMap[userID] = r
+
+	return nil
+}
+
+// checkIfInt проверяет, является ли строка числом
+func (n *ReminderService) checkIfInt(s string) (int, error) {
+	return strconv.Atoi(s)
+}
+
+// ProcessDaysInMoth валидирует количество дней, введенных пользователем.
+// Количество должно быть в диапазоне [1, 31]
+func (n *ReminderService) ProcessDaysInMoth(userID int64, days string) error {
+	daysInt, err := n.checkIfInt(days)
+	if err != nil {
+		return err
+	}
+
+	if daysInt < 1 || daysInt > 31 {
+		return api_errors.ErrInvalidDays
+	}
+
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+	}
+
+	// сохраняем изменения
+
+	r.Date = days
 
 	n.reminderMap[userID] = r
 

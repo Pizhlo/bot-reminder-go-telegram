@@ -158,6 +158,38 @@ func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime strin
 	return result, nil
 }
 
+// CreateSeveralDaysReminder создает напоминание раз в несколько дней
+func (s *Scheduler) CreateSeveralDaysReminder(days string, userTime string, task task, params FuncParams) (NextRun, error) {
+	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+
+	cronTime, err := s.makeTime(userTime)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while creating gocron.AtTimes: %w", err)
+	}
+
+	daysInt, err := strconv.Atoi(days)
+	if err != nil {
+		return NextRun{}, err
+	}
+
+	j, err := s.NewJob(gocron.DailyJob(uint(daysInt), cronTime), job)
+	if err != nil {
+		return NextRun{}, err
+	}
+
+	run, err := j.NextRun()
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while getting next run: %w", err)
+	}
+
+	result := NextRun{
+		JobID:   j.ID(),
+		NextRun: run,
+	}
+
+	return result, nil
+}
+
 // makeTime принимает на вход строку вида "13:10" и возвращает gocron.AtTimes
 func (s *Scheduler) makeTime(userTime string) (gocron.AtTimes, error) {
 	layout := "15:04"

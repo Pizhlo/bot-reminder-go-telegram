@@ -24,6 +24,8 @@ type FSM struct {
 	MinutesDuration  state
 	HoursDuration    state
 	EveryWeek        state
+	SeveralDays      state
+	DaysDuration     state
 	mu               sync.RWMutex
 	logger           *logrus.Logger
 }
@@ -56,6 +58,8 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 	fsm.MinutesDuration = newMinutesDurationState(controller, fsm)
 	fsm.HoursDuration = newHoursDurationState(controller, fsm)
 	fsm.EveryWeek = newWeekDayState(controller, fsm)
+	fsm.SeveralDays = newSeveralDaysState(controller, fsm)
+	fsm.DaysDuration = newDaysDurationState(controller, fsm)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	if !known {

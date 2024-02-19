@@ -204,16 +204,59 @@ func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) (str
 		}
 
 		return txt, nil
+	case model.SeveralDaysType:
+		txt, err := processDays(date, time)
+		if err != nil {
+			return "", fmt.Errorf("error while processing days interval: %w", err)
+		}
+
+		return txt, nil
 	default:
 		return "", fmt.Errorf("unknown reminder type: %s", reminderType)
 	}
 
 }
 
+func processDays(days, userTime string) (string, error) {
+	daysInt, err := strconv.Atoi(days)
+	if err != nil {
+		return "", fmt.Errorf("error while converting string %s to int: %w", days, err)
+	}
+
+	// раз в день
+	if daysInt == 1 {
+		return fmt.Sprintf("один раз в день в %s", userTime), nil
+	}
+
+	// > 20
+	if daysInt > 20 {
+		// раз в 21, 31 день
+		if endsWith(days, "1") {
+			return fmt.Sprintf("один раз в %d день в %s", daysInt, userTime), nil
+		}
+
+		// раз в 22 дня, 32 дня
+		if endsWith(days, "2") {
+			return fmt.Sprintf("один раз в %d дня в %s", daysInt, userTime), nil
+		}
+	}
+
+	// < 10
+	if daysInt < 10 {
+		// раз в 2, 3, 4 дня
+		if endsWith(days, "2", "3", "4") {
+			return fmt.Sprintf("один раз в %d дня в %s", daysInt, userTime), nil
+		}
+	}
+
+	// 5 - 20
+	return fmt.Sprintf("один раз в %d дней в %s", daysInt, userTime), nil
+}
+
 func processWeekDay(date, userTime string) (string, error) {
 	wd, err := parseWeekdayRus(date)
 	if err != nil {
-		return "", fmt.Errorf("error whiel translatin week day %s: %w", date, err)
+		return "", fmt.Errorf("error while translating week day %s: %w", date, err)
 	}
 
 	switch wd {
