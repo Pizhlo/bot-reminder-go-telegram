@@ -387,6 +387,21 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// once in several days (e.g. once in 10 days)
+	s.bot.Handle(&view.BtnSeveralDaysReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].DaysDuration)
+
+		err := s.controller.SeveralDays(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// week days
+
 	// Monday
 	s.bot.Handle(&view.MondayBtn, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)

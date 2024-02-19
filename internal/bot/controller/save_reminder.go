@@ -90,6 +90,8 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 			return gocron.NextRun{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
 		}
 		return c.scheduler.CreateEveryWeekReminder(wd, r.Time, c.SendReminder, params)
+	case model.SeveralDaysType:
+		return c.scheduler.CreateSeveralDaysReminder(r.Date, r.Time, c.SendReminder, params)
 	default:
 		return gocron.NextRun{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}
