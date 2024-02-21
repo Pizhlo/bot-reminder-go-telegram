@@ -2,9 +2,13 @@ package fsm
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -25,6 +29,9 @@ func (n *daysDuration) Handle(ctx context.Context, telectx tele.Context) error {
 
 	err := n.controller.DaysDuration(ctx, telectx)
 	if err != nil {
+		if errors.Is(err, api_errors.ErrInvalidDays) {
+			return telectx.EditOrSend(messages.InvalidDaysMessage, view.BackToReminderMenuBtns())
+		}
 		return err
 	}
 

@@ -21,7 +21,7 @@ func Notes(n int) []model.Note {
 // Note генерирует одну заметку, заполненную рандомными данными
 func Note() model.Note {
 	return model.Note{
-		ID:      randomInt(0, 10),
+		ID:      Int(0, 10),
 		TgID:    1,
 		Text:    String(10),
 		Created: time.Now(),

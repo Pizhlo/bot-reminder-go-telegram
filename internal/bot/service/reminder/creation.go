@@ -207,15 +207,45 @@ func (n *ReminderService) checkIfInt(s string) (int, error) {
 	return strconv.Atoi(s)
 }
 
-// ProcessDaysInMoth валидирует количество дней, введенных пользователем.
-// Количество должно быть в диапазоне [1, 31]
-func (n *ReminderService) ProcessDaysInMoth(userID int64, days string) error {
+// ProcessDaysInMonth валидирует количество дней, введенных пользователем.
+// Количество должно быть в диапазоне [1, 31].
+// Используется для напоминаний раз в месяц
+func (n *ReminderService) ProcessDaysInMonth(userID int64, days string) error {
 	daysInt, err := n.checkIfInt(days)
 	if err != nil {
 		return err
 	}
 
 	if daysInt < 1 || daysInt > 31 {
+		return api_errors.ErrInvalidDays
+	}
+
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+	}
+
+	// сохраняем изменения
+
+	r.Date = days
+
+	n.reminderMap[userID] = r
+
+	return nil
+}
+
+// ProcessDaysInMoth валидирует количество дней, введенных пользователем.
+// Используется для напоминаний раз в несколько дней
+func (n *ReminderService) ProcessDaysDuration(userID int64, days string) error {
+	daysInt, err := n.checkIfInt(days)
+	if err != nil {
+		return api_errors.ErrInvalidDays
+	}
+
+	if daysInt < 1 || daysInt > 180 {
 		return api_errors.ErrInvalidDays
 	}
 

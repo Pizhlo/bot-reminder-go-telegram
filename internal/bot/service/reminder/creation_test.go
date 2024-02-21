@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/stretchr/testify/assert"
@@ -745,4 +746,152 @@ func TestProcessHours_OutOfRange(t *testing.T) {
 		err := n.ProcessHours(userID, h)
 		assert.Error(t, err, fmt.Sprintf("case: %s", h))
 	}
+}
+
+func TestProcessDaysInMonth_OutOfRange(t *testing.T) {
+	type test struct {
+		name   string
+		days   string
+		userID int64
+	}
+
+	tests := []test{
+		{
+			name:   "1",
+			days:   "-1",
+			userID: 1,
+		},
+		{
+			name:   "2",
+			days:   "0",
+			userID: 1,
+		},
+		{
+			name:   "3",
+			days:   "-10",
+			userID: 1,
+		},
+		{
+			name:   "4",
+			days:   "100",
+			userID: 1,
+		},
+		{
+			name:   "5",
+			days:   "32",
+			userID: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		n := New(nil)
+
+		n.SaveName(tt.userID, random.String(5))
+
+		err := n.ProcessDaysInMonth(tt.userID, tt.days)
+		assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
+	}
+}
+
+func TestProcessDaysInMonth_NotInteger(t *testing.T) {
+	n := New(nil)
+
+	n.SaveName(1, random.String(5))
+
+	err := n.ProcessDaysInMonth(1, random.String(5))
+	assert.Error(t, err)
+}
+
+func TestProcessDaysInMonth_Valid(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	n.SaveName(userID, random.String(5))
+
+	daysInt := random.Int(1, 31)
+	days := strconv.Itoa(daysInt)
+
+	err := n.ProcessDaysInMonth(userID, days)
+	assert.NoError(t, err)
+
+	result, ok := n.reminderMap[userID]
+	assert.Equal(t, true, ok)
+
+	assert.Equal(t, userID, result.TgID)
+	assert.Equal(t, days, result.Date)
+}
+
+func TestProcessDaysDuration_OutOfRange(t *testing.T) {
+	type test struct {
+		name   string
+		days   string
+		userID int64
+	}
+
+	tests := []test{
+		{
+			name:   "1",
+			days:   "-1",
+			userID: 1,
+		},
+		{
+			name:   "2",
+			days:   "0",
+			userID: 1,
+		},
+		{
+			name:   "3",
+			days:   "-10",
+			userID: 1,
+		},
+		{
+			name:   "4",
+			days:   "199",
+			userID: 1,
+		},
+		{
+			name:   "5",
+			days:   "181",
+			userID: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		n := New(nil)
+
+		n.SaveName(tt.userID, random.String(5))
+
+		err := n.ProcessDaysDuration(tt.userID, tt.days)
+		assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
+	}
+}
+
+func TestProcessDaysDuration_NotInteger(t *testing.T) {
+	n := New(nil)
+
+	n.SaveName(1, random.String(5))
+
+	err := n.ProcessDaysDuration(1, random.String(5))
+	assert.Error(t, err)
+}
+
+func TestProcessDaysDuration_Valid(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	n.SaveName(userID, random.String(5))
+
+	daysInt := random.Int(1, 180)
+	days := strconv.Itoa(daysInt)
+
+	err := n.ProcessDaysDuration(userID, days)
+	assert.NoError(t, err)
+
+	result, ok := n.reminderMap[userID]
+	assert.Equal(t, true, ok)
+
+	assert.Equal(t, userID, result.TgID)
+	assert.Equal(t, days, result.Date)
 }

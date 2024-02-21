@@ -27,7 +27,7 @@ func Reminder() model.Reminder {
 	randomType := reminderTypes[rand.Intn(len(reminderTypes))]
 
 	r := model.Reminder{
-		ID:      int64(randomInt(0, 10)),
+		ID:      int64(Int(0, 10)),
 		TgID:    1,
 		Name:    String(10),
 		Date:    String(10),
