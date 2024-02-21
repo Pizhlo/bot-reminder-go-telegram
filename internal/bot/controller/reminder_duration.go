@@ -30,7 +30,7 @@ func (c *Controller) HoursDuration(ctx context.Context, telectx telebot.Context)
 
 // DaysDuration принимает от пользователя количество дней, в которые нужно присылать уведомления
 func (c *Controller) DaysDuration(ctx context.Context, telectx telebot.Context) error {
-	err := c.reminderSrv.ProcessDaysInMoth(telectx.Chat().ID, telectx.Message().Text)
+	err := c.reminderSrv.ProcessDaysDuration(telectx.Chat().ID, telectx.Message().Text)
 	if err != nil {
 		return err
 	}

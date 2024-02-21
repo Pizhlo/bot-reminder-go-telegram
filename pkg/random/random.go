@@ -8,7 +8,7 @@ import (
 const charset = "abcdefghijklmnopqrstuvwxyz" +
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890123456789"
 
-func randomInt(min, max int) int {
+func Int(min, max int) int {
 	return min + rand.Intn(max-min+1)
 }
 
@@ -23,7 +23,7 @@ func String(n int) string {
 func Phone() string {
 	phoneStr := "+7"
 
-	phone := randomInt(9000000000, 9999999999)
+	phone := Int(9000000000, 9999999999)
 
 	phoneStr += strconv.Itoa(phone)
 
