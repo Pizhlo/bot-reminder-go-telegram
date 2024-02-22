@@ -10,6 +10,11 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
+const (
+	minutesDate = "minutes"
+	hoursDate   = "hours"
+)
+
 // EverydayReminder обрабатывает кнопку "ежедневное напоминание"
 func (c *Controller) EverydayReminder(ctx context.Context, telectx telebot.Context) error {
 	// сохраняем тип напоминания - "everyday"
@@ -67,7 +72,7 @@ func (c *Controller) SeveralTimesADayReminder(ctx context.Context, telectx teleb
 
 // OnceInMinutes обрабатывает кнопку "раз в несколько минут"
 func (c *Controller) OnceInMinutes(ctx context.Context, telectx telebot.Context) error {
-	err := c.reminderSrv.SaveDate(telectx.Chat().ID, "minutes")
+	err := c.reminderSrv.SaveDate(telectx.Chat().ID, minutesDate)
 	if err != nil {
 		c.HandleError(telectx, err)
 	}
@@ -77,7 +82,7 @@ func (c *Controller) OnceInMinutes(ctx context.Context, telectx telebot.Context)
 
 // OnceInMinutes обрабатывает кнопку "раз в несколько часов"
 func (c *Controller) OnceInHours(ctx context.Context, telectx telebot.Context) error {
-	err := c.reminderSrv.SaveDate(telectx.Chat().ID, "hours")
+	err := c.reminderSrv.SaveDate(telectx.Chat().ID, hoursDate)
 	if err != nil {
 		c.HandleError(telectx, err)
 	}
@@ -147,6 +152,35 @@ func (c *Controller) SeveralDays(ctx context.Context, telectx telebot.Context) e
 	}
 
 	msg = fmt.Sprintf(messages.DaysDurationMessage, r.Name, "раз в несколько дней")
+
+	return telectx.EditOrSend(msg, &telebot.SendOptions{
+		ParseMode:   htmlParseMode,
+		ReplyMarkup: view.BackToReminderMenuBtns(),
+	})
+}
+
+// Month обрабатывает кнопку "раз в месяц"
+func (c *Controller) Month(ctx context.Context, telectx telebot.Context) error {
+	// сохраняем тип напоминания - "once_month"
+	err := c.reminderSrv.SaveType(telectx.Chat().ID, model.OnceMonthType)
+	if err != nil {
+		c.HandleError(telectx, err)
+	}
+
+	var msg string
+
+	// если сообщение прислал пользователь - это новое название напоминания
+	if !telectx.Message().Sender.IsBot {
+		// сохраняем новое название напоминания, если пользователь прислал повторно
+		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	}
+
+	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	if err != nil {
+		msg = messages.MonthDayMessage
+	}
+
+	msg = fmt.Sprintf(messages.MonthDayMessage, r.Name, "раз в месяц")
 
 	return telectx.EditOrSend(msg, &telebot.SendOptions{
 		ParseMode:   htmlParseMode,

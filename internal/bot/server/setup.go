@@ -400,6 +400,19 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// once in month
+	s.bot.Handle(&view.BtnOnceMonthReminder, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Month)
+
+		err := s.controller.Month(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// week days
 
 	// Monday

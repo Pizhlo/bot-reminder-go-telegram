@@ -211,6 +211,8 @@ func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) (str
 		}
 
 		return txt, nil
+	case model.OnceMonthType:
+		return fmt.Sprintf("каждый месяц %s числа в %s", date, time), nil
 	default:
 		return "", fmt.Errorf("unknown reminder type: %s", reminderType)
 	}

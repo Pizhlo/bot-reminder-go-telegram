@@ -67,6 +67,10 @@ func (n *ReminderService) ProcessTime(userID int64, timeMsg string) error {
 		return err
 	}
 
+	return n.saveTime(userID, timeMsg)
+}
+
+func (n *ReminderService) saveTime(userID int64, timeMsg string) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
@@ -213,7 +217,7 @@ func (n *ReminderService) checkIfInt(s string) (int, error) {
 func (n *ReminderService) ProcessDaysInMonth(userID int64, days string) error {
 	daysInt, err := n.checkIfInt(days)
 	if err != nil {
-		return err
+		return api_errors.ErrInvalidDays
 	}
 
 	if daysInt < 1 || daysInt > 31 {
@@ -262,6 +266,39 @@ func (n *ReminderService) ProcessDaysDuration(userID int64, days string) error {
 	r.Date = days
 
 	n.reminderMap[userID] = r
+
+	return nil
+}
+
+// checkFields проверяет, заполнены ли все поля в напоминании
+func (n *ReminderService) checkFields(userID int64) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+	}
+
+	if r.Name == "" {
+		return errors.New("field Name is not filled")
+	}
+
+	if r.Type == "" {
+		return errors.New("field Type is not filled")
+	}
+
+	if r.Date == "" {
+		return errors.New("field Date is not filled")
+	}
+
+	if r.Time == "" {
+		return errors.New("field Time is not filled")
+	}
+
+	if r.Created.IsZero() {
+		return errors.New("field Created is not filled")
+	}
 
 	return nil
 }
