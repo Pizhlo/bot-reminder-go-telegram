@@ -8,6 +8,11 @@ import (
 
 // Save сохраняет напоминание
 func (s *ReminderService) Save(ctx context.Context, userID int64) error {
+	// проверяем, заполнены ли все поля в напоминании
+	if err := s.checkFields(userID); err != nil {
+		return err
+	}
+
 	r, err := s.GetFromMemory(userID)
 	if err != nil {
 		return err

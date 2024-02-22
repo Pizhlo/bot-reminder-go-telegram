@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	"time"
 
 	mock_reminder "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
@@ -77,11 +78,26 @@ func TestSave_DBError(t *testing.T) {
 	// создаем напоминание в памяти
 	n.SaveName(userID, reminder.Name)
 
+	err := n.SaveType(userID, reminder.Type)
+	assert.NoError(t, err)
+
+	err = n.SaveDate(userID, reminder.Date)
+	assert.NoError(t, err)
+
+	err = n.saveTime(userID, reminder.Time)
+	assert.NoError(t, err)
+
+	err = n.SaveType(userID, reminder.Type)
+	assert.NoError(t, err)
+
+	err = n.SaveCreatedField(userID, time.Local)
+	assert.NoError(t, err)
+
 	sqlErr := sql.ErrNoRows
 
 	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(int64(0), sqlErr)
 
-	err := n.Save(context.Background(), userID)
+	err = n.Save(context.Background(), userID)
 	assert.EqualError(t, err, sqlErr.Error())
 }
 

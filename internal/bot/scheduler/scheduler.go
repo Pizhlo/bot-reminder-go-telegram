@@ -49,7 +49,9 @@ func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncPar
 
 	job := gocron.NewTask(task, params.Ctx, params.Reminder)
 
-	j, err := s.NewJob(gocron.DailyJob(uint(1), cronTime), job)
+	dailyJob := gocron.DailyJob(uint(1), cronTime)
+
+	j, err := s.NewJob(dailyJob, job)
 	if err != nil {
 		return NextRun{}, fmt.Errorf("error while creating new job: %w", err)
 	}
@@ -173,6 +175,38 @@ func (s *Scheduler) CreateSeveralDaysReminder(days string, userTime string, task
 	}
 
 	j, err := s.NewJob(gocron.DailyJob(uint(daysInt), cronTime), job)
+	if err != nil {
+		return NextRun{}, err
+	}
+
+	run, err := j.NextRun()
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while getting next run: %w", err)
+	}
+
+	result := NextRun{
+		JobID:   j.ID(),
+		NextRun: run,
+	}
+
+	return result, nil
+}
+
+// CreateMonthlyReminder создает напоминание раз в месяц
+func (s *Scheduler) CreateMonthlyReminder(days string, userTime string, task task, params FuncParams) (NextRun, error) {
+	day, err := strconv.Atoi(days)
+	if err != nil {
+		return NextRun{}, err
+	}
+
+	cronTime, err := s.makeTime(userTime)
+	if err != nil {
+		return NextRun{}, err
+	}
+
+	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+
+	j, err := s.NewJob(gocron.MonthlyJob(uint(0), gocron.NewDaysOfTheMonth(day), cronTime), job)
 	if err != nil {
 		return NextRun{}, err
 	}

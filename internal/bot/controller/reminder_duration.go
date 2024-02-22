@@ -42,3 +42,18 @@ func (c *Controller) DaysDuration(ctx context.Context, telectx telebot.Context) 
 
 	return telectx.EditOrSend(messages.ReminderTimeMessage, view.BackToReminderMenuBtns())
 }
+
+// DaysInMonthDuration принимает от пользователя число месяца, когда нужно присылать уведомления
+func (c *Controller) DaysInMonthDuration(ctx context.Context, telectx telebot.Context) error {
+	err := c.reminderSrv.ProcessDaysInMonth(telectx.Chat().ID, telectx.Message().Text)
+	if err != nil {
+		return err
+	}
+
+	err = c.reminderSrv.SaveDate(telectx.Chat().ID, telectx.Message().Text)
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(messages.ReminderTimeMessage, view.BackToReminderMenuBtns())
+}
