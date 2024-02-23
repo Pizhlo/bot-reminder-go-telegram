@@ -18,6 +18,7 @@ type Config struct {
 	TelegramMaxMsgSize int           `mapstructure:"MAX_MSG_SIZE,required"`
 	DBAddress          string
 	Token              string `mapstructure:"TOKEN,required"`
+	ChannelID          int64  `mapstructure:"CHANNEL_ID,required"`
 }
 
 func LoadConfig(file, path string) (*Config, error) {

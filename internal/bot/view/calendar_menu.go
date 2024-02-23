@@ -118,13 +118,9 @@ func (c *calendar) keyboard() *tele.ReplyMarkup {
 	btns = append(btns, wdays...)
 	btns = append(btns, daysBtns...)
 
-	//rows := menu.Split(7, btns)
-
 	rows := topMenuRows
 
 	rows = append(rows, menu.Split(7, btns)...)
-
-	//rows = append(rows, topMenuRows...)
 
 	rows = append(rows, menu.Row(BtnBackToMenu, BtnBackToReminderType))
 
@@ -142,10 +138,12 @@ func (c *calendar) daysButtons() []tele.Btn {
 	days := c.generateDays()
 
 	// день недели первого дня в месяце
-	firstWeekday := days[0].weekDay - 1
+	firstWeekday := days[0].weekDay
+
+	daysBefore := countDaysBefore(firstWeekday)
 
 	// заполняем пробелы до первого дня. Например, если первый день - среда, будет 2 пробела
-	for i := 0; i < firstWeekday; i++ {
+	for i := 0; i < daysBefore; i++ {
 		res = append(res, tele.Btn{
 			Text:   " ",
 			Unique: " ",
@@ -165,8 +163,10 @@ func (c *calendar) daysButtons() []tele.Btn {
 	// день недели последнего дня в месяце
 	lastWeekDay := days[len(days)-1].weekDay
 
+	daysAfter := countDaysAfter(lastWeekDay)
+
 	// заполняем пробелы после последнего дня. Например, если последний день - пятница, будет 2 пробела
-	for i := lastWeekDay; i < 7; i++ {
+	for i := 0; i < daysAfter; i++ {
 		res = append(res, tele.Btn{
 			Text:   " ",
 			Unique: " ",
@@ -174,6 +174,24 @@ func (c *calendar) daysButtons() []tele.Btn {
 	}
 
 	return res
+}
+
+// countDaysBefore возвращает количество дней, предшествующих первому дню месяца
+func countDaysBefore(weekDay int) int {
+	if weekDay == 0 {
+		return 6
+	}
+
+	return weekDay - 1
+}
+
+// countDaysBefore возвращает количество дней, идущих после последнего дня месяца
+func countDaysAfter(weekDay int) int {
+	if weekDay == 0 {
+		return 0
+	}
+
+	return 7 - weekDay
 }
 
 // setCurYear устанавливает год в текущий

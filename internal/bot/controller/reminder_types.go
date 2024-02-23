@@ -188,7 +188,7 @@ func (c *Controller) Month(ctx context.Context, telectx telebot.Context) error {
 	})
 }
 
-// Month обрабатывает кнопку "раз в год"
+// Year обрабатывает кнопку "раз в год"
 func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
 	// сохраняем тип напоминания - "once_year"
 	err := c.reminderSrv.SaveType(telectx.Chat().ID, model.OnceYearType)

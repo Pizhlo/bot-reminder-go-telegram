@@ -107,7 +107,7 @@ func Start(confName, path string) {
 
 		go func() {
 			//defer cancel()
-			_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, messages.StartBotMessage)
+			_, msgErr := bot.Send(&tele.Chat{ID: conf.ChannelID}, messages.StartBotMessage)
 			if msgErr != nil {
 				logger.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
 			}
@@ -138,7 +138,7 @@ func Start(confName, path string) {
 
 			select {
 			case <-closer:
-				_, msgErr := bot.Send(&tele.Chat{ID: -1001890622926}, messages.ShutDownMessage)
+				_, msgErr := bot.Send(&tele.Chat{ID: conf.ChannelID}, messages.ShutDownMessage)
 				if msgErr != nil {
 					logger.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
 				}
