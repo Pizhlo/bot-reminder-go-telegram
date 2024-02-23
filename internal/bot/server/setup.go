@@ -413,6 +413,65 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// every year
+	s.bot.Handle(&view.BtnOnceYear, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Year)
+
+		err := s.controller.Year(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// calendar
+
+	// prev month
+	s.bot.Handle(&view.BtnPrevMonth, func(c tele.Context) error {
+		err := s.controller.PrevMonth(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// next month
+	s.bot.Handle(&view.BtnNextMonth, func(c tele.Context) error {
+		err := s.controller.NextMonth(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// prev year
+	s.bot.Handle(&view.BtnPrevYear, func(c tele.Context) error {
+		err := s.controller.PrevYear(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// next year
+	s.bot.Handle(&view.BtnNextYear, func(c tele.Context) error {
+		err := s.controller.NextYear(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// week days
 
 	// Monday

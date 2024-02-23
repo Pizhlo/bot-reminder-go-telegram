@@ -17,10 +17,11 @@ type ReminderView struct {
 	pages       []string
 	currentPage int
 	logger      *logrus.Logger
+	calendar    *calendar
 }
 
 func NewReminder() *ReminderView {
-	return &ReminderView{pages: make([]string, 0), currentPage: 0, logger: logger.New()}
+	return &ReminderView{pages: make([]string, 0), currentPage: 0, logger: logger.New(), calendar: new()}
 }
 
 var (
@@ -372,4 +373,29 @@ func endsWith(s string, suff ...string) bool {
 	}
 
 	return false
+}
+
+// Calendar возвращает календарь с текущим месяцем и годом
+func (v *ReminderView) Calendar() *tele.ReplyMarkup {
+	return v.calendar.currentCalendar()
+}
+
+// PrevMonth возвращает календарь с предыдущим месяцем
+func (v *ReminderView) PrevMonth() *tele.ReplyMarkup {
+	return v.calendar.prevMonth()
+}
+
+// NextMonth возвращает календарь со следующим месяцем
+func (v *ReminderView) NextMonth() *tele.ReplyMarkup {
+	return v.calendar.nextMonth()
+}
+
+// PrevYear возвращает календарь с предыдущим годом
+func (v *ReminderView) PrevYear() *tele.ReplyMarkup {
+	return v.calendar.prevYear()
+}
+
+// NextYear возвращает календарь с следующим годом
+func (v *ReminderView) NextYear() *tele.ReplyMarkup {
+	return v.calendar.nextYear()
 }

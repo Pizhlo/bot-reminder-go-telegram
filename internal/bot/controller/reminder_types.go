@@ -187,3 +187,32 @@ func (c *Controller) Month(ctx context.Context, telectx telebot.Context) error {
 		ReplyMarkup: view.BackToReminderMenuBtns(),
 	})
 }
+
+// Month обрабатывает кнопку "раз в год"
+func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
+	// сохраняем тип напоминания - "once_year"
+	err := c.reminderSrv.SaveType(telectx.Chat().ID, model.OnceYearType)
+	if err != nil {
+		c.HandleError(telectx, err)
+	}
+
+	var msg string
+
+	// если сообщение прислал пользователь - это новое название напоминания
+	if !telectx.Message().Sender.IsBot {
+		// сохраняем новое название напоминания, если пользователь прислал повторно
+		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	}
+
+	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	if err != nil {
+		msg = messages.CalendarMessage
+	}
+
+	msg = fmt.Sprintf(messages.CalendarMessage, r.Name, "раз в год")
+
+	return telectx.EditOrSend(msg, &telebot.SendOptions{
+		ParseMode:   htmlParseMode,
+		ReplyMarkup: c.reminderSrv.Calendar(telectx.Chat().ID),
+	})
+}
