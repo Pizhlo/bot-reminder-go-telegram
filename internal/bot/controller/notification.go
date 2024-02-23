@@ -12,7 +12,7 @@ func (c *Controller) SendReminder(ctx telebot.Context, reminder model.Reminder) 
 
 	msg, err := view.ReminderMessage(reminder)
 	if err != nil {
-		c.HandleError(ctx, err)
+		return err
 	}
 
 	err = ctx.EditOrSend(msg, &telebot.SendOptions{
@@ -21,7 +21,7 @@ func (c *Controller) SendReminder(ctx telebot.Context, reminder model.Reminder) 
 	})
 
 	if err != nil {
-		c.HandleError(ctx, err)
+		return err
 	}
 
 	return nil

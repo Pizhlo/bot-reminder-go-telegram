@@ -8,6 +8,7 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/stretchr/testify/assert"
 )
@@ -894,4 +895,148 @@ func TestProcessDaysDuration_Valid(t *testing.T) {
 
 	assert.Equal(t, userID, result.TgID)
 	assert.Equal(t, days, result.Date)
+}
+
+func TestSaveCalendarDate_NotFound(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	err := n.SaveCalendarDate(userID, "")
+	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+}
+
+func TestSaveCalendarDate_Valid_OnceYearType(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	r := model.Reminder{
+		Name: random.String(5),
+		TgID: userID,
+		Type: model.OnceYearType,
+	}
+
+	n.SaveName(r.TgID, r.Name)
+	n.SaveType(r.TgID, r.Type)
+
+	n.viewsMap[userID] = view.NewReminder()
+
+	n.viewsMap[userID].Calendar()
+
+	err := n.SaveCalendarDate(userID, "12")
+	assert.NoError(t, err)
+
+	result, ok := n.reminderMap[userID]
+	assert.Equal(t, true, ok)
+
+	var curDate string
+
+	month := time.Now().Month()
+
+	if month < 10 {
+		curDate = "12" + ".0" + strconv.Itoa(int(month))
+	} else {
+		curDate = "12" + strconv.Itoa(int(month))
+	}
+
+	assert.Equal(t, r.TgID, result.TgID)
+	assert.Equal(t, curDate, result.Date)
+}
+
+func TestCheckFields_NotFound(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	err := n.checkFields(userID)
+	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+}
+
+func TestCheckFields_EmptyType(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	n.SaveName(userID, random.String(4))
+
+	err := n.checkFields(userID)
+	assert.EqualError(t, err, "field Type is not filled")
+}
+
+func TestCheckFields_EmptyDate(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	n.SaveName(userID, random.String(4))
+	n.SaveType(userID, model.OnceMonthType)
+
+	err := n.checkFields(userID)
+	assert.EqualError(t, err, "field Date is not filled")
+}
+
+func TestCheckFields_EmptyTime(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	n.SaveName(userID, random.String(4))
+	n.SaveType(userID, model.OnceMonthType)
+	n.SaveDate(userID, random.String(5))
+
+	err := n.checkFields(userID)
+	assert.EqualError(t, err, "field Time is not filled")
+}
+
+func TestCheckFields_EmptyCreated(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	n.SaveName(userID, random.String(4))
+	n.SaveType(userID, model.OnceMonthType)
+	n.SaveDate(userID, random.String(5))
+	n.saveTime(userID, random.String(4))
+
+	err := n.checkFields(userID)
+	assert.EqualError(t, err, "field Created is not filled")
+}
+
+func TestFixMonth_Before10(t *testing.T) {
+	months := []time.Month{
+		time.January,
+		time.February,
+		time.March,
+		time.April,
+		time.May,
+		time.June,
+		time.July,
+		time.August,
+		time.September,
+	}
+
+	for _, month := range months {
+		expected := "0" + strconv.Itoa(int(month))
+
+		actual := fixMonth(month)
+
+		assert.Equal(t, expected, actual)
+	}
+}
+
+func TestFixMonth_After10(t *testing.T) {
+	months := []time.Month{
+		time.October,
+		time.November,
+		time.December,
+	}
+
+	for _, month := range months {
+		expected := strconv.Itoa(int(month))
+
+		actual := fixMonth(month)
+
+		assert.Equal(t, expected, actual)
+	}
 }

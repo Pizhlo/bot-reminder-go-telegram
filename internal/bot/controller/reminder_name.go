@@ -17,7 +17,7 @@ func (c *Controller) ReminderName(ctx context.Context, telectx telebot.Context) 
 
 	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
-		c.HandleError(telectx, err)
+		return err
 	}
 
 	txt := fmt.Sprintf(messages.TypeOfReminderMessage, r.Name)

@@ -39,9 +39,6 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 	u, err := c.userSrv.ProcessTimezone(ctx, telectx.Chat().ID, loc)
 	if err != nil {
 		c.logger.Errorf("Controller: error while processing user's location: %v\n", err)
-
-		c.HandleError(telectx, err)
-
 		return err
 	}
 

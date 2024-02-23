@@ -27,6 +27,7 @@ type FSM struct {
 	SeveralDays      state
 	DaysDuration     state
 	Month            state
+	Year             state
 	mu               sync.RWMutex
 	logger           *logrus.Logger
 }
@@ -62,6 +63,7 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 	fsm.SeveralDays = newSeveralDaysState(controller, fsm)
 	fsm.DaysDuration = newDaysDurationState(controller, fsm)
 	fsm.Month = newMonthState(controller, fsm)
+	fsm.Year = newYearState(controller, fsm)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	if !known {
@@ -85,4 +87,8 @@ func (f *FSM) SetState(state state) {
 func (f *FSM) Handle(ctx context.Context, telectx tele.Context) error {
 	f.logger.Debugf("Handling request. Current state: %v. Command: %s\n", f.current.Name(), telectx.Message().Text)
 	return f.current.Handle(ctx, telectx)
+}
+
+func (f *FSM) Name() string {
+	return f.current.Name()
 }

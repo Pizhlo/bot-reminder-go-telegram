@@ -17,10 +17,11 @@ type ReminderView struct {
 	pages       []string
 	currentPage int
 	logger      *logrus.Logger
+	calendar    *calendar
 }
 
 func NewReminder() *ReminderView {
-	return &ReminderView{pages: make([]string, 0), currentPage: 0, logger: logger.New()}
+	return &ReminderView{pages: make([]string, 0), currentPage: 0, logger: logger.New(), calendar: new()}
 }
 
 var (
@@ -62,6 +63,8 @@ func (v *ReminderView) Message(reminders []model.Reminder) (string, error) {
 	if len(v.pages) < 5 && res != "" {
 		v.pages = append(v.pages, res)
 	}
+
+	v.currentPage = 0
 
 	return v.pages[0], nil
 }
@@ -213,10 +216,41 @@ func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) (str
 		return txt, nil
 	case model.OnceMonthType:
 		return fmt.Sprintf("каждый месяц %s числа в %s", date, time), nil
+	case model.OnceYearType:
+		return processDateWithoutYear(date, time), nil
 	default:
 		return "", fmt.Errorf("unknown reminder type: %s", reminderType)
 	}
+}
 
+func processDateWithoutYear(date, time string) string {
+	dates := strings.Split(date, ".")
+
+	day := dates[0]
+	month := dates[1]
+
+	monthStr := processMonth(month)
+
+	return fmt.Sprintf("раз в год %s %s в %s", day, monthStr, time)
+}
+
+func processMonth(month string) string {
+	monthsMap := map[string]string{
+		"01": "января",
+		"02": "февраля",
+		"03": "марта",
+		"04": "апреля",
+		"05": "мая",
+		"06": "июня",
+		"07": "июля",
+		"08": "августа",
+		"09": "сентября",
+		"10": "октября",
+		"11": "ноября",
+		"12": "декабря",
+	}
+
+	return monthsMap[month]
 }
 
 func processDays(days, userTime string) (string, error) {
@@ -372,4 +406,41 @@ func endsWith(s string, suff ...string) bool {
 	}
 
 	return false
+}
+
+// Calendar возвращает календарь с текущим месяцем и годом
+func (v *ReminderView) Calendar() *tele.ReplyMarkup {
+	return v.calendar.currentCalendar()
+}
+
+// PrevMonth возвращает календарь с предыдущим месяцем
+func (v *ReminderView) PrevMonth() *tele.ReplyMarkup {
+	return v.calendar.prevMonth()
+}
+
+// NextMonth возвращает календарь со следующим месяцем
+func (v *ReminderView) NextMonth() *tele.ReplyMarkup {
+	return v.calendar.nextMonth()
+}
+
+// PrevYear возвращает календарь с предыдущим годом
+func (v *ReminderView) PrevYear() *tele.ReplyMarkup {
+	return v.calendar.prevYear()
+}
+
+// NextYear возвращает календарь с следующим годом
+func (v *ReminderView) NextYear() *tele.ReplyMarkup {
+	return v.calendar.nextYear()
+}
+
+func (v *ReminderView) GetDaysBtns() []tele.Btn {
+	return v.calendar.getDaysBtns()
+}
+
+func (v *ReminderView) Month() time.Month {
+	return v.calendar.month()
+}
+
+func (v *ReminderView) Year() int {
+	return v.calendar.year()
 }
