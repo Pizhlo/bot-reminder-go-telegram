@@ -88,3 +88,7 @@ func (f *FSM) Handle(ctx context.Context, telectx tele.Context) error {
 	f.logger.Debugf("Handling request. Current state: %v. Command: %s\n", f.current.Name(), telectx.Message().Text)
 	return f.current.Handle(ctx, telectx)
 }
+
+func (f *FSM) Name() string {
+	return f.current.Name()
+}

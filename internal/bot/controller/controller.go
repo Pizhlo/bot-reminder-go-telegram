@@ -57,12 +57,12 @@ func (c *Controller) GetAllUsers(ctx context.Context) []*user_model.User {
 
 // HandleError сообщает об ошибке в канал.
 // Также сообщает пользователю об ошибке - редактирует сообщение
-func (c *Controller) HandleError(ctx tele.Context, err error) {
+func (c *Controller) HandleError(ctx tele.Context, err error, state string) {
 	var msg string
 	if ctx.Message().Sender != c.bot.Me {
-		msg = fmt.Sprintf(messages.ErrorMessageChannel, ctx.Message().Text, err)
+		msg = fmt.Sprintf(messages.ErrorMessageChannel, ctx.Message().Text, state, err)
 	} else {
-		msg = fmt.Sprintf(messages.ErrorMessageChannel, ctx.Callback().Unique, err)
+		msg = fmt.Sprintf(messages.ErrorMessageChannel, ctx.Callback().Unique, state, err)
 	}
 
 	editErr := ctx.EditOrSend(messages.ErrorMessageUser, view.BackToMenuBtn())

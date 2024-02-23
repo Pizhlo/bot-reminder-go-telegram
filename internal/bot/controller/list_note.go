@@ -30,8 +30,6 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 
 		c.logger.Errorf("Error while handling /notes command. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
 
-		c.HandleError(telectx, err)
-
 		return err
 	}
 

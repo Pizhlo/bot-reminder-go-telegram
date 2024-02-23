@@ -1,6 +1,8 @@
 package reminder
 
-import tele "gopkg.in/telebot.v3"
+import (
+	tele "gopkg.in/telebot.v3"
+)
 
 // Calendar возвращает календарь с текущим месяцем и годом
 func (v *ReminderService) Calendar(userID int64) *tele.ReplyMarkup {
@@ -25,4 +27,9 @@ func (v *ReminderService) PrevYear(userID int64) *tele.ReplyMarkup {
 // NextYear перелистывает календарь на месяц назад
 func (v *ReminderService) NextYear(userID int64) *tele.ReplyMarkup {
 	return v.viewsMap[userID].NextYear()
+}
+
+// DaysBtns возвращает слайс с кнопками, которые содержат в себе число месяца
+func (v *ReminderService) DaysBtns(userID int64) []tele.Btn {
+	return v.viewsMap[userID].GetDaysBtns()
 }

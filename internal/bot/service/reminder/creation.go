@@ -103,6 +103,44 @@ func (n *ReminderService) SaveDate(userID int64, date string) error {
 	return nil
 }
 
+// SaveCalendarDate сохраняет дату, которая хранится в календаре
+func (n *ReminderService) SaveCalendarDate(userID int64, userDate string) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+	}
+
+	month := n.viewsMap[userID].Month()
+
+	var date string
+
+	monthStr := fixMonth(month)
+
+	if r.Type == model.OnceYearType {
+		date = fmt.Sprintf("%s.%s", userDate, monthStr)
+	} else if r.Type == model.DateType {
+		year := n.viewsMap[userID].Year()
+		date = fmt.Sprintf("%s.%s.%d", userDate, monthStr, year)
+	}
+
+	r.Date = date
+
+	n.reminderMap[userID] = r
+
+	return nil
+}
+
+func fixMonth(month time.Month) string {
+	if month < 10 {
+		return "0" + strconv.Itoa(int(month))
+	}
+
+	return strconv.Itoa(int(month))
+}
+
 // GetFromMemory достает из кэша напоминание в текущем состоянии (могут быть не заполнены все поля)
 func (n *ReminderService) GetFromMemory(userID int64) (*model.Reminder, error) {
 	n.mu.Lock()

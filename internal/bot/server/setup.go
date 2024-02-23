@@ -21,7 +21,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -33,7 +33,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Profile btn")
 		err := s.controller.Profile(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -45,7 +45,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Settings btn")
 		err := s.controller.Settings(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -59,7 +59,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.ListNotes(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -71,7 +71,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Reminders btn")
 		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -88,7 +88,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -108,7 +108,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -120,7 +120,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		//return s.controller.CreateNote(ctx, telectx)
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err)
+			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
 			return err
 		}
 
@@ -133,7 +133,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnNextPgNotes, func(c tele.Context) error {
 		err := s.controller.NextPageNotes(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -144,7 +144,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnPrevPgNotes, func(c tele.Context) error {
 		err := s.controller.PrevPageNotes(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -155,7 +155,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnLastPgNotes, func(c tele.Context) error {
 		err := s.controller.LastPageNotes(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -166,7 +166,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnFirstPgNotes, func(c tele.Context) error {
 		err := s.controller.FirstPageNotes(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -179,7 +179,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := c.EditOrSend(messages.SearchNotesByTextMessage, view.BackToMenuBtn())
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -190,7 +190,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnDeleteAllNotes, func(c tele.Context) error {
 		err := s.controller.ConfirmDeleteAllNotes(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -201,7 +201,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&controller.BtnDeleteAllNotes, func(c tele.Context) error {
 		err := s.controller.DeleteAllNotes(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -212,7 +212,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&controller.BtnNotDeleteAllNotes, func(c tele.Context) error {
 		err := c.Edit(messages.NotDeleteMessage, view.BackToMenuBtn())
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -227,7 +227,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnPrevPgReminders, func(c tele.Context) error {
 		err := s.controller.PrevPageReminders(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -238,7 +238,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnNextPgReminders, func(c tele.Context) error {
 		err := s.controller.NextPageReminders(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -249,7 +249,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnFirstPgReminders, func(c tele.Context) error {
 		err := s.controller.FirstPageReminders(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -260,7 +260,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnLastPgReminders, func(c tele.Context) error {
 		err := s.controller.LastPageReminders(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -272,7 +272,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
 		err := s.controller.ReminderName(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -289,7 +289,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {
 		err := s.controller.ConfirmDeleteAllReminders(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -300,7 +300,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&controller.BtnDeleteAllReminders, func(c tele.Context) error {
 		err := s.controller.DeleteAllReminders(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -313,7 +313,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := c.EditOrSend(messages.ReminderNameMessage, view.BackToMenuBtn())
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -328,7 +328,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.EverydayReminder(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -341,7 +341,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.SeveralTimesADayReminder(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -354,7 +354,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.OnceInMinutes(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -367,7 +367,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.OnceInHours(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -380,7 +380,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.EveryWeek(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -393,7 +393,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.SeveralDays(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -406,7 +406,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.Month(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -419,8 +419,23 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.Year(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				err := s.controller.ProcessDate(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				return nil
+			})
 		}
 
 		return nil
@@ -432,8 +447,23 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnPrevMonth, func(c tele.Context) error {
 		err := s.controller.PrevMonth(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				err := s.controller.ProcessDate(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				return nil
+			})
 		}
 
 		return nil
@@ -443,8 +473,23 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnNextMonth, func(c tele.Context) error {
 		err := s.controller.NextMonth(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				err := s.controller.ProcessDate(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				return nil
+			})
 		}
 
 		return nil
@@ -454,8 +499,23 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnPrevYear, func(c tele.Context) error {
 		err := s.controller.PrevYear(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				err := s.controller.ProcessDate(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				return nil
+			})
 		}
 
 		return nil
@@ -465,8 +525,23 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnNextYear, func(c tele.Context) error {
 		err := s.controller.NextYear(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				err := s.controller.ProcessDate(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				return nil
+			})
 		}
 
 		return nil
@@ -480,7 +555,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.WeekDay(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -493,7 +568,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.WeekDay(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -506,7 +581,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.WeekDay(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -519,7 +594,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.WeekDay(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -532,7 +607,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.WeekDay(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -545,7 +620,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.WeekDay(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 
@@ -558,7 +633,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.WeekDay(ctx, c)
 		if err != nil {
-			s.controller.HandleError(c, err)
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
 		}
 

@@ -23,7 +23,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 	noteIDString, found := strings.CutPrefix(text, "/del")
 	if !found {
 		err := fmt.Errorf("error in controller.DeleteNoteByID(): not found suffix `/del` in message text: %s", text)
-		c.HandleError(telectx, err)
+
 		return err
 	}
 
@@ -31,7 +31,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 	noteID, err := strconv.Atoi(noteIDString)
 	if err != nil {
 		err := fmt.Errorf("error while convertion string %s to int while handling command %s: %w", noteIDString, text, err)
-		c.HandleError(telectx, err)
+
 		return err
 	}
 
@@ -44,8 +44,6 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 		}
 
 		err := fmt.Errorf("error while deleting note by ID %d: %w", noteID, err)
-		c.HandleError(telectx, err)
-
 		return err
 	}
 

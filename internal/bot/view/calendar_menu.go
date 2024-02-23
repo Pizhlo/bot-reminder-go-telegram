@@ -38,6 +38,7 @@ var (
 type calendar struct {
 	curMonth time.Month
 	curYear  int
+	daysBtns []tele.Btn
 }
 
 type day struct {
@@ -47,6 +48,18 @@ type day struct {
 
 func new() *calendar {
 	return &calendar{}
+}
+
+func (c *calendar) getDaysBtns() []tele.Btn {
+	return c.daysBtns
+}
+
+func (c *calendar) month() time.Month {
+	return c.curMonth
+}
+
+func (c *calendar) year() int {
+	return c.curYear
 }
 
 // currentCalendar предоставляет клавиатуру с календарем на текущий месяц и год
@@ -158,6 +171,8 @@ func (c *calendar) daysButtons() []tele.Btn {
 		}
 
 		res = append(res, btn)
+
+		c.daysBtns = append(c.daysBtns, btn)
 	}
 
 	// день недели последнего дня в месяце
@@ -178,6 +193,7 @@ func (c *calendar) daysButtons() []tele.Btn {
 
 // countDaysBefore возвращает количество дней, предшествующих первому дню месяца
 func countDaysBefore(weekDay int) int {
+	// день недели воскресенье - нужно добавить 6 дней перед ним
 	if weekDay == 0 {
 		return 6
 	}
@@ -187,6 +203,7 @@ func countDaysBefore(weekDay int) int {
 
 // countDaysBefore возвращает количество дней, идущих после последнего дня месяца
 func countDaysAfter(weekDay int) int {
+	// день недели воскресенье - добавлять дни не нужно
 	if weekDay == 0 {
 		return 0
 	}
