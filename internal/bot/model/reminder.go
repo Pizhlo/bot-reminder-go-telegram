@@ -21,10 +21,6 @@ const (
 	OnceYearType ReminderType = "once_year"
 	// один раз - в указанную дату
 	DateType ReminderType = "date"
-	// прислать напоминание сегодня
-	Today ReminderType = "today"
-	// прислать завтра
-	Tomorrow ReminderType = "tomorrow"
 )
 
 type Reminder struct {
