@@ -80,7 +80,8 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	}
 
 	params := gocron.FuncParams{
-		Ctx:      telectx,
+		Ctx:      ctx,
+		Telectx:  telectx,
 		Reminder: *r,
 	}
 

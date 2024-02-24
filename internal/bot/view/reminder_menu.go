@@ -1,6 +1,8 @@
 package view
 
 import (
+	"fmt"
+
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	tele "gopkg.in/telebot.v3"
 )
@@ -9,7 +11,7 @@ var (
 	// --------------- напоминания --------------
 
 	// inline кнопка для удаления сработавшего напоминания
-	BtnDeleteReminder = selector.Data("❌Удалить", "")
+	//BtnDeleteReminder = selector.Data("❌Удалить", "")
 
 	// inline кнопка создания напоминания
 	BtnCreateReminder = selector.Data("📝Создать напоминание", "create_reminder")
@@ -114,13 +116,25 @@ func RemindersAndMenuBtns() *tele.ReplyMarkup {
 	return menu
 }
 
-// DeleteReminderBtn возвращает меню с кнопкой Удалить.
+// DeleteReminderBtn возвращает кнопку Удалить.
 // Используется для сообщений, когда срабатывает напоминание.
-func DeleteReminderBtn(reminder model.Reminder) *tele.ReplyMarkup {
+func DeleteReminderBtn(reminder model.Reminder) tele.Btn {
+	unique := fmt.Sprintf("%d-%d", reminder.ID, reminder.TgID)
+
+	return tele.Btn{Text: "❌Удалить", Unique: unique, Data: unique}
+}
+
+// DeleteReminderMenu возвращает меню с кнопкой Удалить.
+// Используется для сообщений, когда срабатывает напоминание.
+func DeleteReminderMenu(reminder model.Reminder) *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
+	unique := fmt.Sprintf("%d.%d", reminder.ID, reminder.TgID)
+
+	btn := menu.Data("❌Удалить", unique)
+
 	menu.Inline(
-		menu.Row(BtnDeleteReminder),
+		menu.Row(btn),
 	)
 
 	return menu
