@@ -218,6 +218,8 @@ func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) (str
 		return fmt.Sprintf("каждый месяц %s числа в %s", date, time), nil
 	case model.OnceYearType:
 		return processDateWithoutYear(date, time), nil
+	case model.DateType:
+		return processDateWithYear(date, time), nil
 	default:
 		return "", fmt.Errorf("unknown reminder type: %s", reminderType)
 	}
@@ -232,6 +234,20 @@ func processDateWithoutYear(date, time string) string {
 	monthStr := processMonth(month)
 
 	return fmt.Sprintf("раз в год %s %s в %s", day, monthStr, time)
+}
+
+func processDateWithYear(date, time string) string {
+	dates := strings.Split(date, ".")
+
+	day := dates[0]
+	month := dates[1]
+	year := dates[2]
+
+	monthStr := processMonth(month)
+
+	fullDate := fmt.Sprintf("%s %s %s года", day, monthStr, year)
+
+	return fmt.Sprintf("%s в %s", fullDate, time)
 }
 
 func processMonth(month string) string {
@@ -433,14 +449,27 @@ func (v *ReminderView) NextYear() *tele.ReplyMarkup {
 	return v.calendar.nextYear()
 }
 
+// GetDaysBtns возвращает слайс кнопок с числами месяца
 func (v *ReminderView) GetDaysBtns() []tele.Btn {
 	return v.calendar.getDaysBtns()
 }
 
+// Month возвращает возвращает месяц, установленный в календаре на данный момент
 func (v *ReminderView) Month() time.Month {
 	return v.calendar.month()
 }
 
+// Year возвращает возвращает год, установленный в календаре на данный момент
 func (v *ReminderView) Year() int {
 	return v.calendar.year()
+}
+
+// SetCurMonth устаналивает месяц в текущий
+func (v *ReminderView) SetCurMonth() {
+	v.calendar.setCurMonth()
+}
+
+// SetCurYear устаналивает год в текущий
+func (v *ReminderView) SetCurYear() {
+	v.calendar.setCurYear()
 }

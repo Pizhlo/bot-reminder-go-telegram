@@ -211,22 +211,41 @@ func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
 
 	msg = fmt.Sprintf(messages.CalendarMessage, r.Name, "раз в год")
 
-	kb := c.reminderSrv.Calendar(telectx.Chat().ID)
-
-	btns := c.reminderSrv.DaysBtns(telectx.Chat().ID)
-
-	for _, btn := range btns {
-		c.bot.Handle(&btn, func(telectx telebot.Context) error {
-			return c.ProcessDate(ctx, telectx)
-		})
-	}
-
 	return telectx.EditOrSend(msg, &telebot.SendOptions{
 		ParseMode:   htmlParseMode,
-		ReplyMarkup: kb,
+		ReplyMarkup: c.reminderSrv.Calendar(telectx.Chat().ID),
 	})
 }
 
 func (c *Controller) DaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
 	return c.reminderSrv.DaysBtns(telectx.Chat().ID)
+}
+
+// Year обрабатывает кнопку "Выбрать дату"
+func (c *Controller) Date(ctx context.Context, telectx telebot.Context) error {
+	// сохраняем тип напоминания - "date"
+	err := c.reminderSrv.SaveType(telectx.Chat().ID, model.DateType)
+	if err != nil {
+		return err
+	}
+
+	var msg string
+
+	// если сообщение прислал пользователь - это новое название напоминания
+	if !telectx.Message().Sender.IsBot {
+		// сохраняем новое название напоминания, если пользователь прислал повторно
+		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	}
+
+	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	if err != nil {
+		msg = messages.CalendarMessage
+	}
+
+	msg = fmt.Sprintf(messages.CalendarMessage, r.Name, "дата")
+
+	return telectx.EditOrSend(msg, &telebot.SendOptions{
+		ParseMode:   htmlParseMode,
+		ReplyMarkup: c.reminderSrv.Calendar(telectx.Chat().ID),
+	})
 }

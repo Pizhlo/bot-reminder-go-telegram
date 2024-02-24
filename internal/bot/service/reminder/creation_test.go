@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSaveReminderName(t *testing.T) {
+func TestSaveReminderName_New(t *testing.T) {
 	n := New(nil)
 
 	userID := int64(1)
@@ -26,6 +26,23 @@ func TestSaveReminderName(t *testing.T) {
 
 	assert.Equal(t, userID, result.TgID)
 	assert.Equal(t, reminderName, result.Name)
+}
+
+func TestSaveReminderName_Exist(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+	reminderName1 := random.String(10)
+	reminderName2 := random.String(10)
+
+	n.SaveName(userID, reminderName1)
+	n.SaveName(userID, reminderName2)
+
+	result, ok := n.reminderMap[userID]
+	assert.Equal(t, true, ok)
+
+	assert.Equal(t, userID, result.TgID)
+	assert.Equal(t, reminderName2, result.Name)
 }
 
 func TestSaveType_NotFound(t *testing.T) {
@@ -922,6 +939,8 @@ func TestSaveCalendarDate_Valid_OnceYearType(t *testing.T) {
 
 	n.viewsMap[userID] = view.NewReminder()
 
+	n.SetupCalendar(userID)
+
 	n.viewsMap[userID].Calendar()
 
 	err := n.SaveCalendarDate(userID, "12")
@@ -938,6 +957,47 @@ func TestSaveCalendarDate_Valid_OnceYearType(t *testing.T) {
 		curDate = "12" + ".0" + strconv.Itoa(int(month))
 	} else {
 		curDate = "12" + strconv.Itoa(int(month))
+	}
+
+	assert.Equal(t, r.TgID, result.TgID)
+	assert.Equal(t, curDate, result.Date)
+}
+
+func TestSaveCalendarDate_Valid_DateType(t *testing.T) {
+	n := New(nil)
+
+	userID := int64(1)
+
+	r := model.Reminder{
+		Name: random.String(5),
+		TgID: userID,
+		Type: model.DateType,
+	}
+
+	n.SaveName(r.TgID, r.Name)
+	n.SaveType(r.TgID, r.Type)
+
+	n.viewsMap[userID] = view.NewReminder()
+
+	n.SetupCalendar(userID)
+
+	n.viewsMap[userID].Calendar()
+
+	err := n.SaveCalendarDate(userID, "12")
+	assert.NoError(t, err)
+
+	result, ok := n.reminderMap[userID]
+	assert.Equal(t, true, ok)
+
+	var curDate string
+
+	month := time.Now().Month()
+	year := time.Now().Year()
+
+	if month < 10 {
+		curDate = fmt.Sprintf("%s.0%d.%d", "12", month, year)
+	} else {
+		curDate = fmt.Sprintf("%s.%d.%d", "12", month, year)
 	}
 
 	assert.Equal(t, r.TgID, result.TgID)
@@ -1039,4 +1099,57 @@ func TestFixMonth_After10(t *testing.T) {
 
 		assert.Equal(t, expected, actual)
 	}
+}
+
+func TestValidateDate_Valid(t *testing.T) {
+	userID := int64(1)
+
+	curDay := time.Now().Day() + 1
+	dayOfMonth := strconv.Itoa(curDay)
+
+	tz := time.Local
+
+	n := New(nil)
+
+	n.viewsMap[userID] = view.NewReminder()
+
+	n.SetupCalendar(userID)
+
+	err := n.ValidateDate(userID, dayOfMonth, tz)
+	assert.NoError(t, err)
+}
+
+func TestValidateDate_NotInt(t *testing.T) {
+	userID := int64(1)
+
+	dayOfMonth := random.String(4)
+
+	tz := time.Local
+
+	n := New(nil)
+
+	n.viewsMap[userID] = view.NewReminder()
+
+	n.SetupCalendar(userID)
+
+	err := n.ValidateDate(userID, dayOfMonth, tz)
+	assert.Error(t, err)
+}
+
+func TestValidateDate_DatePassed(t *testing.T) {
+	userID := int64(1)
+
+	curDay := time.Now().Day() - 1
+	dayOfMonth := strconv.Itoa(curDay)
+
+	tz := time.Local
+
+	n := New(nil)
+
+	n.viewsMap[userID] = view.NewReminder()
+
+	n.SetupCalendar(userID)
+
+	err := n.ValidateDate(userID, dayOfMonth, tz)
+	assert.EqualError(t, err, api_errors.ErrInvalidDate.Error())
 }

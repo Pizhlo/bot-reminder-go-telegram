@@ -9,23 +9,23 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-type year struct {
+type onceReminder struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
 }
 
-func newYearState(controller *controller.Controller, FSM *FSM) *year {
-	return &year{controller, FSM, logger.New(), "every year"}
+func newOnceReminderState(controller *controller.Controller, FSM *FSM) *onceReminder {
+	return &onceReminder{controller, FSM, logger.New(), "date reminder"}
 }
 
-func (n *year) Handle(ctx context.Context, telectx tele.Context) error {
+func (n *onceReminder) Handle(ctx context.Context, telectx tele.Context) error {
 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
-	return n.controller.Year(ctx, telectx)
+	return n.controller.Date(ctx, telectx)
 }
 
-func (n *year) Name() string {
+func (n *onceReminder) Name() string {
 	return n.name
 }

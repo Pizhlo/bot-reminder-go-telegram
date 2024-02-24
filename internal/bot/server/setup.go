@@ -2,10 +2,12 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
@@ -417,7 +419,39 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnOnceYear, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Year)
 
+		s.controller.SetupCalendar(ctx, c)
+
 		err := s.controller.Year(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				err := s.controller.SaveCalendarDate(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				return nil
+			})
+		}
+
+		return nil
+	})
+
+	// date
+	s.bot.Handle(&view.BtnOnce, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Once)
+
+		s.controller.SetupCalendar(ctx, c)
+
+		err := s.controller.Date(ctx, c)
 		if err != nil {
 			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
@@ -429,6 +463,10 @@ func (s *Server) setupBot(ctx context.Context) {
 			s.bot.Handle(&btn, func(c tele.Context) error {
 				err := s.controller.ProcessDate(ctx, c)
 				if err != nil {
+					if errors.Is(err, api_errors.ErrInvalidDate) {
+						return s.controller.InvalidDate(ctx, c)
+					}
+
 					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 					return err
 				}
@@ -457,6 +495,10 @@ func (s *Server) setupBot(ctx context.Context) {
 			s.bot.Handle(&btn, func(c tele.Context) error {
 				err := s.controller.ProcessDate(ctx, c)
 				if err != nil {
+					if errors.Is(err, api_errors.ErrInvalidDate) {
+						return s.controller.InvalidDate(ctx, c)
+					}
+
 					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 					return err
 				}
@@ -483,6 +525,10 @@ func (s *Server) setupBot(ctx context.Context) {
 			s.bot.Handle(&btn, func(c tele.Context) error {
 				err := s.controller.ProcessDate(ctx, c)
 				if err != nil {
+					if errors.Is(err, api_errors.ErrInvalidDate) {
+						return s.controller.InvalidDate(ctx, c)
+					}
+
 					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 					return err
 				}
@@ -509,6 +555,10 @@ func (s *Server) setupBot(ctx context.Context) {
 			s.bot.Handle(&btn, func(c tele.Context) error {
 				err := s.controller.ProcessDate(ctx, c)
 				if err != nil {
+					if errors.Is(err, api_errors.ErrInvalidDate) {
+						return s.controller.InvalidDate(ctx, c)
+					}
+
 					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 					return err
 				}
@@ -535,6 +585,10 @@ func (s *Server) setupBot(ctx context.Context) {
 			s.bot.Handle(&btn, func(c tele.Context) error {
 				err := s.controller.ProcessDate(ctx, c)
 				if err != nil {
+					if errors.Is(err, api_errors.ErrInvalidDate) {
+						return s.controller.InvalidDate(ctx, c)
+					}
+
 					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 					return err
 				}
