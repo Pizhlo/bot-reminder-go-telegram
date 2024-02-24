@@ -58,9 +58,10 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 	}
 
 	var verb string
+	// если срабатывает один раз (определенную дату)
 	if r.Type == model.DateType {
 		verb = "сработает"
-	} else {
+	} else { // в остальных случаях срабатывает больше одного раза
 		verb = "будет срабатывать"
 	}
 
@@ -81,6 +82,17 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	params := gocron.FuncParams{
 		Ctx:      telectx,
 		Reminder: *r,
+	}
+
+	// получаем часовой пояс пользователя
+	userTz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+	if err != nil {
+		return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
+	}
+
+	loc, err := time.LoadLocation(userTz.Name)
+	if err != nil {
+		return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
 	}
 
 	switch r.Type {
@@ -106,16 +118,6 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	case model.OnceYearType:
 		return c.scheduler.CreateOnceInYearReminder(r.Date, r.Time, c.SendReminder, params)
 	case model.DateType:
-		userTz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
-		if err != nil {
-			return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
-		}
-
-		loc, err := time.LoadLocation(userTz.Name)
-		if err != nil {
-			return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
-		}
-
 		return c.scheduler.CreateCalendarDateReminder(r.Date, r.Time, loc, c.SendReminder, params)
 	default:
 		return gocron.NextRun{}, fmt.Errorf("unknown type of reminder: %s", r.Type)

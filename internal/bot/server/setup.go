@@ -324,6 +324,19 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// reminder types
 
+	// today
+	s.bot.Handle(&view.BtnToday, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+
+		err := s.controller.Today(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+			return err
+		}
+
+		return nil
+	})
+
 	// everyday
 	s.bot.Handle(&view.BtnEveryDayReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
