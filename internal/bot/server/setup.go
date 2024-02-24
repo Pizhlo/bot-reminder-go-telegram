@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
@@ -281,11 +280,11 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// удалить сработавшее напоминание
-	s.bot.Handle(&view.BtnDeleteReminder, func(ctx tele.Context) error {
-		uniq := ctx.Callback().Unique
-		return ctx.EditOrSend(fmt.Sprintf("Удалено: %s", uniq))
-	})
+	// // удалить сработавшее напоминание
+	// s.bot.Handle(&view.BtnDeleteReminder, func(ctx tele.Context) error {
+	// 	uniq := ctx.Callback().Unique
+	// 	return ctx.EditOrSend(fmt.Sprintf("Удалено: %s", uniq))
+	// })
 
 	// удалить все напоминания - подтверждение
 	s.bot.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {

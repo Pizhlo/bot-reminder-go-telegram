@@ -1,6 +1,7 @@
 package gocron
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,7 +14,7 @@ import (
 )
 
 // task - функция, которую будут вызывать в момент срабатывания напоминания
-type task func(ctx telebot.Context, reminder model.Reminder) error
+type task func(ctx context.Context, telectx telebot.Context, reminder model.Reminder) error
 
 // Scheduler управляет отложенными вызовами
 type Scheduler struct {
@@ -32,7 +33,8 @@ func New() (*Scheduler, error) {
 }
 
 type FuncParams struct {
-	Ctx      telebot.Context
+	Ctx      context.Context
+	Telectx  telebot.Context
 	Reminder model.Reminder
 }
 
@@ -48,7 +50,7 @@ func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncPar
 		return NextRun{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
 
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	dailyJob := gocron.DailyJob(uint(1), cronTime)
 
@@ -74,10 +76,13 @@ func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncPar
 func (s *Scheduler) DeleteJob(id uuid.UUID) error {
 	return s.RemoveJob(id)
 }
+func makeTask(task task, params FuncParams) gocron.Task {
+	return gocron.NewTask(task, params.Ctx, params.Telectx, params.Reminder)
+}
 
 // CreateMinutesReminder создает напоминание один раз в несколько минут
 func (s *Scheduler) CreateMinutesReminder(minutes string, task task, params FuncParams) (NextRun, error) {
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	minutesInt, err := strconv.Atoi(minutes)
 	if err != nil {
@@ -107,7 +112,7 @@ func (s *Scheduler) CreateMinutesReminder(minutes string, task task, params Func
 
 // CreateHoursReminder создает напоминание один раз в несколько часов
 func (s *Scheduler) CreateHoursReminder(hours string, task task, params FuncParams) (NextRun, error) {
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	hoursInt, err := strconv.Atoi(hours)
 	if err != nil {
@@ -136,7 +141,7 @@ func (s *Scheduler) CreateHoursReminder(hours string, task task, params FuncPara
 
 // CreateEveryWeekReminder создает напоминание еженедельное напоминание
 func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime string, task task, params FuncParams) (NextRun, error) {
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	cronTime, err := s.makeTime(userTime)
 	if err != nil {
@@ -163,7 +168,7 @@ func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime strin
 
 // CreateSeveralDaysReminder создает напоминание раз в несколько дней
 func (s *Scheduler) CreateSeveralDaysReminder(days string, userTime string, task task, params FuncParams) (NextRun, error) {
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	cronTime, err := s.makeTime(userTime)
 	if err != nil {
@@ -205,7 +210,7 @@ func (s *Scheduler) CreateMonthlyReminder(days string, userTime string, task tas
 		return NextRun{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
 
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	j, err := s.NewJob(gocron.MonthlyJob(uint(0), gocron.NewDaysOfTheMonth(day), cronTime), job)
 	if err != nil {
@@ -226,7 +231,7 @@ func (s *Scheduler) CreateMonthlyReminder(days string, userTime string, task tas
 }
 
 func (s *Scheduler) CreateOnceInYearReminder(date, userTime string, task task, params FuncParams) (NextRun, error) {
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	cronTab := s.makeCronTab(date, userTime)
 
@@ -249,7 +254,7 @@ func (s *Scheduler) CreateOnceInYearReminder(date, userTime string, task task, p
 }
 
 func (s *Scheduler) CreateCalendarDateReminder(date, userTime string, userTz *time.Location, task task, params FuncParams) (NextRun, error) {
-	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+	job := makeTask(task, params)
 
 	dates := strings.Split(date, ".")
 

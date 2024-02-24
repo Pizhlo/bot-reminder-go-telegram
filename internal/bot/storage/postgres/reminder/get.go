@@ -71,7 +71,7 @@ func (db *ReminderRepo) GetAllJobs(ctx context.Context, userID int64) ([]uuid.UU
 func (db *ReminderRepo) GetJobID(ctx context.Context, userID int64, reminderID int) (uuid.UUID, error) {
 	var id uuid.UUID
 
-	row := db.db.QueryRowContext(ctx, `select job_id from reminders.jobs where user_id = (select id from users.users where tg_id = $1) and id = $2`, userID, reminderID)
+	row := db.db.QueryRowContext(ctx, `select job_id from reminders.jobs where user_id = (select id from users.users where tg_id = $1) and reminder_id = $2`, userID, reminderID)
 
 	err := row.Scan(&id)
 	if err != nil {
