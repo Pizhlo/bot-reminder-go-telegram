@@ -18,7 +18,7 @@ const (
 
 // Today обрабатывает кнопку "сегодня"
 func (c *Controller) Today(ctx context.Context, telectx telebot.Context) error {
-	// сохраняем тип напоминания - "today"
+	// сохраняем тип напоминания - "date"
 	err := c.reminderSrv.SaveType(telectx.Chat().ID, model.DateType)
 	if err != nil {
 		return err
@@ -44,6 +44,47 @@ func (c *Controller) Today(ctx context.Context, telectx telebot.Context) error {
 	layout := "02.01.2006"
 
 	date := time.Now().In(loc).Format(layout)
+
+	err = c.reminderSrv.SaveDate(telectx.Chat().ID, date)
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(messages.ReminderTimeMessage, &telebot.SendOptions{
+		ParseMode:   htmlParseMode,
+		ReplyMarkup: view.BackToReminderMenuBtns(),
+	})
+}
+
+// Today обрабатывает кнопку "завтра"
+func (c *Controller) Tomorrow(ctx context.Context, telectx telebot.Context) error {
+	// сохраняем тип напоминания - "date"
+	err := c.reminderSrv.SaveType(telectx.Chat().ID, model.DateType)
+	if err != nil {
+		return err
+	}
+
+	// если сообщение прислал пользователь - это новое название напоминания
+	if !telectx.Message().Sender.IsBot {
+		// сохраняем новое название напоминания, если пользователь прислал повторно
+		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	}
+
+	// сохраняем дату
+	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
+	loc, err := time.LoadLocation(tz.Name)
+	if err != nil {
+		return err
+	}
+
+	layout := "02.01.2006"
+
+	// добавляем к дате 1 день
+	date := time.Now().In(loc).Add(24 * time.Hour).Format(layout)
 
 	err = c.reminderSrv.SaveDate(telectx.Chat().ID, date)
 	if err != nil {
