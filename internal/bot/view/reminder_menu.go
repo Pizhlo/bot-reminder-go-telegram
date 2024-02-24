@@ -42,6 +42,12 @@ var (
 
 	// тип напоминания: Один раз
 	BtnOnce = selector.Data("Выбрать дату", "date")
+
+	// тип напоминания: Сегодня
+	BtnToday = selector.Data("Сегодня", "today")
+
+	// тип напоминания: Завтра
+	BtnTomorrow = selector.Data("Завтра", "tomorrow")
 )
 
 // CreateReminderAndBackToMenu возвращает кнопку создания напоминания, удалить все и назад в меню
@@ -74,6 +80,7 @@ func ReminderTypes() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
+		menu.Row(BtnToday, BtnTomorrow),
 		menu.Row(BtnSeveralTimesDayReminder, BtnEveryDayReminder),
 		menu.Row(BtnEveryWeekReminder, BtnSeveralDaysReminder),
 		menu.Row(BtnOnceMonthReminder, BtnOnceYear),

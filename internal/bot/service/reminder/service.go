@@ -68,3 +68,9 @@ func (n *ReminderService) SaveUser(userID int64) {
 
 	n.logger.Debugf("Reminder service: successfully saved user in the views map.\n")
 }
+
+// SetupCalendar устанавливает месяц и год в календаре на текущие
+func (n *ReminderService) SetupCalendar(userID int64) {
+	n.viewsMap[userID].SetCurMonth()
+	n.viewsMap[userID].SetCurYear()
+}

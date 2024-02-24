@@ -248,6 +248,66 @@ func (s *Scheduler) CreateOnceInYearReminder(date, userTime string, task task, p
 	return result, nil
 }
 
+func (s *Scheduler) CreateCalendarDateReminder(date, userTime string, userTz *time.Location, task task, params FuncParams) (NextRun, error) {
+	job := gocron.NewTask(task, params.Ctx, params.Reminder)
+
+	dates := strings.Split(date, ".")
+
+	year := dates[2]
+	month := dates[1]
+	day := dates[0]
+
+	yearInt, err := strconv.Atoi(year)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while converting string year %s to int: %w", year, err)
+	}
+
+	monthInt, err := strconv.Atoi(month)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while converting string month %s to int: %w", month, err)
+	}
+
+	dayInt, err := strconv.Atoi(day)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while converting string day %s to int: %w", day, err)
+	}
+
+	minuteHour := strings.Split(userTime, ":")
+	minute := minuteHour[1]
+	hour := minuteHour[0]
+
+	minuteInt, err := strconv.Atoi(minute)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while converting string minute %s to int: %w", minute, err)
+	}
+
+	hourInt, err := strconv.Atoi(hour)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while converting string hour %s to int: %w", hour, err)
+	}
+
+	timeDate := time.Date(yearInt, time.Month(monthInt), dayInt, hourInt, minuteInt, 0, 0, userTz)
+
+	oneTime := gocron.OneTimeJobStartDateTime(timeDate)
+
+	j, err := s.NewJob(gocron.OneTimeJob(oneTime), job)
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while creating job: %w", err)
+	}
+
+	run, err := j.NextRun()
+	if err != nil {
+		return NextRun{}, fmt.Errorf("error while getting next run: %w", err)
+	}
+
+	result := NextRun{
+		JobID:   j.ID(),
+		NextRun: run,
+	}
+
+	return result, nil
+}
+
 func (s *Scheduler) makeCronTab(date, userTime string) string {
 	// minute = field(fields[1], minutes)
 	// hour = field(fields[2], hours)

@@ -57,7 +57,14 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 		return err
 	}
 
-	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name, nextRunMsg, nextRun.NextRun.Format(layout))
+	var verb string
+	if r.Type == model.DateType {
+		verb = "сработает"
+	} else {
+		verb = "будет срабатывать"
+	}
+
+	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name, verb, nextRunMsg, nextRun.NextRun.Format(layout))
 
 	return telectx.EditOrSend(msg, &telebot.SendOptions{
 		ReplyMarkup: view.BackToMenuBtn(),
@@ -83,12 +90,14 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 		if r.Date == "minutes" {
 			return c.scheduler.CreateMinutesReminder(r.Time, c.SendReminder, params)
 		}
+
 		return c.scheduler.CreateHoursReminder(r.Time, c.SendReminder, params)
 	case model.EveryWeekType:
 		wd, err := view.ParseWeekday(r.Date)
 		if err != nil {
 			return gocron.NextRun{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
 		}
+
 		return c.scheduler.CreateEveryWeekReminder(wd, r.Time, c.SendReminder, params)
 	case model.SeveralDaysType:
 		return c.scheduler.CreateSeveralDaysReminder(r.Date, r.Time, c.SendReminder, params)
@@ -96,6 +105,18 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 		return c.scheduler.CreateMonthlyReminder(r.Date, r.Time, c.SendReminder, params)
 	case model.OnceYearType:
 		return c.scheduler.CreateOnceInYearReminder(r.Date, r.Time, c.SendReminder, params)
+	case model.DateType:
+		userTz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+		if err != nil {
+			return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
+		}
+
+		loc, err := time.LoadLocation(userTz.Name)
+		if err != nil {
+			return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
+		}
+
+		return c.scheduler.CreateCalendarDateReminder(r.Date, r.Time, loc, c.SendReminder, params)
 	default:
 		return gocron.NextRun{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}

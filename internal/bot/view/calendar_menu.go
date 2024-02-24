@@ -64,9 +64,6 @@ func (c *calendar) year() int {
 
 // currentCalendar предоставляет клавиатуру с календарем на текущий месяц и год
 func (c *calendar) currentCalendar() *tele.ReplyMarkup {
-	c.setCurYear()
-	c.setCurMonth()
-
 	return c.keyboard()
 }
 

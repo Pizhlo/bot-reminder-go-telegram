@@ -15,9 +15,14 @@ func (n *ReminderService) SaveName(userID int64, name string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	reminder := model.Reminder{
-		TgID: userID,
-		Name: name,
+	reminder, ok := n.reminderMap[userID]
+	if !ok {
+		reminder = model.Reminder{
+			TgID: userID,
+			Name: name,
+		}
+	} else {
+		reminder.Name = name
 	}
 
 	n.reminderMap[userID] = reminder
@@ -104,7 +109,7 @@ func (n *ReminderService) SaveDate(userID int64, date string) error {
 }
 
 // SaveCalendarDate сохраняет дату, которая хранится в календаре
-func (n *ReminderService) SaveCalendarDate(userID int64, userDate string) error {
+func (n *ReminderService) SaveCalendarDate(userID int64, dayOfMonth string) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
@@ -120,15 +125,37 @@ func (n *ReminderService) SaveCalendarDate(userID int64, userDate string) error 
 	monthStr := fixMonth(month)
 
 	if r.Type == model.OnceYearType {
-		date = fmt.Sprintf("%s.%s", userDate, monthStr)
+		date = fmt.Sprintf("%s.%s", dayOfMonth, monthStr)
 	} else if r.Type == model.DateType {
+
 		year := n.viewsMap[userID].Year()
-		date = fmt.Sprintf("%s.%s.%d", userDate, monthStr, year)
+		date = fmt.Sprintf("%s.%s.%d", dayOfMonth, monthStr, year)
 	}
 
 	r.Date = date
 
 	n.reminderMap[userID] = r
+
+	return nil
+}
+
+func (n *ReminderService) ValidateDate(userID int64, dayOfMonth string, timezone *time.Location) error {
+	month := n.viewsMap[userID].Month()
+	year := n.viewsMap[userID].Year()
+
+	dayInt, err := n.checkIfInt(dayOfMonth)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().In(timezone)
+
+	userDate := time.Date(year, month, dayInt, now.Hour(), now.Minute(), now.Second(), now.Nanosecond(), timezone)
+
+	// если дата уже прошла - не можем создать уведомление на эту дату, возвращаем ошибку
+	if now.After(userDate) {
+		return api_errors.ErrInvalidDate
+	}
 
 	return nil
 }
