@@ -11,45 +11,44 @@ var (
 	// --------------- напоминания --------------
 
 	// inline кнопка для удаления сработавшего напоминания
-	//BtnDeleteReminder = selector.Data("❌Удалить", "")
+	//BtnDeleteReminder = tele.Btn{Text:"❌Удалить", Unique:"")
 
 	// inline кнопка создания напоминания
-	BtnCreateReminder = selector.Data("📝Создать напоминание", "create_reminder")
+	BtnCreateReminder = tele.Btn{Text: "📝Создать напоминание", Unique: "create_reminder"}
 
 	// inline кнопка удаления всех напоминаний
-	BtnDeleteAllReminders = selector.Data("❌Удалить все", "delete_reminders")
+	BtnDeleteAllReminders = tele.Btn{Text: "❌Удалить все", Unique: "delete_reminders"}
 
 	// --------------- типы --------------
 
 	// inline кнопка для возвращения к выбору типа напоминания
-	BtnBackToReminderType = selector.Data("⬅️К выбору", "reminder_type")
+	BtnBackToReminderType = tele.Btn{Text: "⬅️К выбору", Unique: "reminder_type"}
 
 	// тип напоминания: несколько раз в день
-	BtnSeveralTimesDayReminder = selector.Data("Несколько раз в день", "several_times_day")
+	BtnSeveralTimesDayReminder = tele.Btn{Text: "Несколько раз в день", Unique: "several_times_day"}
 
 	// тип напоминания: ежедневно
-	BtnEveryDayReminder = selector.Data("Ежедневно", "everyday")
+	BtnEveryDayReminder = tele.Btn{Text: "Ежедневно", Unique: "everyday"}
 
 	// тип напоминания: Раз в неделю
-	BtnEveryWeekReminder = selector.Data("Раз в неделю", "every_week")
+	BtnEveryWeekReminder = tele.Btn{Text: "Раз в неделю", Unique: "every_week"}
 
 	// тип напоминания: Раз в несколько дней
-	BtnSeveralDaysReminder = selector.Data("Раз в несколько дней", "once_several_days")
+	BtnSeveralDaysReminder = tele.Btn{Text: "Раз в несколько дней", Unique: "once_several_days"}
 
 	// тип напоминания: Раз в месяц
-	BtnOnceMonthReminder = selector.Data("Раз в месяц", "once_month")
+	BtnOnceMonthReminder = tele.Btn{Text: "Раз в месяц", Unique: "once_month"}
 
 	// тип напоминания: Раз в год
-	BtnOnceYear = selector.Data("Раз в год", "once_year")
+	BtnOnceYear = tele.Btn{Text: "Раз в год", Unique: "once_year"}
 
 	// тип напоминания: Один раз
-	BtnOnce = selector.Data("Выбрать дату", "date")
-
+	BtnOnce = tele.Btn{Text: "Выбрать дату", Unique: "date"}
 	// тип напоминания: Сегодня
-	BtnToday = selector.Data("Сегодня", "today")
+	BtnToday = tele.Btn{Text: "Сегодня", Unique: "today"}
 
 	// тип напоминания: Завтра
-	BtnTomorrow = selector.Data("Завтра", "tomorrow")
+	BtnTomorrow = tele.Btn{Text: "Завтра", Unique: "tomorrow"}
 )
 
 // CreateReminderAndBackToMenu возвращает кнопку создания напоминания, удалить все и назад в меню
@@ -144,10 +143,10 @@ var (
 	// --------------- несколько раз в день --------------
 
 	// тип напоминания: Раз в несколько минут
-	BtnMinutesReminder = selector.Data("Раз в несколько минут", "minutes")
+	BtnMinutesReminder = tele.Btn{Text: "Раз в несколько минут", Unique: "minutes"}
 
 	// тип напоминания: Раз в несколько часов
-	BtnHoursReminder = selector.Data("Раз в несколько часов", "hours")
+	BtnHoursReminder = tele.Btn{Text: "Раз в несколько часов", Unique: "hours"}
 )
 
 // SeveralTimesBtns возвращает меню с двумя кнопками: раз в несколько минут, раз в несколько часов
@@ -166,25 +165,25 @@ var (
 	// --------------- раз в неделю --------------
 
 	// тип напоминания: Каждый понедельник
-	MondayBtn = selector.Data("Понедельник", "monday")
+	MondayBtn = tele.Btn{Text: "Понедельник", Unique: "monday"}
 
 	// тип напоминания: Каждый вторник
-	TuesdayBtn = selector.Data("Вторник", "tuesday")
+	TuesdayBtn = tele.Btn{Text: "Вторник", Unique: "tuesday"}
 
 	// тип напоминания: Каждую среду
-	WednesdayBtn = selector.Data("Среда", "wednesday")
+	WednesdayBtn = tele.Btn{Text: "Среда", Unique: "wednesday"}
 
 	// тип напоминания: Каждый четверг
-	ThursdayBtn = selector.Data("Четверг", "thursday")
+	ThursdayBtn = tele.Btn{Text: "Четверг", Unique: "thursday"}
 
 	// тип напоминания: Каждую пятницу
-	FridayBtn = selector.Data("Пятница", "friday")
+	FridayBtn = tele.Btn{Text: "Пятница", Unique: "friday"}
 
 	// тип напоминания: Каждую субботу
-	SaturdayBtn = selector.Data("Суббота", "saturday")
+	SaturdayBtn = tele.Btn{Text: "Суббота", Unique: "saturday"}
 
 	// тип напоминания: Каждое воскресенье
-	SundayBtn = selector.Data("Воскресенье", "sunday")
+	SundayBtn = tele.Btn{Text: "Воскресенье", Unique: "sunday"}
 )
 
 // WeekMenu возвращает меню днями недели
