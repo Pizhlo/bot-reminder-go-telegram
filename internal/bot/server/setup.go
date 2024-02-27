@@ -178,7 +178,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnSearchNotesByText, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteByText)
 
-		err := c.EditOrSend(messages.SearchNotesByTextMessage, view.BackToMenuBtn())
+		err := c.EditOrSend(messages.SearchNotesByTextMessage, view.BackToMenuAndNotesBtn())
 		if err != nil {
 			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
