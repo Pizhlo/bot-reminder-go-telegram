@@ -27,17 +27,15 @@ func NewNote() *NoteView {
 }
 
 var (
-	selector = &tele.ReplyMarkup{}
-
 	// inline кнопка для переключения на предыдущую страницу (заметки)
-	BtnPrevPgNotes = selector.Data("<", "prev")
+	BtnPrevPgNotes = tele.Btn{Text: "<", Unique: "prev"}
 	// inline кнопка для переключения на следующую страницу (заметки)
-	BtnNextPgNotes = selector.Data(">", "next")
+	BtnNextPgNotes = tele.Btn{Text: ">", Unique: "next"}
 
 	// inline кнопка для переключения на первую страницу (заметки)
-	BtnFirstPgNotes = selector.Data("<<", "start")
+	BtnFirstPgNotes = tele.Btn{Text: "<<", Unique: "start"}
 	// inline кнопка для переключения на последнюю страницу (заметки)
-	BtnLastPgNotes = selector.Data(">>", "end")
+	BtnLastPgNotes = tele.Btn{Text: ">>", Unique: "end"}
 )
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
@@ -128,9 +126,10 @@ func (v *NoteView) total() int {
 
 // Keyboard делает клавиатуру для навигации по страницам
 func (v *NoteView) Keyboard() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {
-		menu := &tele.ReplyMarkup{}
 		menu.Inline(
 			menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
 			menu.Row(BtnDeleteAllNotes),
@@ -141,16 +140,16 @@ func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 
 	text := fmt.Sprintf("%d / %d", v.current(), v.total())
 
-	btn := selector.Data(text, "")
+	btn := menu.Data(text, "")
 
-	selector.Inline(
-		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
-		selector.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
-		selector.Row(BtnDeleteAllNotes),
-		selector.Row(BtnBackToMenu),
+	menu.Inline(
+		menu.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
+		menu.Row(BtnDeleteAllNotes),
+		menu.Row(BtnBackToMenu),
 	)
 
-	return selector
+	return menu
 }
 
 // SetCurrentToFirst устанавливает текущий номер страницы на 1

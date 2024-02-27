@@ -7,31 +7,16 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-var monthsTranslation = map[string]string{
-	"January":   "Янв",
-	"February":  "Фев",
-	"March":     "Март",
-	"April":     "Апр",
-	"May":       "Май",
-	"June":      "Июнь",
-	"July":      "Июль",
-	"August":    "Авг",
-	"September": "Сент",
-	"October":   "Окт",
-	"November":  "Ноя",
-	"December":  "Дек",
-}
-
 var (
 	// inline кнопка для переключения на предыдущий месяц
-	BtnPrevMonth = selector.Data("<", "prev_month")
+	BtnPrevMonth = tele.Btn{Text: "<", Unique: "prev_month"}
 	// inline кнопка для переключения на следующий месяц
-	BtnNextMonth = selector.Data(">", "next_month")
+	BtnNextMonth = tele.Btn{Text: ">", Unique: "next_month"}
 
 	// inline кнопка для переключения на предыдущий год
-	BtnPrevYear = selector.Data("<<", "prev_year")
+	BtnPrevYear = tele.Btn{Text: "<<", Unique: "prev_year"}
 	// inline кнопка для переключения на следующий год
-	BtnNextYear = selector.Data(">>", "next_year")
+	BtnNextYear = tele.Btn{Text: ">>", Unique: "next_year"}
 )
 
 // calendar предоставляет календарь пользователю для выбора даты
@@ -277,6 +262,21 @@ func (c *calendar) topMenu() []tele.Btn {
 
 // monthTitle возвращает кнопку с названием текущего месяца
 func (c *calendar) monthTitle() tele.Btn {
+	monthsTranslation := map[string]string{
+		"January":   "Янв",
+		"February":  "Фев",
+		"March":     "Март",
+		"April":     "Апр",
+		"May":       "Май",
+		"June":      "Июнь",
+		"July":      "Июль",
+		"August":    "Авг",
+		"September": "Сент",
+		"October":   "Окт",
+		"November":  "Ноя",
+		"December":  "Дек",
+	}
+
 	monthTitle := monthsTranslation[c.curMonth.String()]
 
 	return tele.Btn{

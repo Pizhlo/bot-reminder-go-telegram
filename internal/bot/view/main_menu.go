@@ -6,22 +6,23 @@ var (
 	// -------------- главное меню --------------
 
 	// inline кнопка для просмотра профиля
-	BtnProfile = selector.Data("👤Профиль", "profile")
+	BtnProfile = tele.Btn{Text: "👤Профиль", Unique: "profile"}
+
 	// inline кнопка для просмотра настроек
-	BtnSettings = selector.Data("⚙️Настройки", "settings")
+	BtnSettings = tele.Btn{Text: "⚙️Настройки", Unique: "settings"}
 
 	// inline кнопка просмотра заметок
-	BtnNotes = selector.Data("📝Заметки", "notes")
+	BtnNotes = tele.Btn{Text: "📝Заметки", Unique: "notes"}
 	// inline кнопка просмотра напоминаний
-	BtnReminders = selector.Data("⏰Напоминания", "reminders")
+	BtnReminders = tele.Btn{Text: "⏰Напоминания", Unique: "reminders"}
 
 	// inline кнопка для возвращения в меню
-	BtnBackToMenu = selector.Data("⬅️Меню", "menu")
+	BtnBackToMenu = tele.Btn{Text: "⬅️Меню", Unique: "menu"}
 
 	// --------------- профиль --------------
 
 	// inline кнопка просмотра информации по подписке
-	BtnSubscription = selector.Data("🖊Подписка", "subscription")
+	BtnSubscription = tele.Btn{Text: "🖊Подписка", Unique: "subscription"}
 )
 
 // BackToMenuBtn возвращает кнопку возврата в меню

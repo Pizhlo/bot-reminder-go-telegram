@@ -6,9 +6,9 @@ var (
 	// --------------- заметки --------------
 
 	// inline кнопка для удаления всех заметок
-	BtnDeleteAllNotes    = selector.Data("❌Удалить все", "delete_notes")
-	BtnSearchNotesByText = selector.Data("🔍Поиск по тексту", "search_notes_by_text")
-	BtnSearchNotesByDate = selector.Data("🔍Поиск по дате", "search_notes_by_date")
+	BtnDeleteAllNotes    = tele.Btn{Text: "❌Удалить все", Unique: "delete_notes"}
+	BtnSearchNotesByText = tele.Btn{Text: "🔍Поиск по тексту", Unique: "search_notes_by_text"}
+	BtnSearchNotesByDate = tele.Btn{Text: "🔍Поиск по дате", Unique: "search_notes_by_date"}
 )
 
 // DeleteAllNotesAndBackToMenu возвращает меню с кнопками:

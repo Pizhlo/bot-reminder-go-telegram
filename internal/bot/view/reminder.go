@@ -26,14 +26,14 @@ func NewReminder() *ReminderView {
 
 var (
 	// inline кнопка для переключения на предыдущую страницу (напоминания)
-	BtnPrevPgReminders = selector.Data("<", "prev")
+	BtnPrevPgReminders = tele.Btn{Text: "<", Unique: "prev"}
 	// inline кнопка для переключения на следующую страницу (напоминания)
-	BtnNextPgReminders = selector.Data(">", "next")
+	BtnNextPgReminders = tele.Btn{Text: ">", Unique: "next"}
 
 	// inline кнопка для переключения на первую страницу (напоминания)
-	BtnFirstPgReminders = selector.Data("<<", "start")
+	BtnFirstPgReminders = tele.Btn{Text: "<<", Unique: "start"}
 	// inline кнопка для переключения на последнюю страницу (напоминания)
-	BtnLastPgReminders = selector.Data(">>", "end")
+	BtnLastPgReminders = tele.Btn{Text: ">>", Unique: "end"}
 )
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
