@@ -63,6 +63,8 @@ func (v *NoteView) Message(notes []model.Note) string {
 		v.pages = append(v.pages, res)
 	}
 
+	v.currentPage = 0
+
 	return v.pages[0]
 }
 
