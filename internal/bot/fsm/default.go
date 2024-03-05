@@ -11,16 +11,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-// дефолтное состояние бота
+// Дефолтное состояние бота, в котором он воспринимает любой текст как заметку
 type defaultState struct {
 	fsm        *FSM
 	controller *controller.Controller
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newDefaultState(controller *controller.Controller, FSM *FSM) *defaultState {
-	return &defaultState{fsm: FSM, controller: controller, logger: logger.New(), name: "default"}
+	return &defaultState{fsm: FSM, controller: controller, logger: logger.New(), name: "default", next: nil}
 }
 
 func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
@@ -57,4 +58,12 @@ func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *defaultState) Name() string {
 	return n.name
+}
+
+func (n *defaultState) Next() {
+	if n.next != nil {
+		n.fsm.SetState(n.next)
+	} else {
+		n.fsm.SetState(n.fsm.DefaultState)
+	}
 }

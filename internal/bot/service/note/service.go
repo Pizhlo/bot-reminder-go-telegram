@@ -35,6 +35,9 @@ type noteEditor interface {
 
 	// SearchByText производит поиск по заметок по тексту. Если таких заметок нет, возвращает ErrNotesNotFound
 	SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error)
+
+	// SearchByOneDate производит поиск по заметок по выбранной дате. Если таких заметок нет, возвращает ErrNotesNotFound
+	SearchByOneDate(ctx context.Context, searchNote model.SearchByOneDate) ([]model.Note, error)
 }
 
 func New(noteEditor noteEditor) *NoteService {
@@ -52,4 +55,10 @@ func (n *NoteService) SaveUser(userID int64) {
 	}
 
 	n.logger.Debugf("Note service: successfully saved user in the views map.\n")
+}
+
+// SetupCalendar устанавливает месяц и год в календаре на текущие
+func (n *NoteService) SetupCalendar(userID int64) {
+	n.viewsMap[userID].SetCurMonth()
+	n.viewsMap[userID].SetCurYear()
 }

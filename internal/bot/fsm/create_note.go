@@ -9,15 +9,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние создания заметки
 type createNote struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newCreateNoteState(controller *controller.Controller, FSM *FSM) *createNote {
-	return &createNote{controller, FSM, logger.New(), "create note"}
+	return &createNote{controller, FSM, logger.New(), "create note", nil}
 }
 
 func (n *createNote) Handle(ctx context.Context, telectx tele.Context) error {
@@ -27,4 +29,12 @@ func (n *createNote) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *createNote) Name() string {
 	return n.name
+}
+
+func (n *createNote) Next() {
+	if n.next != nil {
+		n.fsm.SetState(n.next)
+	} else {
+		n.fsm.SetState(n.fsm.DefaultState)
+	}
 }

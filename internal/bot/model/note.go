@@ -16,3 +16,8 @@ type SearchByText struct {
 	UserID int // id in db!
 	Text   string
 }
+type SearchByOneDate struct {
+	TgID   int64
+	UserID int
+	Date   time.Time
+}

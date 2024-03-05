@@ -64,7 +64,12 @@ func (c *Controller) InvalidDate(ctx context.Context, telectx tele.Context) erro
 	return telectx.EditOrSend(messages.InvalidDateMessage, c.reminderSrv.Calendar(telectx.Chat().ID))
 }
 
-// SetupCalendar устанавливает месяц и год в календаре на текущие
-func (c *Controller) SetupCalendar(ctx context.Context, telectx tele.Context) {
+// SetupReminderCalendar устанавливает месяц и год в календаре на текущие для напоминаний
+func (c *Controller) SetupReminderCalendar(ctx context.Context, telectx tele.Context) {
 	c.reminderSrv.SetupCalendar(telectx.Chat().ID)
+}
+
+// SetupNoteCalendar устанавливает месяц и год в календаре на текущие для заметок
+func (c *Controller) SetupNoteCalendar(ctx context.Context, telectx tele.Context) {
+	c.noteSrv.SetupCalendar(telectx.Chat().ID)
 }

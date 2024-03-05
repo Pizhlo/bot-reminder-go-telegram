@@ -299,8 +299,12 @@ func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
 	})
 }
 
-func (c *Controller) DaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
+func (c *Controller) ReminderDaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
 	return c.reminderSrv.DaysBtns(telectx.Chat().ID)
+}
+
+func (c *Controller) NoteDaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
+	return c.noteSrv.DaysBtns(telectx.Chat().ID)
 }
 
 // Year обрабатывает кнопку "Выбрать дату"

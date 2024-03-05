@@ -187,6 +187,53 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	// поиск заметок по дате
+	s.bot.Handle(&view.BtnSearchNotesByDate, func(c tele.Context) error {
+		//s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteByText)
+
+		err := c.EditOrSend(messages.SearchNotesByDateChooseMessage, &tele.SendOptions{
+			ReplyMarkup: view.SearchByDateBtn(),
+			ParseMode:   "html",
+		})
+		if err != nil {
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+			return err
+		}
+
+		return nil
+	})
+
+	// поиск заметок по одной дате
+	s.bot.Handle(&view.BtnSearchByOneDate, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteOneDate)
+
+		s.controller.SetupNoteCalendar(ctx, c)
+
+		err := s.controller.SearchNoteByOnedate(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+			return err
+		}
+
+		btns := s.controller.NoteDaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				s.fsm[c.Chat().ID].SetNext()
+				err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				return nil
+			})
+		}
+
+		return nil
+	})
+
 	// удалить все заметки - спросить а точно ли
 	s.bot.Handle(&view.BtnDeleteAllNotes, func(c tele.Context) error {
 		err := s.controller.ConfirmDeleteAllNotes(ctx, c)
@@ -279,12 +326,6 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		return nil
 	})
-
-	// // удалить сработавшее напоминание
-	// s.bot.Handle(&view.BtnDeleteReminder, func(ctx tele.Context) error {
-	// 	uniq := ctx.Callback().Unique
-	// 	return ctx.EditOrSend(fmt.Sprintf("Удалено: %s", uniq))
-	// })
 
 	// удалить все напоминания - подтверждение
 	s.bot.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {
@@ -444,7 +485,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnOnceYear, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Year)
 
-		s.controller.SetupCalendar(ctx, c)
+		s.controller.SetupReminderCalendar(ctx, c)
 
 		err := s.controller.Year(ctx, c)
 		if err != nil {
@@ -452,7 +493,7 @@ func (s *Server) setupBot(ctx context.Context) {
 			return err
 		}
 
-		btns := s.controller.DaysBtns(ctx, c)
+		btns := s.controller.ReminderDaysBtns(ctx, c)
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
@@ -474,7 +515,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnOnce, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Once)
 
-		s.controller.SetupCalendar(ctx, c)
+		s.controller.SetupReminderCalendar(ctx, c)
 
 		err := s.controller.Date(ctx, c)
 		if err != nil {
@@ -482,7 +523,7 @@ func (s *Server) setupBot(ctx context.Context) {
 			return err
 		}
 
-		btns := s.controller.DaysBtns(ctx, c)
+		btns := s.controller.ReminderDaysBtns(ctx, c)
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
@@ -514,7 +555,7 @@ func (s *Server) setupBot(ctx context.Context) {
 			return err
 		}
 
-		btns := s.controller.DaysBtns(ctx, c)
+		btns := s.controller.ReminderDaysBtns(ctx, c)
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
@@ -544,7 +585,7 @@ func (s *Server) setupBot(ctx context.Context) {
 			return err
 		}
 
-		btns := s.controller.DaysBtns(ctx, c)
+		btns := s.controller.ReminderDaysBtns(ctx, c)
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
@@ -574,7 +615,7 @@ func (s *Server) setupBot(ctx context.Context) {
 			return err
 		}
 
-		btns := s.controller.DaysBtns(ctx, c)
+		btns := s.controller.ReminderDaysBtns(ctx, c)
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
@@ -604,7 +645,7 @@ func (s *Server) setupBot(ctx context.Context) {
 			return err
 		}
 
-		btns := s.controller.DaysBtns(ctx, c)
+		btns := s.controller.ReminderDaysBtns(ctx, c)
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {

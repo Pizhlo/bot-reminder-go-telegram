@@ -9,15 +9,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для обработки напоминаний раз в неделю
 type weekDay struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newWeekDayState(controller *controller.Controller, FSM *FSM) *weekDay {
-	return &weekDay{controller, FSM, logger.New(), "every week"}
+	return &weekDay{controller, FSM, logger.New(), "every week", nil}
 }
 
 func (n *weekDay) Handle(ctx context.Context, telectx tele.Context) error {
@@ -28,4 +30,12 @@ func (n *weekDay) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *weekDay) Name() string {
 	return n.name
+}
+
+func (n *weekDay) Next() {
+	if n.next != nil {
+		n.fsm.SetState(n.next)
+	} else {
+		n.fsm.SetState(n.fsm.DefaultState)
+	}
 }

@@ -9,6 +9,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для обработки команды старт (кнопки меню) от пользователя
 type start struct {
 	controller   *controller.Controller
 	fsm          *FSM
@@ -16,10 +17,11 @@ type start struct {
 	defaultState state
 	logger       *logrus.Logger
 	name         string
+	next         state
 }
 
 func newStartState(FSM *FSM, controller *controller.Controller, location state, defaultState state) *start {
-	return &start{controller, FSM, location, defaultState, logger.New(), "start"}
+	return &start{controller, FSM, location, defaultState, logger.New(), "start", nil}
 }
 
 // Отправляем пользователю запрос геолокации
@@ -40,4 +42,12 @@ func (n *start) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *start) Name() string {
 	return n.name
+}
+
+func (n *start) Next() {
+	if n.next != nil {
+		n.fsm.SetState(n.next)
+	} else {
+		n.fsm.SetState(n.fsm.DefaultState)
+	}
 }
