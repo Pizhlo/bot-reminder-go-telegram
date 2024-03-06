@@ -11,22 +11,52 @@ import (
 
 // PrevMonth обрабатывает кнопку "предыдущий месяц" в календаре
 func (c *Controller) PrevMonth(ctx context.Context, telectx tele.Context) error {
-	return telectx.Edit(c.reminderSrv.PrevMonth(telectx.Chat().ID))
+	// если используется календарь напоминаний
+	if c.reminderCalendar[telectx.Chat().ID] {
+		return telectx.Edit(c.reminderSrv.PrevMonth(telectx.Chat().ID))
+	}
+
+	return telectx.Edit(c.noteSrv.PrevMonth(telectx.Chat().ID))
 }
 
 // NextMonth обрабатывает кнопку "следующий месяц" в календаре
 func (c *Controller) NextMonth(ctx context.Context, telectx tele.Context) error {
-	return telectx.Edit(c.reminderSrv.NextMonth(telectx.Chat().ID))
+	if c.reminderCalendar[telectx.Chat().ID] {
+		return telectx.Edit(c.reminderSrv.NextMonth(telectx.Chat().ID))
+	}
+
+	return telectx.Edit(c.noteSrv.NextMonth(telectx.Chat().ID))
 }
 
 // PrevYear обрабатывает кнопку "предыдущий год" в календаре
 func (c *Controller) PrevYear(ctx context.Context, telectx tele.Context) error {
-	return telectx.Edit(c.reminderSrv.PrevYear(telectx.Chat().ID))
+	if c.reminderCalendar[telectx.Chat().ID] {
+		return telectx.Edit(c.reminderSrv.PrevYear(telectx.Chat().ID))
+	}
+
+	return telectx.Edit(c.noteSrv.PrevYear(telectx.Chat().ID))
 }
 
 // NextYear обрабатывает кнопку "следующий год" в календаре
 func (c *Controller) NextYear(ctx context.Context, telectx tele.Context) error {
-	return telectx.Edit(c.reminderSrv.NextYear(telectx.Chat().ID))
+	if c.reminderCalendar[telectx.Chat().ID] {
+		return telectx.Edit(c.reminderSrv.NextYear(telectx.Chat().ID))
+	}
+
+	return telectx.Edit(c.noteSrv.NextYear(telectx.Chat().ID))
+}
+
+func (c *Controller) SetReminderCalendar(userID int64) {
+	c.reminderCalendar[userID] = true
+}
+
+func (c *Controller) SetNoteCalendar(userID int64) {
+	c.noteCalendar[userID] = true
+}
+
+func (c *Controller) ResetCalendars(userID int64) {
+	c.noteCalendar[userID] = false
+	c.reminderCalendar[userID] = false
 }
 
 // SaveCalendarDate сохраняет дату, указанную в календаре, без валидации (для напоминаний раз в год)

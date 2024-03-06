@@ -14,6 +14,9 @@ var (
 
 	// --------------- поиск по дате --------------
 
+	// inline кнопка для возврата назад в заметки
+	BtnBackToNotes = tele.Btn{Text: "⬅️Назад", Unique: "notes"}
+
 	// inline кнопка для возвращения к выбору типа напоминания
 	BtnBackToDateType = tele.Btn{Text: "⬅️К выбору", Unique: "search_notes_by_date"}
 	// inline кнопка для поиска по одной дате

@@ -145,7 +145,7 @@ func (n *ReminderService) ValidateDate(userID int64, dayOfMonth string, timezone
 
 	dayInt, err := n.checkIfInt(dayOfMonth)
 	if err != nil {
-		return err
+		return api_errors.ErrInvalidDate
 	}
 
 	now := time.Now().In(timezone)

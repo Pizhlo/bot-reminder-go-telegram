@@ -123,3 +123,7 @@ func (f *FSM) Name() string {
 func (f *FSM) SetNext() {
 	f.current.Next()
 }
+
+func (f *FSM) Current() state {
+	return f.current
+}

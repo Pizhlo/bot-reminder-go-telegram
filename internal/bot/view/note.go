@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -28,14 +29,14 @@ func NewNote() *NoteView {
 
 var (
 	// inline кнопка для переключения на предыдущую страницу (заметки)
-	BtnPrevPgNotes = tele.Btn{Text: "<", Unique: "prev"}
+	BtnPrevPgNotes = tele.Btn{Text: "<", Unique: "prev_pg_notes"}
 	// inline кнопка для переключения на следующую страницу (заметки)
-	BtnNextPgNotes = tele.Btn{Text: ">", Unique: "next"}
+	BtnNextPgNotes = tele.Btn{Text: ">", Unique: "next_pg_notes"}
 
 	// inline кнопка для переключения на первую страницу (заметки)
-	BtnFirstPgNotes = tele.Btn{Text: "<<", Unique: "start"}
+	BtnFirstPgNotes = tele.Btn{Text: "<<", Unique: "start_pg_notes"}
 	// inline кнопка для переключения на последнюю страницу (заметки)
-	BtnLastPgNotes = tele.Btn{Text: ">>", Unique: "end"}
+	BtnLastPgNotes = tele.Btn{Text: ">>", Unique: "end_pg_notes"}
 )
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
@@ -209,4 +210,14 @@ func (v *NoteView) SetCurMonth() {
 // SetCurYear устаналивает год в текущий
 func (v *NoteView) SetCurYear() {
 	v.calendar.setCurYear()
+}
+
+// SetCurMonth возвращает текущий месяц
+func (v *NoteView) CurMonth() time.Month {
+	return v.calendar.month()
+}
+
+// SetCurYear возвращает текущий год
+func (v *NoteView) CurYear() int {
+	return v.calendar.year()
 }

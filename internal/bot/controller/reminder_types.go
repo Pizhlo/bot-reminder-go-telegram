@@ -299,12 +299,14 @@ func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
 	})
 }
 
-func (c *Controller) ReminderDaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
-	return c.reminderSrv.DaysBtns(telectx.Chat().ID)
-}
+func (c *Controller) DaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
+	if val, ok := c.noteCalendar[telectx.Chat().ID]; ok {
+		if val {
+			return c.noteSrv.DaysBtns(telectx.Chat().ID)
+		}
+	}
 
-func (c *Controller) NoteDaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
-	return c.noteSrv.DaysBtns(telectx.Chat().ID)
+	return c.reminderSrv.DaysBtns(telectx.Chat().ID)
 }
 
 // Year обрабатывает кнопку "Выбрать дату"

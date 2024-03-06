@@ -45,7 +45,10 @@ func (c *Controller) NextPageNotes(ctx context.Context, telectx tele.Context) er
 	c.logger.Debugf("Controller: handling next notes page command.\n")
 	next, kb := c.noteSrv.NextPage(telectx.Chat().ID)
 
-	return telectx.Edit(next, kb)
+	return telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
 }
 
 // NextPageNotes обрабатывает кнопку переключения на предыдущую страницу

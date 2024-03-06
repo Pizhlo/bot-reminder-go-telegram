@@ -26,9 +26,12 @@ func (c *Controller) SearchNoteBySelecteddate(ctx context.Context, telectx tele.
 		return fmt.Errorf("error while converting string %s to type int: %w", telectx.Callback().Unique, err)
 	}
 
+	month := c.noteSrv.CurMonth(telectx.Chat().ID)
+	year := c.noteSrv.CurYear(telectx.Chat().ID)
+
 	search := model.SearchByOneDate{
 		TgID: telectx.Chat().ID,
-		Date: time.Date(time.Now().Year(), time.Now().Month(), day, 0, 0, 0, 0, time.Local),
+		Date: time.Date(year, month, day, 0, 0, 0, 0, time.Local),
 	}
 
 	notes, kb, err := c.noteSrv.SearchOneDate(ctx, search)
