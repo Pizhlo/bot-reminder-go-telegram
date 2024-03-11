@@ -22,7 +22,8 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.bot.OnError(err, telectx)
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -34,7 +35,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Profile btn")
 		err := s.controller.Profile(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -46,7 +47,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Settings btn")
 		err := s.controller.Settings(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -60,7 +61,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.ListNotes(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -72,7 +73,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Reminders btn")
 		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -89,7 +90,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -109,7 +110,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -121,7 +122,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		//return s.controller.CreateNote(ctx, telectx)
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
