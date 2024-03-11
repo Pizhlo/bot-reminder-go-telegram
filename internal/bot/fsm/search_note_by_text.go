@@ -30,7 +30,14 @@ func (n *searchNoteByTextState) Handle(ctx context.Context, telectx tele.Context
 		return n.controller.DeleteNoteByID(ctx, telectx)
 	}
 
-	return n.controller.SearchNoteByText(ctx, telectx)
+	err := n.controller.SearchNoteByText(ctx, telectx)
+	if err != nil {
+		return err
+	}
+
+	n.fsm.SetNext()
+
+	return nil
 }
 
 func (n *searchNoteByTextState) Name() string {
