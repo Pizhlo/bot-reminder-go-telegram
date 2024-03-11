@@ -11,7 +11,7 @@ import (
 )
 
 // SearchByText ищет заметки, созданные в выбранную дату. Возвращает сообщение с заметками, клавиатуру, ошибку
-func (s *NoteService) SearchOneDate(ctx context.Context, note model.SearchByOneDate) (string, *tele.ReplyMarkup, error) {
+func (s *NoteService) SearchByOneDate(ctx context.Context, note model.SearchByOneDate) (string, *tele.ReplyMarkup, error) {
 	notes, err := s.noteEditor.SearchByOneDate(ctx, note)
 	if err != nil {
 		return "", nil, err

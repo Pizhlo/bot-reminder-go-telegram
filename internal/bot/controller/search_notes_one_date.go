@@ -44,7 +44,7 @@ func (c *Controller) SearchNoteBySelectedDate(ctx context.Context, telectx tele.
 		Date: time.Date(year, month, day, 0, 0, 0, 0, loc),
 	}
 
-	notes, kb, err := c.noteSrv.SearchOneDate(ctx, search)
+	notes, kb, err := c.noteSrv.SearchByOneDate(ctx, search)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
 			msg := fmt.Sprintf(messages.NoNotesFoundByDateMessage, search.Date.Format("02.01.2006"))
