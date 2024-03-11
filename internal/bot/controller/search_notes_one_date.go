@@ -29,9 +29,19 @@ func (c *Controller) SearchNoteBySelectedDate(ctx context.Context, telectx tele.
 	month := c.noteSrv.CurMonth(telectx.Chat().ID)
 	year := c.noteSrv.CurYear(telectx.Chat().ID)
 
+	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+	if err != nil {
+		return fmt.Errorf("error while getting user's timezone: %w", err)
+	}
+
+	loc, err := time.LoadLocation(tz.Name)
+	if err != nil {
+		return fmt.Errorf("error while loading user's timezone: %w", err)
+	}
+
 	search := model.SearchByOneDate{
 		TgID: telectx.Chat().ID,
-		Date: time.Date(year, month, day, 0, 0, 0, 0, time.Local),
+		Date: time.Date(year, month, day, 0, 0, 0, 0, loc),
 	}
 
 	notes, kb, err := c.noteSrv.SearchOneDate(ctx, search)

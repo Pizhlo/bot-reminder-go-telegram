@@ -22,7 +22,6 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
-			s.bot.OnError(err, telectx)
 			s.HandleError(telectx, err)
 			return err
 		}
