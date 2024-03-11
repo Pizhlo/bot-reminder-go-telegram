@@ -60,10 +60,6 @@ func (n *defaultState) Name() string {
 	return n.name
 }
 
-func (n *defaultState) Next() {
-	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
-	}
+func (n *defaultState) Next() state {
+	return n.fsm.DefaultState
 }

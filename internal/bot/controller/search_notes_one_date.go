@@ -20,7 +20,7 @@ func (c *Controller) SearchNoteByOnedate(ctx context.Context, telectx tele.Conte
 }
 
 // SearchNoteByOnedate производит поиск заметок по выбранной дате
-func (c *Controller) SearchNoteBySelecteddate(ctx context.Context, telectx tele.Context) error {
+func (c *Controller) SearchNoteBySelectedDate(ctx context.Context, telectx tele.Context) error {
 	day, err := strconv.Atoi(telectx.Callback().Unique)
 	if err != nil {
 		return fmt.Errorf("error while converting string %s to type int: %w", telectx.Callback().Unique, err)

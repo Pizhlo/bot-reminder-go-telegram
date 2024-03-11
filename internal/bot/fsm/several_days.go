@@ -32,10 +32,9 @@ func (n *severalDays) Name() string {
 	return n.name
 }
 
-func (n *severalDays) Next() {
+func (n *severalDays) Next() state {
 	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
+		return n.next
 	}
+	return n.fsm.DefaultState
 }

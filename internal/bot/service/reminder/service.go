@@ -58,7 +58,6 @@ func New(reminderEditor reminderEditor) *ReminderService {
 
 // SaveUser сохраняет пользователя в мапе view
 func (n *ReminderService) SaveUser(userID int64) {
-	n.logger.Debugf("Reminder service: checking if user saved in the views map...\n")
 	if _, ok := n.viewsMap[userID]; !ok {
 		n.logger.Debugf("Reminder service: user not found in the views map. Saving...\n")
 		n.viewsMap[userID] = view.NewReminder()
@@ -66,7 +65,6 @@ func (n *ReminderService) SaveUser(userID int64) {
 		n.logger.Debugf("Reminder service: user already saved in the views map.\n")
 	}
 
-	n.logger.Debugf("Reminder service: successfully saved user in the views map.\n")
 }
 
 // SetupCalendar устанавливает месяц и год в календаре на текущие

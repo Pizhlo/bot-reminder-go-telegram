@@ -136,3 +136,18 @@ func (mr *MocknoteEditorMockRecorder) SearchByText(ctx, searchNote interface{}) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByText", reflect.TypeOf((*MocknoteEditor)(nil).SearchByText), ctx, searchNote)
 }
+
+// SearchByTwoDates mocks base method.
+func (m *MocknoteEditor) SearchByTwoDates(ctx context.Context, searchNote *model.SearchByTwoDates) ([]model.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchByTwoDates", ctx, searchNote)
+	ret0, _ := ret[0].([]model.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchByTwoDates indicates an expected call of SearchByTwoDates.
+func (mr *MocknoteEditorMockRecorder) SearchByTwoDates(ctx, searchNote interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByTwoDates", reflect.TypeOf((*MocknoteEditor)(nil).SearchByTwoDates), ctx, searchNote)
+}

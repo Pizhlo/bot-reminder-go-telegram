@@ -31,12 +31,11 @@ func (n *searchNoteOneDate) Handle(ctx context.Context, telectx tele.Context) er
 	return n.controller.SearchNoteByOnedate(ctx, telectx)
 }
 
-func (n *searchNoteOneDate) Next() {
+func (n *searchNoteOneDate) Next() state {
 	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
+		return n.next
 	}
+	return n.fsm.DefaultState
 }
 
 func (n *searchNoteOneDate) Name() string {
@@ -63,13 +62,12 @@ func (n *selectedDay) Name() string {
 }
 
 func (n *selectedDay) Handle(ctx context.Context, telectx tele.Context) error {
-	return n.controller.SearchNoteBySelecteddate(ctx, telectx)
+	return n.controller.SearchNoteBySelectedDate(ctx, telectx)
 }
 
-func (n *selectedDay) Next() {
+func (n *selectedDay) Next() state {
 	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
+		return n.next
 	}
+	return n.fsm.DefaultState
 }

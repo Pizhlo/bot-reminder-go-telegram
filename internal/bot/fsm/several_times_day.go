@@ -32,10 +32,9 @@ func (n *severalTimes) Name() string {
 	return n.name
 }
 
-func (n *severalTimes) Next() {
+func (n *severalTimes) Next() state {
 	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
+		return n.next
 	}
+	return n.fsm.DefaultState
 }

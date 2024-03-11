@@ -37,10 +37,9 @@ func (n *searchNoteByTextState) Name() string {
 	return n.name
 }
 
-func (n *searchNoteByTextState) Next() {
+func (n *searchNoteByTextState) Next() state {
 	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
+		return n.next
 	}
+	return n.fsm.DefaultState
 }

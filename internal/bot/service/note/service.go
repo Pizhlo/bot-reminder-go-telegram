@@ -14,6 +14,7 @@ type NoteService struct {
 	noteEditor noteEditor
 	logger     *logrus.Logger
 	viewsMap   map[int64]*view.NoteView
+	searchMap  map[int64]model.SearchByTwoDates
 }
 
 //go:generate mockgen -source ./service.go -destination=./mocks/note_editor.go
@@ -38,15 +39,20 @@ type noteEditor interface {
 
 	// SearchByOneDate производит поиск по заметок по выбранной дате. Если таких заметок нет, возвращает ErrNotesNotFound
 	SearchByOneDate(ctx context.Context, searchNote model.SearchByOneDate) ([]model.Note, error)
+
+	// SearchByTwoDates производит поиск по заметок по двум датам. Если таких заметок нет, возвращает ErrNotesNotFound
+	SearchByTwoDates(ctx context.Context, searchNote *model.SearchByTwoDates) ([]model.Note, error)
 }
 
 func New(noteEditor noteEditor) *NoteService {
-	return &NoteService{noteEditor: noteEditor, logger: logger.New(), viewsMap: make(map[int64]*view.NoteView)}
+	return &NoteService{noteEditor: noteEditor,
+		logger:    logger.New(),
+		viewsMap:  make(map[int64]*view.NoteView),
+		searchMap: make(map[int64]model.SearchByTwoDates)}
 }
 
 // SaveUser сохраняет пользователя в мапе view
 func (n *NoteService) SaveUser(userID int64) {
-	n.logger.Debugf("Note service: checking if user saved in the views map...\n")
 	if _, ok := n.viewsMap[userID]; !ok {
 		n.logger.Debugf("Note service: user not found in the views map. Saving...\n")
 		n.viewsMap[userID] = view.NewNote()
@@ -54,7 +60,6 @@ func (n *NoteService) SaveUser(userID int64) {
 		n.logger.Debugf("Note service: user already saved in the views map.\n")
 	}
 
-	n.logger.Debugf("Note service: successfully saved user in the views map.\n")
 }
 
 // SetupCalendar устанавливает месяц и год в календаре на текущие

@@ -69,7 +69,7 @@ func (n *ReminderService) ProcessTime(userID int64, timeMsg string) error {
 
 	_, err := time.Parse(layout, timeMsg)
 	if err != nil {
-		return err
+		return api_errors.ErrInvalidTime
 	}
 
 	return n.saveTime(userID, timeMsg)

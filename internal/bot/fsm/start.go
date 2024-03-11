@@ -44,10 +44,9 @@ func (n *start) Name() string {
 	return n.name
 }
 
-func (n *start) Next() {
+func (n *start) Next() state {
 	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
+		return n.next
 	}
+	return n.fsm.DefaultState
 }

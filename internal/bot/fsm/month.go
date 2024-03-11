@@ -13,7 +13,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-// Состояние для обработки напоминаний раз в месяц
+// Состояние для обработки напоминаний раз в месяц. Валидирует число месяца
 type month struct {
 	controller *controller.Controller
 	fsm        *FSM
@@ -23,7 +23,7 @@ type month struct {
 }
 
 func newMonthState(controller *controller.Controller, FSM *FSM) *month {
-	return &month{controller, FSM, logger.New(), "month", nil}
+	return &month{controller, FSM, logger.New(), "month", FSM.ReminderTime}
 }
 
 func (n *month) Handle(ctx context.Context, telectx tele.Context) error {
@@ -38,7 +38,9 @@ func (n *month) Handle(ctx context.Context, telectx tele.Context) error {
 	}
 
 	// в случае успеха меняем стейт
-	n.fsm.SetState(n.fsm.ReminderTime)
+	n.fsm.SetNext()
+
+	//return n.fsm.Handle(ctx, telectx)
 
 	return nil
 }
@@ -47,10 +49,9 @@ func (n *month) Name() string {
 	return n.name
 }
 
-func (n *month) Next() {
+func (n *month) Next() state {
 	if n.next != nil {
-		n.fsm.SetState(n.next)
-	} else {
-		n.fsm.SetState(n.fsm.DefaultState)
+		return n.next
 	}
+	return n.fsm.DefaultState
 }

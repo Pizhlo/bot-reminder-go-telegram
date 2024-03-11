@@ -16,8 +16,17 @@ type SearchByText struct {
 	UserID int // id in db!
 	Text   string
 }
+
+// для поиска заметок по одной дате
 type SearchByOneDate struct {
 	TgID   int64
 	UserID int
 	Date   time.Time
+}
+
+// для поиска заметок по двум датам
+type SearchByTwoDates struct {
+	TgID                  int64
+	UserID                int
+	FirstDate, SecondDate time.Time
 }
