@@ -35,8 +35,6 @@ func New(userEditor userEditor, userCache userEditor, timezoneCache timezoneEdit
 	srv := &UserService{userEditor: userEditor, userCache: userCache, logger: logger.New(),
 		timezoneCache: timezoneCache, timezoneEditor: timezoneEditor}
 
-	srv.logger.Debugf("Loading all users from DB to cache...\n")
-
 	users, err := userEditor.GetAll(context.Background())
 	if err != nil {
 		srv.logger.Fatalf("unable to load all users from DB on start: %v\n", err)
@@ -45,10 +43,6 @@ func New(userEditor userEditor, userCache userEditor, timezoneCache timezoneEdit
 	for _, user := range users {
 		srv.userCache.Save(context.Background(), user.TGID, user)
 	}
-
-	srv.logger.Debugf("Successfully saved %d user(s) to cache: %v\n", len(users), users)
-
-	srv.logger.Debugf("Loading all users' timezones from DB to cache...\n")
 
 	tzs, err := srv.timezoneEditor.GetAll(context.Background())
 	if err != nil {
@@ -70,12 +64,8 @@ func (s *UserService) GetAll(ctx context.Context) []*user.User {
 }
 
 func (s *UserService) SaveUser(ctx context.Context, userID int64, u *user.User) error {
-	s.logger.Debugf("User service: Saving user in cache... Key: %d. Value: %v\n", userID, u)
 	s.userCache.Save(ctx, userID, u)
 
-	s.logger.Debugf("User service: Successfully saved user in cache. Key: %d. Value: %v\n", userID, u)
-
-	s.logger.Debugf("User service: Saving user in DB... Value: %v\n", u)
 	return s.userEditor.Save(ctx, userID, u)
 }
 
@@ -87,8 +77,6 @@ func (s *UserService) CheckUser(ctx context.Context, tgID int64) bool {
 }
 
 func (s *UserService) checkInCache(ctx context.Context, tgID int64) bool {
-	s.logger.Debugf("User service: Checking user in cache. ID: %d\n", tgID)
-
 	u, err := s.userCache.Get(ctx, tgID)
 	if err != nil {
 		s.logger.Errorf("User service: Error while checking user in cache: %v\n", err)
@@ -104,8 +92,6 @@ func (s *UserService) checkInCache(ctx context.Context, tgID int64) bool {
 }
 
 func (s *UserService) checkInRepo(ctx context.Context, tgID int64) bool {
-	s.logger.Debugf("User service: Checking user in DB. ID: %d\n", tgID)
-
 	u, err := s.userEditor.Get(ctx, tgID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {

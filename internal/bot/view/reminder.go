@@ -17,7 +17,7 @@ type ReminderView struct {
 	pages       []string
 	currentPage int
 	logger      *logrus.Logger
-	calendar    *calendar
+	calendar    *Calendar
 }
 
 func NewReminder() *ReminderView {
@@ -26,22 +26,22 @@ func NewReminder() *ReminderView {
 
 var (
 	// inline кнопка для переключения на предыдущую страницу (напоминания)
-	BtnPrevPgReminders = tele.Btn{Text: "<", Unique: "prev"}
+	BtnPrevPgReminders = tele.Btn{Text: "<", Unique: "prev_pg_reminders"}
 	// inline кнопка для переключения на следующую страницу (напоминания)
-	BtnNextPgReminders = tele.Btn{Text: ">", Unique: "next"}
+	BtnNextPgReminders = tele.Btn{Text: ">", Unique: "next_pg_reminders"}
 
 	// inline кнопка для переключения на первую страницу (напоминания)
-	BtnFirstPgReminders = tele.Btn{Text: "<<", Unique: "start"}
+	BtnFirstPgReminders = tele.Btn{Text: "<<", Unique: "start_pg_reminders"}
 	// inline кнопка для переключения на последнюю страницу (напоминания)
-	BtnLastPgReminders = tele.Btn{Text: ">>", Unique: "end"}
+	BtnLastPgReminders = tele.Btn{Text: ">>", Unique: "end_pg_reminders"}
 )
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
 func (v *ReminderView) Message(reminders []model.Reminder) (string, error) {
-	if len(reminders) == 0 {
-		return messages.UserDoesntHaveNotesMessage, nil
-	}
+	// if len(reminders) == 0 {
+	// 	return messages.UserDoesntHaveNotesMessage, nil
+	// }
 
 	var res = ""
 
@@ -53,7 +53,7 @@ func (v *ReminderView) Message(reminders []model.Reminder) (string, error) {
 			return "", err
 		}
 
-		res += fmt.Sprintf("<b>%d. %s</b>\n\nСрабатывает: %s\nСоздано: %s\nУдалить: /del%d\n\n", i+1, reminder.Name, txt, reminder.Created.Format(dateFormat), reminder.ID)
+		res += fmt.Sprintf("<b>%d. %s</b>\n\nСрабатывает: %s\nСоздано: %s\nУдалить: /del%d\n\n", i+1, reminder.Name, txt, reminder.Created.Format(createdFieldFormat), reminder.ID)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""
@@ -426,27 +426,37 @@ func endsWith(s string, suff ...string) bool {
 
 // Calendar возвращает календарь с текущим месяцем и годом
 func (v *ReminderView) Calendar() *tele.ReplyMarkup {
-	return v.calendar.currentCalendar()
+	calendar := v.calendar.currentCalendar()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToReminderType)
+	return calendar
 }
 
 // PrevMonth возвращает календарь с предыдущим месяцем
 func (v *ReminderView) PrevMonth() *tele.ReplyMarkup {
-	return v.calendar.prevMonth()
+	calendar := v.calendar.prevMonth()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToReminderType)
+	return calendar
 }
 
 // NextMonth возвращает календарь со следующим месяцем
 func (v *ReminderView) NextMonth() *tele.ReplyMarkup {
-	return v.calendar.nextMonth()
+	calendar := v.calendar.nextMonth()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToReminderType)
+	return calendar
 }
 
 // PrevYear возвращает календарь с предыдущим годом
 func (v *ReminderView) PrevYear() *tele.ReplyMarkup {
-	return v.calendar.prevYear()
+	calendar := v.calendar.prevYear()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToReminderType)
+	return calendar
 }
 
 // NextYear возвращает календарь с следующим годом
 func (v *ReminderView) NextYear() *tele.ReplyMarkup {
-	return v.calendar.nextYear()
+	calendar := v.calendar.nextYear()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToReminderType)
+	return calendar
 }
 
 // GetDaysBtns возвращает слайс кнопок с числами месяца

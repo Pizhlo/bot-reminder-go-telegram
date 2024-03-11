@@ -10,15 +10,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для обработки геолокации от пользователя
 type location struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newLocationState(FSM *FSM, controller *controller.Controller) *location {
-	return &location{controller, FSM, logger.New(), "location"}
+	return &location{controller, FSM, logger.New(), "location", nil}
 }
 
 // Обрабатываем геолокацию пользователя
@@ -37,4 +39,11 @@ func (n *location) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *location) Name() string {
 	return n.name
+}
+
+func (n *location) Next() state {
+	if n.next != nil {
+		return n.next
+	}
+	return n.fsm.DefaultState
 }

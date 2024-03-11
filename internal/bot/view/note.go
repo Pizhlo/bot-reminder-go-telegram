@@ -2,55 +2,52 @@ package view
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
-	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 const (
-	dateFormat       = "02.01.2006 15:04:05"
-	noteCountPerPage = 5
-	maxMessageLen    = 4096
+	createdFieldFormat = "02.01.2006 15:04:05"
+	noteCountPerPage   = 5
+	maxMessageLen      = 4096
 )
 
 type NoteView struct {
 	pages       []string
 	currentPage int
 	logger      *logrus.Logger
+	calendar    *Calendar
 }
 
 func NewNote() *NoteView {
-	return &NoteView{pages: make([]string, 0), currentPage: 0, logger: logger.New()}
+	return &NoteView{pages: make([]string, 0), currentPage: 0, logger: logger.New(), calendar: new()}
 }
 
 var (
 	// inline кнопка для переключения на предыдущую страницу (заметки)
-	BtnPrevPgNotes = tele.Btn{Text: "<", Unique: "prev"}
+	BtnPrevPgNotes = tele.Btn{Text: "<", Unique: "prev_pg_notes"}
 	// inline кнопка для переключения на следующую страницу (заметки)
-	BtnNextPgNotes = tele.Btn{Text: ">", Unique: "next"}
+	BtnNextPgNotes = tele.Btn{Text: ">", Unique: "next_pg_notes"}
 
 	// inline кнопка для переключения на первую страницу (заметки)
-	BtnFirstPgNotes = tele.Btn{Text: "<<", Unique: "start"}
+	BtnFirstPgNotes = tele.Btn{Text: "<<", Unique: "start_pg_notes"}
 	// inline кнопка для переключения на последнюю страницу (заметки)
-	BtnLastPgNotes = tele.Btn{Text: ">>", Unique: "end"}
+	BtnLastPgNotes = tele.Btn{Text: ">>", Unique: "end_pg_notes"}
 )
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
 func (v *NoteView) Message(notes []model.Note) string {
-	if len(notes) == 0 {
-		return messages.UserDoesntHaveNotesMessage
-	}
-
 	var res = ""
 
 	v.pages = make([]string, 0)
 
 	for i, note := range notes {
-		res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /del%d</b>\n\n%s\n\n", i+1, note.Created.Format(dateFormat), note.ID, note.Text)
+		res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /del%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""
@@ -161,4 +158,66 @@ func (v *NoteView) SetCurrentToFirst() {
 func (v *NoteView) Clear() {
 	v.currentPage = 0
 	v.pages = make([]string, 0)
+}
+
+// Calendar возвращает календарь с текущим месяцем и годом
+func (v *NoteView) Calendar() *tele.ReplyMarkup {
+	calendar := v.calendar.currentCalendar()
+
+	calendarWithBtns := v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+
+	return calendarWithBtns
+}
+
+// PrevMonth возвращает календарь с предыдущим месяцем
+func (v *NoteView) PrevMonth() *tele.ReplyMarkup {
+	calendar := v.calendar.prevMonth()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// NextMonth возвращает календарь со следующим месяцем
+func (v *NoteView) NextMonth() *tele.ReplyMarkup {
+	calendar := v.calendar.nextMonth()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// PrevYear возвращает календарь с предыдущим годом
+func (v *NoteView) PrevYear() *tele.ReplyMarkup {
+	calendar := v.calendar.prevYear()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// NextYear возвращает календарь с следующим годом
+func (v *NoteView) NextYear() *tele.ReplyMarkup {
+	calendar := v.calendar.nextYear()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// GetDaysBtns возвращает слайс кнопок с числами месяца
+func (v *NoteView) GetDaysBtns() []tele.Btn {
+	return v.calendar.getDaysBtns()
+}
+
+// SetCurMonth устаналивает месяц в текущий
+func (v *NoteView) SetCurMonth() {
+	v.calendar.setCurMonth()
+}
+
+// SetCurYear устаналивает год в текущий
+func (v *NoteView) SetCurYear() {
+	v.calendar.setCurYear()
+}
+
+// SetCurMonth возвращает текущий месяц
+func (v *NoteView) CurMonth() time.Month {
+	return v.calendar.month()
+}
+
+// SetCurYear возвращает текущий год
+func (v *NoteView) CurYear() int {
+	return v.calendar.year()
 }

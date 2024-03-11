@@ -69,7 +69,7 @@ func (n *ReminderService) ProcessTime(userID int64, timeMsg string) error {
 
 	_, err := time.Parse(layout, timeMsg)
 	if err != nil {
-		return err
+		return api_errors.ErrInvalidTime
 	}
 
 	return n.saveTime(userID, timeMsg)
@@ -145,7 +145,7 @@ func (n *ReminderService) ValidateDate(userID int64, dayOfMonth string, timezone
 
 	dayInt, err := n.checkIfInt(dayOfMonth)
 	if err != nil {
-		return err
+		return api_errors.ErrInvalidDate
 	}
 
 	now := time.Now().In(timezone)

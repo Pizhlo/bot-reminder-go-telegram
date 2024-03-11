@@ -18,8 +18,6 @@ func (s *ReminderService) Save(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	s.logger.Debugf("Reminder service: saving user's reminder. Model: %+v\n", r)
-
 	id, err := s.reminderEditor.Save(ctx, r)
 	if err != nil {
 		return err

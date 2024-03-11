@@ -19,8 +19,8 @@ var (
 	BtnNextYear = tele.Btn{Text: ">>", Unique: "next_year"}
 )
 
-// calendar предоставляет календарь пользователю для выбора даты
-type calendar struct {
+// Calendar предоставляет календарь пользователю для выбора даты
+type Calendar struct {
 	curMonth time.Month
 	curYear  int
 	daysBtns []tele.Btn
@@ -31,29 +31,29 @@ type day struct {
 	weekDay int // день недели
 }
 
-func new() *calendar {
-	return &calendar{}
+func new() *Calendar {
+	return &Calendar{}
 }
 
-func (c *calendar) getDaysBtns() []tele.Btn {
+func (c *Calendar) getDaysBtns() []tele.Btn {
 	return c.daysBtns
 }
 
-func (c *calendar) month() time.Month {
+func (c *Calendar) month() time.Month {
 	return c.curMonth
 }
 
-func (c *calendar) year() int {
+func (c *Calendar) year() int {
 	return c.curYear
 }
 
 // currentCalendar предоставляет клавиатуру с календарем на текущий месяц и год
-func (c *calendar) currentCalendar() *tele.ReplyMarkup {
+func (c *Calendar) currentCalendar() *tele.ReplyMarkup {
 	return c.keyboard()
 }
 
 // prevMonth предоставляет клавиатуру с календарем на предыдущий месяц
-func (c *calendar) prevMonth() *tele.ReplyMarkup {
+func (c *Calendar) prevMonth() *tele.ReplyMarkup {
 	if c.curMonth == 1 {
 		c.curMonth = 12
 		c.curYear -= 1
@@ -65,7 +65,7 @@ func (c *calendar) prevMonth() *tele.ReplyMarkup {
 }
 
 // nextMonth предоставляет клавиатуру с календарем на следующий месяц
-func (c *calendar) nextMonth() *tele.ReplyMarkup {
+func (c *Calendar) nextMonth() *tele.ReplyMarkup {
 	if c.curMonth == 12 {
 		c.curMonth = 1
 		c.curYear += 1
@@ -77,21 +77,21 @@ func (c *calendar) nextMonth() *tele.ReplyMarkup {
 }
 
 // prevYear предоставляет клавиатуру с календарем на предыдущий год
-func (c *calendar) prevYear() *tele.ReplyMarkup {
+func (c *Calendar) prevYear() *tele.ReplyMarkup {
 	c.curYear -= 1
 
 	return c.keyboard()
 }
 
 // nextYear предоставляет клавиатуру с календарем на следующий год
-func (c *calendar) nextYear() *tele.ReplyMarkup {
+func (c *Calendar) nextYear() *tele.ReplyMarkup {
 	c.curYear += 1
 
 	return c.keyboard()
 }
 
 // keyboard делает клавиатуру с календарем на указанный месяц и год
-func (c *calendar) keyboard() *tele.ReplyMarkup {
+func (c *Calendar) keyboard() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	btns := make([]tele.Btn, 0)
@@ -117,7 +117,7 @@ func (c *calendar) keyboard() *tele.ReplyMarkup {
 
 	rows = append(rows, menu.Split(7, btns)...)
 
-	rows = append(rows, menu.Row(BtnBackToMenu, BtnBackToReminderType))
+	//rows = append(rows, menu.Row(BtnBackToMenu, BtnBackToReminderType))
 
 	menu.Inline(
 		rows...,
@@ -127,7 +127,7 @@ func (c *calendar) keyboard() *tele.ReplyMarkup {
 }
 
 // daysButtons генерирует кнопки с днями месяца
-func (c *calendar) daysButtons() []tele.Btn {
+func (c *Calendar) daysButtons() []tele.Btn {
 	res := []tele.Btn{}
 
 	days := c.generateDays()
@@ -194,22 +194,22 @@ func countDaysAfter(weekDay int) int {
 }
 
 // setCurYear устанавливает год в текущий
-func (c *calendar) setCurYear() {
+func (c *Calendar) setCurYear() {
 	c.curYear = time.Now().Year()
 }
 
 // setCurMonth устанавливает месяц в текущий
-func (c *calendar) setCurMonth() {
+func (c *Calendar) setCurMonth() {
 	c.curMonth = time.Now().Month()
 }
 
 // daysInMonthCount возвращает количество дней в месяце, установленном в поле curMonth
-func (c *calendar) daysInMonthCount() int {
+func (c *Calendar) daysInMonthCount() int {
 	return time.Date(c.curYear, c.curMonth+1, 0, 0, 0, 0, 0, time.UTC).Day()
 }
 
 // generateDays составляет дни на весь месяц
-func (c *calendar) generateDays() []day {
+func (c *Calendar) generateDays() []day {
 	days := []day{}
 	daysInMonth := c.daysInMonthCount()
 
@@ -223,7 +223,7 @@ func (c *calendar) generateDays() []day {
 }
 
 // weekDaysButtons возвращает кнопки с названиями дней недели
-func (c *calendar) weekDaysButtons() []tele.Btn {
+func (c *Calendar) weekDaysButtons() []tele.Btn {
 	weekDays := map[int]string{
 		1: "Пн",
 		2: "Вт",
@@ -250,7 +250,7 @@ func (c *calendar) weekDaysButtons() []tele.Btn {
 
 // topMenu возвращает меню, расположенное над календарем - там находятся название месяца, года,
 // и кнопки для переключения между датами
-func (c *calendar) topMenu() []tele.Btn {
+func (c *Calendar) topMenu() []tele.Btn {
 	menu := []tele.Btn{}
 
 	monthBtn, yearBtn := c.monthTitle(), c.yearTitle()
@@ -261,7 +261,7 @@ func (c *calendar) topMenu() []tele.Btn {
 }
 
 // monthTitle возвращает кнопку с названием текущего месяца
-func (c *calendar) monthTitle() tele.Btn {
+func (c *Calendar) monthTitle() tele.Btn {
 	monthsTranslation := map[string]string{
 		"January":   "Янв",
 		"February":  "Фев",
@@ -286,9 +286,21 @@ func (c *calendar) monthTitle() tele.Btn {
 }
 
 // yearTitle возвращает кнопку с надписью текущего года
-func (c *calendar) yearTitle() tele.Btn {
+func (c *Calendar) yearTitle() tele.Btn {
 	return tele.Btn{
 		Text:   fmt.Sprintf("%d", c.curYear),
 		Unique: fmt.Sprintf("%d", c.curYear),
 	}
+}
+
+func (c *Calendar) addButns(dst *tele.ReplyMarkup, btns ...tele.Btn) *tele.ReplyMarkup {
+	inlineBtns := []tele.InlineButton{}
+
+	for _, btn := range btns {
+		inlineBtns = append(inlineBtns, *btn.Inline())
+	}
+
+	dst.InlineKeyboard = append(dst.InlineKeyboard, inlineBtns)
+
+	return dst
 }

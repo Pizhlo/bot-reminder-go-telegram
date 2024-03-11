@@ -13,15 +13,18 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для обработки напоминаний раз в несколько дней. Валидирует число.
+// Тип: напоминание раз в несколько дней
 type daysDuration struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newDaysDurationState(controller *controller.Controller, FSM *FSM) *daysDuration {
-	return &daysDuration{controller, FSM, logger.New(), "days duration"}
+	return &daysDuration{controller, FSM, logger.New(), "days duration", FSM.ReminderTime}
 }
 
 func (n *daysDuration) Handle(ctx context.Context, telectx tele.Context) error {
@@ -36,11 +39,18 @@ func (n *daysDuration) Handle(ctx context.Context, telectx tele.Context) error {
 	}
 
 	// в случае успеха меняем стейт
-	n.fsm.SetState(n.fsm.ReminderTime)
+	n.fsm.SetNext()
 
 	return nil
 }
 
 func (n *daysDuration) Name() string {
 	return n.name
+}
+
+func (n *daysDuration) Next() state {
+	if n.next != nil {
+		return n.next
+	}
+	return n.fsm.DefaultState
 }

@@ -9,15 +9,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для обработки напоминаний раз в неск. секунд
 type minutesDuration struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newMinutesDurationState(controller *controller.Controller, FSM *FSM) *minutesDuration {
-	return &minutesDuration{controller, FSM, logger.New(), "minutes duration"}
+	return &minutesDuration{controller, FSM, logger.New(), "minutes duration", nil}
 }
 
 func (n *minutesDuration) Handle(ctx context.Context, telectx tele.Context) error {
@@ -28,4 +30,11 @@ func (n *minutesDuration) Handle(ctx context.Context, telectx tele.Context) erro
 
 func (n *minutesDuration) Name() string {
 	return n.name
+}
+
+func (n *minutesDuration) Next() state {
+	if n.next != nil {
+		return n.next
+	}
+	return n.fsm.DefaultState
 }

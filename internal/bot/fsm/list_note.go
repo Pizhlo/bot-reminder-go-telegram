@@ -10,15 +10,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние перечисления напомианий
 type listNote struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newListNoteState(FSM *FSM, controller *controller.Controller) *listNote {
-	return &listNote{controller, FSM, logger.New(), "list note"}
+	return &listNote{controller, FSM, logger.New(), "list note", nil}
 }
 
 func (n *listNote) Handle(ctx context.Context, telectx tele.Context) error {
@@ -37,4 +39,11 @@ func (n *listNote) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *listNote) Name() string {
 	return n.name
+}
+
+func (n *listNote) Next() state {
+	if n.next != nil {
+		return n.next
+	}
+	return n.fsm.DefaultState
 }

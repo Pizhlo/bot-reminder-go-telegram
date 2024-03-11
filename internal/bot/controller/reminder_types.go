@@ -204,6 +204,20 @@ func (c *Controller) EveryWeek(ctx context.Context, telectx telebot.Context) err
 // WeekDay обрабатывает выбор пользователя определенного дня недели - понедельник, вторник, и т.д.
 // Это приходит с нажатий на клавиатуру view.WeekMenu()
 func (c *Controller) WeekDay(ctx context.Context, telectx telebot.Context) error {
+	// если сообщение прислал пользователь - это новое название напоминания
+	if !telectx.Message().Sender.IsBot {
+		// сохраняем новое название напоминания, если пользователь прислал повторно
+		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+
+		msg := fmt.Sprintf(messages.ChooseWeekDayMessage, telectx.Message().Text, "раз в неделю")
+
+		return telectx.EditOrSend(msg, &telebot.SendOptions{
+			ParseMode:   htmlParseMode,
+			ReplyMarkup: view.WeekMenu(),
+		})
+	}
+
+	// если пользователь нажал кнопку
 	err := c.reminderSrv.SaveDate(telectx.Chat().ID, telectx.Callback().Unique)
 	if err != nil {
 		return err
@@ -300,6 +314,12 @@ func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
 }
 
 func (c *Controller) DaysBtns(ctx context.Context, telectx telebot.Context) []telebot.Btn {
+	if val, ok := c.noteCalendar[telectx.Chat().ID]; ok {
+		if val {
+			return c.noteSrv.DaysBtns(telectx.Chat().ID)
+		}
+	}
+
 	return c.reminderSrv.DaysBtns(telectx.Chat().ID)
 }
 

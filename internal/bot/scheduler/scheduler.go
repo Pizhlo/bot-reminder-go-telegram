@@ -148,7 +148,7 @@ func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime strin
 		return NextRun{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
 
-	j, err := s.NewJob(gocron.WeeklyJob(0, gocron.NewWeekdays(weekDay), cronTime), job)
+	j, err := s.NewJob(gocron.WeeklyJob(1, gocron.NewWeekdays(weekDay), cronTime), job)
 	if err != nil {
 		return NextRun{}, fmt.Errorf("error while creating new job: %w", err)
 	}

@@ -27,6 +27,10 @@ type Controller struct {
 	reminderSrv *reminder.ReminderService
 	// scheduler вызывает функции в указанное время
 	scheduler *gocron.Scheduler
+	// отражает, используется ли календарь заметок
+	noteCalendar map[int64]bool
+	// отражает, используется ли календарь напоминаний
+	reminderCalendar map[int64]bool
 }
 
 const (
@@ -40,13 +44,22 @@ func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, re
 		return nil, err
 	}
 
-	return &Controller{logger: logger.New(), userSrv: userSrv, noteSrv: noteSrv, bot: bot, reminderSrv: reminderSrv, scheduler: sch}, nil
+	return &Controller{logger: logger.New(),
+		userSrv:          userSrv,
+		noteSrv:          noteSrv,
+		bot:              bot,
+		reminderSrv:      reminderSrv,
+		scheduler:        sch,
+		noteCalendar:     make(map[int64]bool),
+		reminderCalendar: make(map[int64]bool)}, nil
 }
 
 // CheckUser проверяет, известен ли пользователь боту
 func (c *Controller) CheckUser(ctx context.Context, tgID int64) bool {
 	c.noteSrv.SaveUser(tgID)
 	c.reminderSrv.SaveUser(tgID)
+	c.noteCalendar[tgID] = false
+	c.reminderCalendar[tgID] = false
 	return c.userSrv.CheckUser(ctx, tgID)
 }
 

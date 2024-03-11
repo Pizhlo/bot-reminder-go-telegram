@@ -22,7 +22,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -34,7 +34,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Profile btn")
 		err := s.controller.Profile(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -46,7 +46,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Settings btn")
 		err := s.controller.Settings(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -60,7 +60,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.ListNotes(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -72,7 +72,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		s.logger.Debugf("Reminders btn")
 		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -89,7 +89,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -109,7 +109,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -121,7 +121,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		//return s.controller.CreateNote(ctx, telectx)
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
-			s.controller.HandleError(telectx, err, s.fsm[telectx.Chat().ID].Name())
+			s.HandleError(telectx, err)
 			return err
 		}
 
@@ -182,6 +182,88 @@ func (s *Server) setupBot(ctx context.Context) {
 		if err != nil {
 			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err
+		}
+
+		return nil
+	})
+
+	// поиск заметок по дате
+	s.bot.Handle(&view.BtnSearchNotesByDate, func(c tele.Context) error {
+		err := c.EditOrSend(messages.SearchNotesByDateChooseMessage, &tele.SendOptions{
+			ReplyMarkup: view.SearchByDateBtn(),
+			ParseMode:   "html",
+		})
+		if err != nil {
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+			return err
+		}
+
+		return nil
+	})
+
+	// поиск заметок по одной дате
+	s.bot.Handle(&view.BtnSearchByOneDate, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteOneDate)
+
+		s.controller.SetupNoteCalendar(ctx, c)
+		s.controller.SetNoteCalendar(c.Chat().ID)
+
+		err := s.controller.SearchNoteByOnedate(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				s.fsm[c.Chat().ID].SetNext()
+				err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				if err != nil {
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ListNote)
+				s.controller.ResetCalendars(c.Chat().ID)
+				return nil
+			})
+		}
+
+		return nil
+	})
+
+	// поиск заметок по двум датам
+	s.bot.Handle(&view.BtnSearchByTwoDate, func(c tele.Context) error {
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteTwoDates)
+
+		s.controller.SetupNoteCalendar(ctx, c)
+		s.controller.SetNoteCalendar(c.Chat().ID)
+
+		err := s.controller.SearchNoteByTwoDates(ctx, c)
+		if err != nil {
+			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+			return err
+		}
+
+		btns := s.controller.DaysBtns(ctx, c)
+
+		for _, btn := range btns {
+			s.bot.Handle(&btn, func(c tele.Context) error {
+				s.fsm[c.Chat().ID].SetNext()
+				err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				if err != nil {
+					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+						return s.controller.SecondDateBeforeFirst(ctx, c)
+					}
+
+					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+					return err
+				}
+
+				return nil
+			})
 		}
 
 		return nil
@@ -279,12 +361,6 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		return nil
 	})
-
-	// // удалить сработавшее напоминание
-	// s.bot.Handle(&view.BtnDeleteReminder, func(ctx tele.Context) error {
-	// 	uniq := ctx.Callback().Unique
-	// 	return ctx.EditOrSend(fmt.Sprintf("Удалено: %s", uniq))
-	// })
 
 	// удалить все напоминания - подтверждение
 	s.bot.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {
@@ -405,13 +481,15 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnEveryWeekReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].EveryWeek)
 
-		err := s.controller.EveryWeek(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.EveryWeek(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		// return nil
+
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 
 	// once in several days (e.g. once in 10 days)
@@ -444,7 +522,9 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnOnceYear, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Year)
 
-		s.controller.SetupCalendar(ctx, c)
+		s.controller.SetupReminderCalendar(ctx, c)
+
+		s.controller.SetReminderCalendar(c.Chat().ID)
 
 		err := s.controller.Year(ctx, c)
 		if err != nil {
@@ -456,14 +536,17 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				err := s.controller.SaveCalendarDate(ctx, c)
-				if err != nil {
-					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-					return err
-				}
+				// s.fsm[c.Chat().ID].SetNext()
+				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				// if err != nil {
+				// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+				// 	return err
+				// }
 
-				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
-				return nil
+				// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+				// s.controller.ResetCalendars(c.Chat().ID)
+				// return nil
+				return s.fsm[c.Chat().ID].Handle(ctx, c)
 			})
 		}
 
@@ -474,7 +557,8 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnOnce, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Once)
 
-		s.controller.SetupCalendar(ctx, c)
+		s.controller.SetupReminderCalendar(ctx, c)
+		s.controller.SetReminderCalendar(c.Chat().ID)
 
 		err := s.controller.Date(ctx, c)
 		if err != nil {
@@ -486,18 +570,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				err := s.controller.ProcessDate(ctx, c)
-				if err != nil {
-					if errors.Is(err, api_errors.ErrInvalidDate) {
-						return s.controller.InvalidDate(ctx, c)
-					}
-
-					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-					return err
-				}
-
-				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
-				return nil
+				return s.fsm[c.Chat().ID].Handle(ctx, c)
 			})
 		}
 
@@ -518,18 +591,26 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				err := s.controller.ProcessDate(ctx, c)
-				if err != nil {
-					if errors.Is(err, api_errors.ErrInvalidDate) {
-						return s.controller.InvalidDate(ctx, c)
-					}
+				// s.fsm[c.Chat().ID].SetNext()
+				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				// if err != nil {
+				// 	// если режим - дата (одноразовое напоминание) и проверка не прошла
+				// 	if errors.Is(err, api_errors.ErrInvalidDate) {
+				// 		return s.controller.InvalidDate(ctx, c)
+				// 	}
+				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
+				// 	}
 
-					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-					return err
-				}
+				// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+				// 	return err
+				// }
 
-				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
-				return nil
+				// s.fsm[c.Chat().ID].SetNext()
+				// s.controller.ResetCalendars(c.Chat().ID)
+				// return nil
+
+				return s.fsm[c.Chat().ID].Handle(ctx, c)
 			})
 		}
 
@@ -548,18 +629,23 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				err := s.controller.ProcessDate(ctx, c)
-				if err != nil {
-					if errors.Is(err, api_errors.ErrInvalidDate) {
-						return s.controller.InvalidDate(ctx, c)
-					}
+				// s.fsm[c.Chat().ID].SetNext()
+				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				// if err != nil {
+				// 	if errors.Is(err, api_errors.ErrInvalidDate) {
+				// 		return s.controller.InvalidDate(ctx, c)
+				// 	}
+				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
+				// 	}
 
-					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-					return err
-				}
+				// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+				// 	return err
+				// }
 
-				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
-				return nil
+				// s.fsm[c.Chat().ID].SetNext()
+				// s.controller.ResetCalendars(c.Chat().ID)
+				return s.fsm[c.Chat().ID].Handle(ctx, c)
 			})
 		}
 
@@ -578,18 +664,23 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				err := s.controller.ProcessDate(ctx, c)
-				if err != nil {
-					if errors.Is(err, api_errors.ErrInvalidDate) {
-						return s.controller.InvalidDate(ctx, c)
-					}
+				// s.fsm[c.Chat().ID].SetNext()
+				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				// if err != nil {
+				// 	if errors.Is(err, api_errors.ErrInvalidDate) {
+				// 		return s.controller.InvalidDate(ctx, c)
+				// 	}
+				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
+				// 	}
 
-					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-					return err
-				}
+				// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+				// 	return err
+				// }
 
-				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
-				return nil
+				// s.fsm[c.Chat().ID].SetNext()
+				// s.controller.ResetCalendars(c.Chat().ID)
+				return s.fsm[c.Chat().ID].Handle(ctx, c)
 			})
 		}
 
@@ -608,18 +699,20 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				err := s.controller.ProcessDate(ctx, c)
-				if err != nil {
-					if errors.Is(err, api_errors.ErrInvalidDate) {
-						return s.controller.InvalidDate(ctx, c)
-					}
+				// s.fsm[c.Chat().ID].SetNext()
+				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				// if err != nil {
+				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
+				// 	}
 
-					s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-					return err
-				}
+				// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+				// 	return err
+				// }
 
-				s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
-				return nil
+				// s.fsm[c.Chat().ID].SetNext()
+				// s.controller.ResetCalendars(c.Chat().ID)
+				return s.fsm[c.Chat().ID].Handle(ctx, c)
 			})
 		}
 
@@ -630,92 +723,94 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// Monday
 	s.bot.Handle(&view.MondayBtn, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := s.controller.WeekDay(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.WeekDay(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		// return nil
+
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 
 	// Tuesday
 	s.bot.Handle(&view.TuesdayBtn, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := s.controller.WeekDay(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.WeekDay(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 
 	// Wednesday
 	s.bot.Handle(&view.WednesdayBtn, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := s.controller.WeekDay(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.WeekDay(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 
 	// Thursday
 	s.bot.Handle(&view.ThursdayBtn, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := s.controller.WeekDay(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.WeekDay(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 
 	// Friday
 	s.bot.Handle(&view.FridayBtn, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := s.controller.WeekDay(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.WeekDay(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 
 	// Saturday
 	s.bot.Handle(&view.SaturdayBtn, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := s.controller.WeekDay(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.WeekDay(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 
 	// Sunday
 	s.bot.Handle(&view.SundayBtn, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
+		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
-		err := s.controller.WeekDay(ctx, c)
-		if err != nil {
-			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
-			return err
-		}
+		// err := s.controller.WeekDay(ctx, c)
+		// if err != nil {
+		// 	s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
+		// 	return err
+		// }
 
-		return nil
+		return s.fsm[c.Chat().ID].Handle(ctx, c)
 	})
 }

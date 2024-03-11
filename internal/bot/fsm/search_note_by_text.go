@@ -10,15 +10,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для поиска заметок по тексту
 type searchNoteByTextState struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newSearchNoteByTextState(controller *controller.Controller, FSM *FSM) *searchNoteByTextState {
-	return &searchNoteByTextState{controller, FSM, logger.New(), "search note by text"}
+	return &searchNoteByTextState{controller, FSM, logger.New(), "search note by text", nil}
 }
 
 func (n *searchNoteByTextState) Handle(ctx context.Context, telectx tele.Context) error {
@@ -33,4 +35,11 @@ func (n *searchNoteByTextState) Handle(ctx context.Context, telectx tele.Context
 
 func (n *searchNoteByTextState) Name() string {
 	return n.name
+}
+
+func (n *searchNoteByTextState) Next() state {
+	if n.next != nil {
+		return n.next
+	}
+	return n.fsm.DefaultState
 }

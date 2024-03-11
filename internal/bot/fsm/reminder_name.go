@@ -9,15 +9,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для обработки названия напоминания
 type reminderName struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newReminderNameState(controller *controller.Controller, FSM *FSM) *reminderName {
-	return &reminderName{controller, FSM, logger.New(), "reminder name"}
+	return &reminderName{controller, FSM, logger.New(), "reminder name", nil}
 }
 
 func (n *reminderName) Handle(ctx context.Context, telectx tele.Context) error {
@@ -27,4 +29,11 @@ func (n *reminderName) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *reminderName) Name() string {
 	return n.name
+}
+
+func (n *reminderName) Next() state {
+	if n.next != nil {
+		return n.next
+	}
+	return n.fsm.DefaultState
 }

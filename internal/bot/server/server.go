@@ -42,3 +42,12 @@ func (s *Server) loadFSM(ctx context.Context) {
 
 	s.controller.SaveUsers(ctx, users)
 }
+
+// HandleError обрабатывает ошибку: устанавливает состояние в дефолтное, передает контроллеру
+func (s *Server) HandleError(ctx tele.Context, err error) {
+	// обрабатываем ошибку
+	s.controller.HandleError(ctx, err, s.fsm[ctx.Chat().ID].Name())
+
+	// устанавливаем состояние в дефолтное
+	s.fsm[ctx.Chat().ID].SetState(s.fsm[ctx.Chat().ID].DefaultState)
+}

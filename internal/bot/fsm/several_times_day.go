@@ -9,15 +9,17 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+// Состояние для обработки напоминаний несколько раз в день (раз в неск. секунд / минут)
 type severalTimes struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
 	name       string
+	next       state
 }
 
 func newSeveralTimesState(controller *controller.Controller, FSM *FSM) *severalTimes {
-	return &severalTimes{controller, FSM, logger.New(), "several times a day"}
+	return &severalTimes{controller, FSM, logger.New(), "several times a day", nil}
 }
 
 func (n *severalTimes) Handle(ctx context.Context, telectx tele.Context) error {
@@ -28,4 +30,11 @@ func (n *severalTimes) Handle(ctx context.Context, telectx tele.Context) error {
 
 func (n *severalTimes) Name() string {
 	return n.name
+}
+
+func (n *severalTimes) Next() state {
+	if n.next != nil {
+		return n.next
+	}
+	return n.fsm.DefaultState
 }

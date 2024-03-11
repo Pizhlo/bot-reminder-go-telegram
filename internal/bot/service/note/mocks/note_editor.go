@@ -107,6 +107,21 @@ func (mr *MocknoteEditorMockRecorder) Save(ctx, note interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MocknoteEditor)(nil).Save), ctx, note)
 }
 
+// SearchByOneDate mocks base method.
+func (m *MocknoteEditor) SearchByOneDate(ctx context.Context, searchNote model.SearchByOneDate) ([]model.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchByOneDate", ctx, searchNote)
+	ret0, _ := ret[0].([]model.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchByOneDate indicates an expected call of SearchByOneDate.
+func (mr *MocknoteEditorMockRecorder) SearchByOneDate(ctx, searchNote interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByOneDate", reflect.TypeOf((*MocknoteEditor)(nil).SearchByOneDate), ctx, searchNote)
+}
+
 // SearchByText mocks base method.
 func (m *MocknoteEditor) SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error) {
 	m.ctrl.T.Helper()
@@ -120,4 +135,19 @@ func (m *MocknoteEditor) SearchByText(ctx context.Context, searchNote model.Sear
 func (mr *MocknoteEditorMockRecorder) SearchByText(ctx, searchNote interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByText", reflect.TypeOf((*MocknoteEditor)(nil).SearchByText), ctx, searchNote)
+}
+
+// SearchByTwoDates mocks base method.
+func (m *MocknoteEditor) SearchByTwoDates(ctx context.Context, searchNote *model.SearchByTwoDates) ([]model.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchByTwoDates", ctx, searchNote)
+	ret0, _ := ret[0].([]model.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchByTwoDates indicates an expected call of SearchByTwoDates.
+func (mr *MocknoteEditorMockRecorder) SearchByTwoDates(ctx, searchNote interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByTwoDates", reflect.TypeOf((*MocknoteEditor)(nil).SearchByTwoDates), ctx, searchNote)
 }

@@ -21,7 +21,7 @@ func (c *Controller) SearchNoteByText(ctx context.Context, telectx tele.Context)
 	message, kb, err := c.noteSrv.SearchByText(ctx, searchNote)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrNotesNotFound) {
-			return telectx.EditOrSend(messages.NoNotesFoundMessage, view.BackToMenuBtn())
+			return telectx.EditOrSend(messages.NoNotesFoundByTextMessage, view.BackToMenuBtn())
 		}
 
 		return err
