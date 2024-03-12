@@ -54,10 +54,10 @@ func New(noteEditor noteEditor) *NoteService {
 // SaveUser сохраняет пользователя в мапе view
 func (n *NoteService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		n.logger.Debugf("Note service: user not found in the views map. Saving...\n")
+		n.logger.Debugf("Note service: user %d not found in the views map. Saving...\n", userID)
 		n.viewsMap[userID] = view.NewNote()
 	} else {
-		n.logger.Debugf("Note service: user already saved in the views map.\n")
+		n.logger.Debugf("Note service: user %d already saved in the views map.\n", userID)
 	}
 
 }

@@ -33,7 +33,10 @@ func (s *Server) RegisterUser(userID int64, known bool) {
 }
 
 func (s *Server) loadFSM(ctx context.Context) {
-	users := s.controller.GetAllUsers(ctx)
+	users, err := s.controller.GetAllUsers(ctx)
+	if err != nil {
+		s.logger.Fatalf("error while loading all users: %v", err)
+	}
 
 	for _, user := range users {
 		s.RegisterUser(user.TGID, true)

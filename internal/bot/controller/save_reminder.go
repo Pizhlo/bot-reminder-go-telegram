@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"time"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -15,18 +14,16 @@ import (
 // saveReminder сохраняет напоминание
 func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) error {
 	// достаем часовой пояс пользователя, чтобы установить поле created
-	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
-	userTz, err := time.LoadLocation(tz.Name)
+	userTz, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return fmt.Errorf("error while setting timezone (for setting 'created' field): %w", err)
 	}
 
 	// сохраняем поле created
-	c.reminderSrv.SaveCreatedField(telectx.Chat().ID, userTz)
+	err = c.reminderSrv.SaveCreatedField(telectx.Chat().ID, userTz)
+	if err != nil {
+		return err
+	}
 
 	err = c.reminderSrv.Save(ctx, telectx.Chat().ID)
 	if err != nil {
@@ -86,40 +83,47 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	}
 
 	// получаем часовой пояс пользователя
-	userTz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
-		return gocron.NewJob{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
+		return gocron.NewJob{}, fmt.Errorf("error while loading user's timezone: %w", err)
 	}
 
-	loc, err := time.LoadLocation(userTz.Name)
+	var sch *gocron.Scheduler
+	sch, err = c.getScheduler(telectx.Chat().ID)
 	if err != nil {
-		return gocron.NewJob{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
+		err = c.createScheduler(ctx, telectx.Chat().ID)
+		if err != nil {
+			return gocron.NewJob{}, err
+		}
+
+		sch, _ = c.getScheduler(telectx.Chat().ID)
 	}
 
 	switch r.Type {
 	case model.EverydayType:
-		return c.scheduler.CreateEverydayJob(r.Time, c.SendReminder, params)
+		return sch.CreateEverydayJob(r.Time, c.SendReminder, params)
 	case model.SeveralTimesDayType:
 		if r.Date == "minutes" {
-			return c.scheduler.CreateMinutesReminder(r.Time, c.SendReminder, params)
+			return sch.CreateMinutesReminder(r.Time, c.SendReminder, params)
 		}
 
-		return c.scheduler.CreateHoursReminder(r.Time, c.SendReminder, params)
+		return sch.CreateHoursReminder(r.Time, c.SendReminder, params)
 	case model.EveryWeekType:
 		wd, err := view.ParseWeekday(r.Date)
 		if err != nil {
 			return gocron.NewJob{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
 		}
 
-		return c.scheduler.CreateEveryWeekReminder(wd, r.Time, c.SendReminder, params)
+		return sch.CreateEveryWeekReminder(wd, r.Time, c.SendReminder, params)
 	case model.SeveralDaysType:
-		return c.scheduler.CreateSeveralDaysReminder(r.Date, r.Time, c.SendReminder, params)
+		return sch.CreateSeveralDaysReminder(r.Date, r.Time, c.SendReminder, params)
 	case model.OnceMonthType:
-		return c.scheduler.CreateMonthlyReminder(r.Date, r.Time, c.SendReminder, params)
+		return sch.CreateMonthlyReminder(r.Date, r.Time, c.SendReminder, params)
 	case model.OnceYearType:
-		return c.scheduler.CreateOnceInYearReminder(r.Date, r.Time, c.SendReminder, params)
+		return sch.CreateOnceInYearReminder(r.Date, r.Time, c.SendReminder, params)
 	case model.DateType:
-		return c.scheduler.CreateCalendarDateReminder(r.Date, r.Time, loc, c.SendReminder, params)
+		return sch.CreateCalendarDateReminder(r.Date, r.Time, loc, c.SendReminder, params)
 	default:
 		return gocron.NewJob{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}

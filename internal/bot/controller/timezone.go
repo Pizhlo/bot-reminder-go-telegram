@@ -33,6 +33,12 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 		return err
 	}
 
+	// сохраняем пользователя
+	err = c.saveUser(ctx, telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
 	msg := fmt.Sprintf(messages.LocationMessage, u.Timezone.Name)
 	return telectx.EditOrSend(msg, tele.RemoveKeyboard, &tele.SendOptions{
 		ParseMode: htmlParseMode,

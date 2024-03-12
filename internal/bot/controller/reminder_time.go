@@ -24,12 +24,7 @@ func (c *Controller) ReminderTime(ctx context.Context, telectx telebot.Context) 
 	}
 
 	if r.Type == model.DateType {
-		tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
-		if err != nil {
-			return err
-		}
-
-		loc, err := time.LoadLocation(tz.Name)
+		loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 		if err != nil {
 			return err
 		}

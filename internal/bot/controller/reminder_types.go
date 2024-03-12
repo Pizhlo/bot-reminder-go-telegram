@@ -31,12 +31,7 @@ func (c *Controller) Today(ctx context.Context, telectx telebot.Context) error {
 	// }
 
 	// сохраняем дату
-	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
-	loc, err := time.LoadLocation(tz.Name)
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return err
 	}
@@ -71,12 +66,7 @@ func (c *Controller) Tomorrow(ctx context.Context, telectx telebot.Context) erro
 	}
 
 	// сохраняем дату
-	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
-	loc, err := time.LoadLocation(tz.Name)
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return err
 	}

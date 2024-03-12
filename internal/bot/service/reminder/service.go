@@ -59,10 +59,10 @@ func New(reminderEditor reminderEditor) *ReminderService {
 // SaveUser сохраняет пользователя в мапе view
 func (n *ReminderService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		n.logger.Debugf("Reminder service: user not found in the views map. Saving...\n")
+		n.logger.Debugf("Reminder service: user %d not found in the views map. Saving...\n", userID)
 		n.viewsMap[userID] = view.NewReminder()
 	} else {
-		n.logger.Debugf("Reminder service: user already saved in the views map.\n")
+		n.logger.Debugf("Reminder service: user %d already saved in the views map.\n", userID)
 	}
 
 }

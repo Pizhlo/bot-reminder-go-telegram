@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
@@ -17,6 +19,7 @@ import (
 )
 
 type Controller struct {
+	mu     sync.Mutex
 	logger *logrus.Logger
 	bot    *tele.Bot
 	// отвечает за информацию о пользователях
@@ -25,8 +28,8 @@ type Controller struct {
 	noteSrv *note.NoteService
 	// отвечает за напоминания
 	reminderSrv *reminder.ReminderService
-	// scheduler вызывает функции в указанное время
-	scheduler *gocron.Scheduler
+	// schedulers - мапа с планировщиками для каждого пользователя
+	schedulers map[int64]*gocron.Scheduler
 	// отражает, используется ли календарь заметок
 	noteCalendar map[int64]bool
 	// отражает, используется ли календарь напоминаний
@@ -38,33 +41,30 @@ const (
 	markdownParseMode = "markdown"
 )
 
-func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, reminderSrv *reminder.ReminderService) (*Controller, error) {
-	sch, err := gocron.New()
-	if err != nil {
-		return nil, err
-	}
-
+func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, reminderSrv *reminder.ReminderService) *Controller {
 	return &Controller{logger: logger.New(),
 		userSrv:          userSrv,
 		noteSrv:          noteSrv,
 		bot:              bot,
 		reminderSrv:      reminderSrv,
-		scheduler:        sch,
+		schedulers:       make(map[int64]*gocron.Scheduler),
 		noteCalendar:     make(map[int64]bool),
-		reminderCalendar: make(map[int64]bool)}, nil
+		reminderCalendar: make(map[int64]bool),
+		mu:               sync.Mutex{}}
 }
 
 // CheckUser проверяет, известен ли пользователь боту
 func (c *Controller) CheckUser(ctx context.Context, tgID int64) bool {
-	c.noteSrv.SaveUser(tgID)
-	c.reminderSrv.SaveUser(tgID)
-	c.noteCalendar[tgID] = false
-	c.reminderCalendar[tgID] = false
+	// c.noteSrv.SaveUser(tgID)
+	// c.reminderSrv.SaveUser(tgID)
+	// c.noteCalendar[tgID] = false
+	// c.reminderCalendar[tgID] = false
+
 	return c.userSrv.CheckUser(ctx, tgID)
 }
 
 // GetAllUsers возвращает всех зарегистрированных пользователей
-func (c *Controller) GetAllUsers(ctx context.Context) []*user_model.User {
+func (c *Controller) GetAllUsers(ctx context.Context) ([]*user_model.User, error) {
 	return c.userSrv.GetAll(ctx)
 }
 
@@ -93,9 +93,58 @@ func (c *Controller) HandleError(ctx tele.Context, err error, state string) {
 
 // SaveUsers сохраняет пользователей в сервисах
 func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
+	errors := []error{}
 	for _, u := range users {
 		c.noteSrv.SaveUser(u.TGID)
-		c.userSrv.SaveUser(ctx, u.TGID, u)
+
 		c.reminderSrv.SaveUser(u.TGID)
+
+		err := c.createScheduler(ctx, u.TGID)
+		if err != nil {
+			errors = append(errors, err)
+		}
 	}
+
+	if len(errors) > 0 {
+		c.logger.Fatalf("error while saving users on start: errors: %v", errors)
+	}
+}
+
+// createScheduler создает планировщика для конкретного пользователя
+func (c *Controller) createScheduler(ctx context.Context, tgID int64) error {
+	if _, ok := c.schedulers[tgID]; !ok {
+		loc, err := c.userSrv.GetLocation(ctx, tgID)
+		if err != nil {
+			return err
+		}
+
+		sch, err := gocron.New(loc)
+		if err != nil {
+			return err
+		}
+
+		c.schedulers[tgID] = sch
+	}
+
+	return nil
+}
+
+func (c *Controller) getScheduler(tgID int64) (*gocron.Scheduler, error) {
+	if val, ok := c.schedulers[tgID]; ok {
+		return val, nil
+	}
+
+	return nil, errors.New("no scheduler found for this user")
+}
+
+func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.reminderCalendar[tgID] = false
+	c.noteCalendar[tgID] = false
+	c.noteSrv.SaveUser(tgID)
+	c.reminderSrv.SaveUser(tgID)
+
+	return c.createScheduler(ctx, tgID)
 }

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"time"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
@@ -71,12 +70,7 @@ func (c *Controller) SaveCalendarDate(ctx context.Context, telectx tele.Context)
 
 // ProcessDate валидирует дату и сохраняет
 func (c *Controller) ProcessDate(ctx context.Context, telectx tele.Context) error {
-	userTz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
-	t, err := time.LoadLocation(userTz.Name)
+	t, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return err
 	}

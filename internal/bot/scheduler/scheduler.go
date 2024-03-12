@@ -21,8 +21,10 @@ type Scheduler struct {
 	gocron.Scheduler
 }
 
-func New() (*Scheduler, error) {
-	sch, err := gocron.NewScheduler()
+func New(loc *time.Location) (*Scheduler, error) {
+	locOption := gocron.WithLocation(loc)
+
+	sch, err := gocron.NewScheduler(locOption)
 	if err != nil {
 		return nil, err
 	}
