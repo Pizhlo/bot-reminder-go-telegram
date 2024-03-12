@@ -6,6 +6,7 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,8 @@ type ReminderService struct {
 	// для сохранения напоминаний во время создания
 	reminderMap map[int64]model.Reminder
 	mu          sync.Mutex
+
+	schedulers map[int64]*gocron.Scheduler
 }
 
 //go:generate mockgen -source ./service.go -destination=./mocks/reminder_editor.go
@@ -53,7 +56,7 @@ type reminderEditor interface {
 
 func New(reminderEditor reminderEditor) *ReminderService {
 	return &ReminderService{reminderEditor: reminderEditor, logger: logger.New(), viewsMap: make(map[int64]*view.ReminderView),
-		reminderMap: make(map[int64]model.Reminder), mu: sync.Mutex{}}
+		reminderMap: make(map[int64]model.Reminder), mu: sync.Mutex{}, schedulers: make(map[int64]*gocron.Scheduler)}
 }
 
 // SaveUser сохраняет пользователя в мапе view

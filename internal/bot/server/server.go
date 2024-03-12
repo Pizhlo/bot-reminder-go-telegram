@@ -38,12 +38,12 @@ func (s *Server) loadUsers(ctx context.Context) {
 		s.logger.Fatalf("error while loading all users: %v", err)
 	}
 
+	s.controller.SaveUsers(ctx, users)
+
 	for _, user := range users {
 		s.RegisterUserInFSM(user.TGID, true)
-
 	}
 
-	s.controller.SaveUsers(ctx, users)
 }
 
 // HandleError обрабатывает ошибку: устанавливает состояние в дефолтное, передает контроллеру

@@ -13,8 +13,9 @@ import (
 func (db *ReminderRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error) {
 	reminders := make([]model.Reminder, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select reminders.reminders.id, text, created, date, time, name as type from reminders.reminders
+	rows, err := db.db.QueryContext(ctx, `select reminders.reminders.id, tg_id, text, created, date, time, name as type from reminders.reminders
 	join reminders.types on reminders.types.id = reminders.reminders.type_id
+	join users.users on users.id = reminders.user_id
 	where user_id = (select id from users.users where tg_id = $1) order by created ASC`, userID)
 
 	if err != nil {
@@ -25,7 +26,7 @@ func (db *ReminderRepo) GetAllByUserID(ctx context.Context, userID int64) ([]mod
 	for rows.Next() {
 		reminder := model.Reminder{}
 
-		err := rows.Scan(&reminder.ID, &reminder.Name, &reminder.Created, &reminder.Date, &reminder.Time, &reminder.Type)
+		err := rows.Scan(&reminder.ID, &reminder.TgID, &reminder.Name, &reminder.Created, &reminder.Date, &reminder.Time, &reminder.Type)
 		if err != nil {
 			return nil, fmt.Errorf("error while scanning reminder: %w", err)
 		}

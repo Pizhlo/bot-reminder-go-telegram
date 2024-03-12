@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 
@@ -99,7 +98,17 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 
 		c.reminderSrv.SaveUser(u.TGID)
 
-		err := c.createScheduler(ctx, u.TGID)
+		loc, err := c.userSrv.GetLocation(ctx, u.TGID)
+		if err != nil {
+			errors = append(errors, err)
+		}
+
+		err = c.reminderSrv.CreateScheduler(ctx, u.TGID, loc)
+		if err != nil {
+			errors = append(errors, err)
+		}
+
+		err = c.reminderSrv.StartAllJobs(ctx, u.TGID, loc, c.SendReminder)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -111,31 +120,31 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 }
 
 // createScheduler создает планировщика для конкретного пользователя
-func (c *Controller) createScheduler(ctx context.Context, tgID int64) error {
-	if _, ok := c.schedulers[tgID]; !ok {
-		loc, err := c.userSrv.GetLocation(ctx, tgID)
-		if err != nil {
-			return err
-		}
+// func (c *Controller) createScheduler(ctx context.Context, tgID int64) error {
+// 	if _, ok := c.schedulers[tgID]; !ok {
+// 		loc, err := c.userSrv.GetLocation(ctx, tgID)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		sch, err := gocron.New(loc)
-		if err != nil {
-			return err
-		}
+// 		sch, err := gocron.New(loc)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		c.schedulers[tgID] = sch
-	}
+// 		c.schedulers[tgID] = sch
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (c *Controller) getScheduler(tgID int64) (*gocron.Scheduler, error) {
-	if val, ok := c.schedulers[tgID]; ok {
-		return val, nil
-	}
+// func (c *Controller) getScheduler(tgID int64) (*gocron.Scheduler, error) {
+// 	if val, ok := c.schedulers[tgID]; ok {
+// 		return val, nil
+// 	}
 
-	return nil, errors.New("no scheduler found for this user")
-}
+// 	return nil, errors.New("no scheduler found for this user")
+// }
 
 func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
 	c.mu.Lock()
@@ -146,5 +155,10 @@ func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
 	c.noteSrv.SaveUser(tgID)
 	c.reminderSrv.SaveUser(tgID)
 
-	return c.createScheduler(ctx, tgID)
+	loc, err := c.userSrv.GetLocation(ctx, tgID)
+	if err != nil {
+		return err
+	}
+
+	return c.reminderSrv.CreateScheduler(ctx, tgID, loc)
 }

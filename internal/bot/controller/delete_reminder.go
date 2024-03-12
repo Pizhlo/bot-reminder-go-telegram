@@ -15,13 +15,8 @@ func (c *Controller) DeleteReminder(ctx context.Context, telectx tele.Context, r
 		return fmt.Errorf("error while getting job ID: %w", err)
 	}
 
-	sch, err := c.getScheduler(telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
 	// удаляем из шедулера
-	err = sch.DeleteJob(jobID)
+	err = c.reminderSrv.DeleteJob(telectx.Chat().ID, jobID)
 	if err != nil {
 		return fmt.Errorf("error while deleting job: %w", err)
 	}

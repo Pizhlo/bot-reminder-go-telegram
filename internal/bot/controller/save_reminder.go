@@ -6,7 +6,6 @@ import (
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"gopkg.in/telebot.v3"
 )
@@ -30,19 +29,24 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 		return err
 	}
 
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
+	if err != nil {
+		return fmt.Errorf("error while loading user's timezone: %w", err)
+	}
+
+	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
 	// создаем отложенный вызов
-	nextRun, err := c.createReminder(ctx, telectx)
+	nextRun, err := c.reminderSrv.CreateReminder(ctx, loc, c.SendReminder, r)
 	if err != nil {
 		return err
 	}
 
 	// сохраняем задачу в базе
 	err = c.reminderSrv.SaveJobID(ctx, nextRun.JobID, telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
-	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
 		return err
 	}
@@ -68,63 +72,4 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 		ReplyMarkup: view.BackToMenuBtn(),
 		ParseMode:   htmlParseMode,
 	})
-}
-
-func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context) (gocron.NewJob, error) {
-	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
-	if err != nil {
-		return gocron.NewJob{}, err
-	}
-
-	params := gocron.FuncParams{
-		Ctx:      ctx,
-		Telectx:  telectx,
-		Reminder: *r,
-	}
-
-	// получаем часовой пояс пользователя
-
-	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
-	if err != nil {
-		return gocron.NewJob{}, fmt.Errorf("error while loading user's timezone: %w", err)
-	}
-
-	var sch *gocron.Scheduler
-	sch, err = c.getScheduler(telectx.Chat().ID)
-	if err != nil {
-		err = c.createScheduler(ctx, telectx.Chat().ID)
-		if err != nil {
-			return gocron.NewJob{}, err
-		}
-
-		sch, _ = c.getScheduler(telectx.Chat().ID)
-	}
-
-	switch r.Type {
-	case model.EverydayType:
-		return sch.CreateEverydayJob(r.Time, c.SendReminder, params)
-	case model.SeveralTimesDayType:
-		if r.Date == "minutes" {
-			return sch.CreateMinutesReminder(r.Time, c.SendReminder, params)
-		}
-
-		return sch.CreateHoursReminder(r.Time, c.SendReminder, params)
-	case model.EveryWeekType:
-		wd, err := view.ParseWeekday(r.Date)
-		if err != nil {
-			return gocron.NewJob{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
-		}
-
-		return sch.CreateEveryWeekReminder(wd, r.Time, c.SendReminder, params)
-	case model.SeveralDaysType:
-		return sch.CreateSeveralDaysReminder(r.Date, r.Time, c.SendReminder, params)
-	case model.OnceMonthType:
-		return sch.CreateMonthlyReminder(r.Date, r.Time, c.SendReminder, params)
-	case model.OnceYearType:
-		return sch.CreateOnceInYearReminder(r.Date, r.Time, c.SendReminder, params)
-	case model.DateType:
-		return sch.CreateCalendarDateReminder(r.Date, r.Time, loc, c.SendReminder, params)
-	default:
-		return gocron.NewJob{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
-	}
 }

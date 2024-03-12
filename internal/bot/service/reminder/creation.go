@@ -356,6 +356,10 @@ func (n *ReminderService) checkFields(userID int64) error {
 		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
+	if r.TgID == 0 {
+		return errors.New("field TgID is not filled")
+	}
+
 	if r.Name == "" {
 		return errors.New("field Name is not filled")
 	}
