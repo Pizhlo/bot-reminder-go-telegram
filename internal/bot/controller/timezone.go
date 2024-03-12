@@ -42,13 +42,14 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 		Long: telectx.Message().Location.Lng,
 	}
 
-	u, err := c.userSrv.ProcessTimezone(ctx, telectx.Chat().ID, loc)
+	// сохраняем пользователя и часовой пояс
+	u, err := c.userSrv.ProcessTimezoneAndSave(ctx, telectx.Chat().ID, loc)
 	if err != nil {
 		c.logger.Errorf("Controller: error while processing user's location: %v\n", err)
 		return err
 	}
 
-	// сохраняем пользователя
+	// сохраняем пользователя в сервисах
 	err = c.saveUser(ctx, telectx.Chat().ID)
 	if err != nil {
 		return err

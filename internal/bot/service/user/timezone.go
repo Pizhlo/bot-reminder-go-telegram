@@ -10,7 +10,7 @@ import (
 	"github.com/ringsaturn/tzf"
 )
 
-func (s *UserService) ProcessTimezone(ctx context.Context, userID int64, location model.UserTimezone) (*user.User, error) {
+func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, location model.UserTimezone) (*user.User, error) {
 	finder, err := tzf.NewDefaultFinder()
 	if err != nil {
 		return nil, fmt.Errorf("error creating default finder: %w", err)

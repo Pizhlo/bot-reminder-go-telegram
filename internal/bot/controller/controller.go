@@ -103,7 +103,7 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 			errors = append(errors, err)
 		}
 
-		err = c.reminderSrv.CreateScheduler(ctx, u.TGID, loc)
+		err = c.reminderSrv.CreateScheduler(u.TGID, loc)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -160,5 +160,5 @@ func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
 		return err
 	}
 
-	return c.reminderSrv.CreateScheduler(ctx, tgID, loc)
+	return c.reminderSrv.CreateScheduler(tgID, loc)
 }

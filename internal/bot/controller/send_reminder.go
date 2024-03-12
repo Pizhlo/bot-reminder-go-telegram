@@ -29,6 +29,7 @@ func (c *Controller) SendReminder(ctx context.Context, reminder model.Reminder) 
 	kb := &telebot.ReplyMarkup{}
 
 	kb.Inline(
+		kb.Row(view.BtnBackToMenu),
 		kb.Row(deleteBtn),
 	)
 

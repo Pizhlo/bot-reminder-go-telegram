@@ -23,7 +23,7 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 	var err error
 	sch, err = c.getScheduler(r.TgID)
 	if err != nil {
-		err = c.CreateScheduler(ctx, r.TgID, loc)
+		err = c.CreateScheduler(r.TgID, loc)
 		if err != nil {
 			return gocron.NewJob{}, err
 		}
@@ -63,7 +63,15 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 }
 
 // CreateScheduler создает планировщика для конкретного пользователя
-func (c *ReminderService) CreateScheduler(ctx context.Context, tgID int64, loc *time.Location) error {
+func (c *ReminderService) CreateScheduler(tgID int64, loc *time.Location) error {
+	val, ok := c.schedulers[tgID]
+	if ok {
+		err := val.StopJobs()
+		if err != nil {
+			return err
+		}
+	}
+
 	sch, err := gocron.New(loc)
 	if err != nil {
 		return err
