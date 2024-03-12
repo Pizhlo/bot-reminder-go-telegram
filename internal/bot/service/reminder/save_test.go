@@ -36,7 +36,10 @@ func TestSave(t *testing.T) {
 	err = n.SaveCreatedField(userID, reminder.Created.Location())
 	require.NoError(t, err)
 
-	err = n.ProcessTime(userID, reminder.Time)
+	err = n.ParseTime(userID, reminder.Time)
+	require.NoError(t, err)
+
+	err = n.SaveTime(userID, reminder.Time)
 	require.NoError(t, err)
 
 	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(reminder.ID, nil)
@@ -84,7 +87,7 @@ func TestSave_DBError(t *testing.T) {
 	err = n.SaveDate(userID, reminder.Date)
 	assert.NoError(t, err)
 
-	err = n.saveTime(userID, reminder.Time)
+	err = n.SaveTime(userID, reminder.Time)
 	assert.NoError(t, err)
 
 	err = n.SaveType(userID, reminder.Type)
@@ -123,7 +126,7 @@ func TestSaveJobID(t *testing.T) {
 	err = n.SaveCreatedField(userID, reminder.Created.Location())
 	require.NoError(t, err)
 
-	err = n.ProcessTime(userID, reminder.Time)
+	err = n.ParseTime(userID, reminder.Time)
 	require.NoError(t, err)
 
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -155,7 +158,7 @@ func TestSaveJobID_DBError(t *testing.T) {
 	err = n.SaveCreatedField(userID, reminder.Created.Location())
 	require.NoError(t, err)
 
-	err = n.ProcessTime(userID, reminder.Time)
+	err = n.ParseTime(userID, reminder.Time)
 	require.NoError(t, err)
 
 	sqlErr := sql.ErrNoRows
