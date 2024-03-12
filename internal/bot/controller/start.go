@@ -9,7 +9,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-// StartCmd отправляет приветственное сообщение и меню
+// StartCmd отправляет приветственное сообщение и меню на команду /start
 func (c *Controller) StartCmd(ctx context.Context, telectx tele.Context) error {
 	c.logger.Debugf("Controller: handling /start (or menu btn)\n")
 
@@ -18,4 +18,14 @@ func (c *Controller) StartCmd(ctx context.Context, telectx tele.Context) error {
 	text := fmt.Sprintf(messages.StartMessage, telectx.Chat().FirstName)
 
 	return telectx.EditOrSend(text, kb)
+}
+
+// MenuCmd обрабатывает команду /menu
+func (c *Controller) MenuCmd(ctx context.Context, telectx tele.Context) error {
+	return telectx.EditOrSend(messages.MenuMessage, view.MainMenu())
+}
+
+// HelpCmd обрабатывает команду /help
+func (c *Controller) HelpCmd(ctx context.Context, telectx tele.Context) error {
+	return telectx.EditOrSend(messages.HelpMessage, view.MainMenu())
 }

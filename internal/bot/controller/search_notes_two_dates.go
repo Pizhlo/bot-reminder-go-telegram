@@ -25,14 +25,9 @@ func (c *Controller) SearchNoteByTwoDatesFirstDate(ctx context.Context, telectx 
 		return fmt.Errorf("error while converting string %s to type int: %w", telectx.Callback().Unique, err)
 	}
 
-	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return fmt.Errorf("error while getting user's timezone: %w", err)
-	}
-
-	loc, err := time.LoadLocation(tz.Name)
-	if err != nil {
-		return fmt.Errorf("error while loading user's timezone: %w", err)
 	}
 
 	firstDate := time.Date(c.noteSrv.CurYear(telectx.Chat().ID), c.noteSrv.CurMonth(telectx.Chat().ID), day, 0, 0, 0, 0, loc)
@@ -48,14 +43,9 @@ func (c *Controller) SearchNoteByTwoDatesSecondDate(ctx context.Context, telectx
 		return fmt.Errorf("error while converting string %s to type int: %w", telectx.Callback().Unique, err)
 	}
 
-	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return fmt.Errorf("error while getting user's timezone: %w", err)
-	}
-
-	loc, err := time.LoadLocation(tz.Name)
-	if err != nil {
-		return fmt.Errorf("error while loading user's timezone: %w", err)
 	}
 
 	secondDate := time.Date(c.noteSrv.CurYear(telectx.Chat().ID), c.noteSrv.CurMonth(telectx.Chat().ID), day, 0, 0, 0, 0, loc)

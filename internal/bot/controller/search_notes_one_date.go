@@ -29,12 +29,7 @@ func (c *Controller) SearchNoteBySelectedDate(ctx context.Context, telectx tele.
 	month := c.noteSrv.CurMonth(telectx.Chat().ID)
 	year := c.noteSrv.CurYear(telectx.Chat().ID)
 
-	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
-	if err != nil {
-		return fmt.Errorf("error while getting user's timezone: %w", err)
-	}
-
-	loc, err := time.LoadLocation(tz.Name)
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return fmt.Errorf("error while loading user's timezone: %w", err)
 	}

@@ -20,7 +20,13 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
-		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		// err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		// if err != nil {
+		// 	s.HandleError(telectx, err)
+		// 	return err
+		// }
+
+		err := s.controller.AcceptTimezone(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -29,10 +35,10 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// главное меню
-	s.bot.Handle(&view.BtnProfile, func(telectx tele.Context) error {
-		s.logger.Debugf("Profile btn")
-		err := s.controller.Profile(ctx, telectx)
+	// часовой пояс
+	s.bot.Handle(&view.BtnTimezone, func(telectx tele.Context) error {
+		s.logger.Debugf("Timezone btn")
+		err := s.controller.Timezone(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -41,10 +47,10 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// меню настроек
-	s.bot.Handle(&view.BtnSettings, func(telectx tele.Context) error {
-		s.logger.Debugf("Settings btn")
-		err := s.controller.Settings(ctx, telectx)
+	// изменить часовой пояс
+	s.bot.Handle(&view.BtnEditTimezone, func(telectx tele.Context) error {
+		s.logger.Debugf("Edit timezone btn")
+		err := s.controller.RequestLocation(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -101,13 +107,45 @@ func (s *Server) setupBot(ctx context.Context) {
 	restricted := s.bot.Group()
 	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
 
+	// /start command
 	restricted.Handle(commands.StartCommand, func(telectx tele.Context) error {
 		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-			s.RegisterUser(telectx.Chat().ID, false)
+			s.RegisterUserInFSM(telectx.Chat().ID, false)
 		}
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.StartCmd(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// /menu command
+	restricted.Handle(commands.MenuCommand, func(telectx tele.Context) error {
+		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+			s.RegisterUserInFSM(telectx.Chat().ID, false)
+		}
+
+		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.controller.MenuCmd(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	restricted.Handle(commands.HelpCommand, func(telectx tele.Context) error {
+		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+			s.RegisterUserInFSM(telectx.Chat().ID, false)
+		}
+
+		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.controller.HelpCmd(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

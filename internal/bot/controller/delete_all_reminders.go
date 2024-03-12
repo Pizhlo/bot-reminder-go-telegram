@@ -60,7 +60,7 @@ func (c *Controller) DeleteAllReminders(ctx context.Context, telectx tele.Contex
 
 	// удаляем из шедулера
 	for _, id := range jobIDs {
-		c.scheduler.DeleteJob(id)
+		c.reminderSrv.DeleteJob(telectx.Chat().ID, id)
 	}
 
 	c.logger.Debugf("Controller: successfully delete all user's reminders. Sending message to user...\n")

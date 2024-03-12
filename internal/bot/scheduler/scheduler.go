@@ -10,19 +10,20 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
-	"gopkg.in/telebot.v3"
 )
 
-// task - функция, которую будут вызывать в момент срабатывания напоминания
-type task func(ctx context.Context, telectx telebot.Context, reminder model.Reminder) error
+// Task - функция, которую будут вызывать в момент срабатывания напоминания
+type Task func(ctx context.Context, reminder model.Reminder) error
 
 // Scheduler управляет отложенными вызовами
 type Scheduler struct {
 	gocron.Scheduler
 }
 
-func New() (*Scheduler, error) {
-	sch, err := gocron.NewScheduler()
+func New(loc *time.Location) (*Scheduler, error) {
+	locOption := gocron.WithLocation(loc)
+
+	sch, err := gocron.NewScheduler(locOption)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,6 @@ func New() (*Scheduler, error) {
 
 type FuncParams struct {
 	Ctx      context.Context
-	Telectx  telebot.Context
 	Reminder model.Reminder
 }
 
@@ -44,8 +44,8 @@ type NewJob struct {
 }
 
 // CreateEverydayJob создает ежедневные вызовы в указанное время
-func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncParams) (NewJob, error) {
-	cronTime, err := s.makeTime(userTime)
+func (s *Scheduler) CreateEverydayJob(userTime string, task Task, params FuncParams, loc *time.Location) (NewJob, error) {
+	cronTime, err := s.makeTime(userTime, loc)
 	if err != nil {
 		return NewJob{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
@@ -76,12 +76,12 @@ func (s *Scheduler) CreateEverydayJob(userTime string, task task, params FuncPar
 func (s *Scheduler) DeleteJob(id uuid.UUID) error {
 	return s.RemoveJob(id)
 }
-func makeTask(task task, params FuncParams) gocron.Task {
-	return gocron.NewTask(task, params.Ctx, params.Telectx, params.Reminder)
+func makeTask(task Task, params FuncParams) gocron.Task {
+	return gocron.NewTask(task, params.Ctx, params.Reminder)
 }
 
 // CreateMinutesReminder создает напоминание один раз в несколько минут
-func (s *Scheduler) CreateMinutesReminder(minutes string, task task, params FuncParams) (NewJob, error) {
+func (s *Scheduler) CreateMinutesReminder(minutes string, task Task, params FuncParams) (NewJob, error) {
 	job := makeTask(task, params)
 
 	minutesInt, err := strconv.Atoi(minutes)
@@ -111,7 +111,7 @@ func (s *Scheduler) CreateMinutesReminder(minutes string, task task, params Func
 }
 
 // CreateHoursReminder создает напоминание один раз в несколько часов
-func (s *Scheduler) CreateHoursReminder(hours string, task task, params FuncParams) (NewJob, error) {
+func (s *Scheduler) CreateHoursReminder(hours string, task Task, params FuncParams) (NewJob, error) {
 	job := makeTask(task, params)
 
 	hoursInt, err := strconv.Atoi(hours)
@@ -140,10 +140,10 @@ func (s *Scheduler) CreateHoursReminder(hours string, task task, params FuncPara
 }
 
 // CreateEveryWeekReminder создает напоминание еженедельное напоминание
-func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime string, task task, params FuncParams) (NewJob, error) {
+func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime string, task Task, params FuncParams, loc *time.Location) (NewJob, error) {
 	job := makeTask(task, params)
 
-	cronTime, err := s.makeTime(userTime)
+	cronTime, err := s.makeTime(userTime, loc)
 	if err != nil {
 		return NewJob{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
@@ -167,10 +167,10 @@ func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime strin
 }
 
 // CreateSeveralDaysReminder создает напоминание раз в несколько дней
-func (s *Scheduler) CreateSeveralDaysReminder(days string, userTime string, task task, params FuncParams) (NewJob, error) {
+func (s *Scheduler) CreateSeveralDaysReminder(days string, userTime string, task Task, params FuncParams, loc *time.Location) (NewJob, error) {
 	job := makeTask(task, params)
 
-	cronTime, err := s.makeTime(userTime)
+	cronTime, err := s.makeTime(userTime, loc)
 	if err != nil {
 		return NewJob{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
@@ -199,13 +199,13 @@ func (s *Scheduler) CreateSeveralDaysReminder(days string, userTime string, task
 }
 
 // CreateMonthlyReminder создает напоминание раз в месяц
-func (s *Scheduler) CreateMonthlyReminder(days string, userTime string, task task, params FuncParams) (NewJob, error) {
+func (s *Scheduler) CreateMonthlyReminder(days string, userTime string, task Task, params FuncParams, loc *time.Location) (NewJob, error) {
 	day, err := strconv.Atoi(days)
 	if err != nil {
 		return NewJob{}, err
 	}
 
-	cronTime, err := s.makeTime(userTime)
+	cronTime, err := s.makeTime(userTime, loc)
 	if err != nil {
 		return NewJob{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
@@ -230,7 +230,7 @@ func (s *Scheduler) CreateMonthlyReminder(days string, userTime string, task tas
 	return result, nil
 }
 
-func (s *Scheduler) CreateOnceInYearReminder(date, userTime string, task task, params FuncParams) (NewJob, error) {
+func (s *Scheduler) CreateOnceInYearReminder(date, userTime string, task Task, params FuncParams) (NewJob, error) {
 	job := makeTask(task, params)
 
 	cronTab := s.makeCronTab(date, userTime)
@@ -253,7 +253,7 @@ func (s *Scheduler) CreateOnceInYearReminder(date, userTime string, task task, p
 	return result, nil
 }
 
-func (s *Scheduler) CreateCalendarDateReminder(date, userTime string, userTz *time.Location, task task, params FuncParams) (NewJob, error) {
+func (s *Scheduler) CreateCalendarDateReminder(date, userTime string, userTz *time.Location, task Task, params FuncParams) (NewJob, error) {
 	job := makeTask(task, params)
 
 	dates := strings.Split(date, ".")
@@ -335,13 +335,14 @@ func (s *Scheduler) makeCronTab(date, userTime string) string {
 }
 
 // makeTime принимает на вход строку вида "13:10" и возвращает gocron.AtTimes
-func (s *Scheduler) makeTime(userTime string) (gocron.AtTimes, error) {
+func (s *Scheduler) makeTime(userTime string, loc *time.Location) (gocron.AtTimes, error) {
 	layout := "15:04"
 
 	t, err := time.Parse(layout, userTime)
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing user's time %s: %w", userTime, err)
 	}
+	tLoc := t.In(loc)
 
-	return gocron.NewAtTimes(gocron.NewAtTime(uint(t.Hour()), uint(t.Minute()), 0)), nil
+	return gocron.NewAtTimes(gocron.NewAtTime(uint(tLoc.Hour()), uint(tLoc.Minute()), 0)), nil
 }

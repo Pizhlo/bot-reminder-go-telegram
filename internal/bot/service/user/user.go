@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
@@ -12,10 +13,10 @@ import (
 
 // UserService отвечает за информацию о пользователях: айди, часовой пояс и т.п.
 type UserService struct {
-	logger         *logrus.Logger
-	userCache      userEditor
+	logger *logrus.Logger
+	//userCache      userEditor
 	userEditor     userEditor
-	timezoneCache  timezoneEditor // in-memory cache
+	timezoneCache  timezoneCache  // in-memory cache
 	timezoneEditor timezoneEditor // db
 }
 
@@ -31,41 +32,43 @@ type timezoneEditor interface {
 	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
 }
 
-func New(userEditor userEditor, userCache userEditor, timezoneCache timezoneEditor, timezoneEditor timezoneEditor) *UserService {
-	srv := &UserService{userEditor: userEditor, userCache: userCache, logger: logger.New(),
+type timezoneCache interface {
+	Get(ctx context.Context, userID int64) (*time.Location, error)
+	Save(ctx context.Context, id int64, tz *time.Location)
+}
+
+func New(ctx context.Context, userEditor userEditor, timezoneCache timezoneCache, timezoneEditor timezoneEditor) *UserService {
+	srv := &UserService{userEditor: userEditor, logger: logger.New(),
 		timezoneCache: timezoneCache, timezoneEditor: timezoneEditor}
 
-	users, err := userEditor.GetAll(context.Background())
-	if err != nil {
-		srv.logger.Fatalf("unable to load all users from DB on start: %v\n", err)
-	}
-
-	for _, user := range users {
-		srv.userCache.Save(context.Background(), user.TGID, user)
-	}
-
-	tzs, err := srv.timezoneEditor.GetAll(context.Background())
-	if err != nil {
-		srv.logger.Fatalf("unable to load all timezones from DB on start: %v\n", err)
-	}
-
-	for _, tz := range tzs {
-		srv.timezoneCache.Save(context.Background(), tz.TGID, &tz.Timezone)
-	}
-
-	srv.logger.Debugf("Successfully saved %d users' timezone(s) to cache: %v\n", len(tzs), tzs)
+	srv.loadAll(ctx)
 
 	return srv
 }
 
-func (s *UserService) GetAll(ctx context.Context) []*user.User {
-	u, _ := s.userCache.GetAll(ctx)
-	return u
+func (s *UserService) loadAll(ctx context.Context) {
+	tzs, err := s.timezoneEditor.GetAll(ctx)
+	if err != nil {
+		s.logger.Fatalf("unable to load all timezones from DB on start: %v\n", err)
+	}
+
+	for _, tz := range tzs {
+		loc, err := time.LoadLocation(tz.Timezone.Name)
+		if err != nil {
+			s.logger.Fatalf("unable to load user's location on start. Location: %s. Error: %v", tz.Timezone.Name, err)
+		}
+
+		s.timezoneCache.Save(ctx, tz.TGID, loc)
+	}
+
+	s.logger.Debugf("Successfully saved %d users' timezone(s) to cache\n", len(tzs))
+}
+
+func (s *UserService) GetAll(ctx context.Context) ([]*user.User, error) {
+	return s.userEditor.GetAll(ctx)
 }
 
 func (s *UserService) SaveUser(ctx context.Context, userID int64, u *user.User) error {
-	s.userCache.Save(ctx, userID, u)
-
 	return s.userEditor.Save(ctx, userID, u)
 }
 
@@ -77,7 +80,7 @@ func (s *UserService) CheckUser(ctx context.Context, tgID int64) bool {
 }
 
 func (s *UserService) checkInCache(ctx context.Context, tgID int64) bool {
-	u, err := s.userCache.Get(ctx, tgID)
+	u, err := s.timezoneCache.Get(ctx, tgID)
 	if err != nil {
 		s.logger.Errorf("User service: Error while checking user in cache: %v\n", err)
 	} else {

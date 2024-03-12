@@ -6,6 +6,7 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,8 @@ type ReminderService struct {
 	// для сохранения напоминаний во время создания
 	reminderMap map[int64]model.Reminder
 	mu          sync.Mutex
+
+	schedulers map[int64]*gocron.Scheduler
 }
 
 //go:generate mockgen -source ./service.go -destination=./mocks/reminder_editor.go
@@ -53,16 +56,16 @@ type reminderEditor interface {
 
 func New(reminderEditor reminderEditor) *ReminderService {
 	return &ReminderService{reminderEditor: reminderEditor, logger: logger.New(), viewsMap: make(map[int64]*view.ReminderView),
-		reminderMap: make(map[int64]model.Reminder), mu: sync.Mutex{}}
+		reminderMap: make(map[int64]model.Reminder), mu: sync.Mutex{}, schedulers: make(map[int64]*gocron.Scheduler)}
 }
 
 // SaveUser сохраняет пользователя в мапе view
 func (n *ReminderService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		n.logger.Debugf("Reminder service: user not found in the views map. Saving...\n")
+		n.logger.Debugf("Reminder service: user %d not found in the views map. Saving...\n", userID)
 		n.viewsMap[userID] = view.NewReminder()
 	} else {
-		n.logger.Debugf("Reminder service: user already saved in the views map.\n")
+		n.logger.Debugf("Reminder service: user %d already saved in the views map.\n", userID)
 	}
 
 }

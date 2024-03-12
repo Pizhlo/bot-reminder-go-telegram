@@ -5,11 +5,8 @@ import tele "gopkg.in/telebot.v3"
 var (
 	// -------------- главное меню --------------
 
-	// inline кнопка для просмотра профиля
-	BtnProfile = tele.Btn{Text: "👤Профиль", Unique: "profile"}
-
-	// inline кнопка для просмотра настроек
-	BtnSettings = tele.Btn{Text: "⚙️Настройки", Unique: "settings"}
+	// inline кнопка для просмотра часового пояса
+	BtnTimezone = tele.Btn{Text: "🌍Часовой пояс", Unique: "timezone"}
 
 	// inline кнопка просмотра заметок
 	BtnNotes = tele.Btn{Text: "📝Заметки", Unique: "notes"}
@@ -19,10 +16,10 @@ var (
 	// inline кнопка для возвращения в меню
 	BtnBackToMenu = tele.Btn{Text: "⬅️Меню", Unique: "menu"}
 
-	// --------------- профиль --------------
+	// --------------- часовой пояс --------------
 
-	// inline кнопка просмотра информации по подписке
-	BtnSubscription = tele.Btn{Text: "🖊Подписка", Unique: "subscription"}
+	// inline кнопка изменения часового пояса
+	BtnEditTimezone = tele.Btn{Text: "✏️Изменить", Unique: "edit_timezone"}
 )
 
 // BackToMenuBtn возвращает кнопку возврата в меню
@@ -42,19 +39,19 @@ func MainMenu() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
-		menu.Row(BtnProfile, BtnSettings),
+		menu.Row(BtnTimezone),
 		menu.Row(BtnNotes, BtnReminders),
 	)
 
 	return menu
 }
 
-// ProfileMenu возвращает меню раздела Профиль
-func ProfileMenu() *tele.ReplyMarkup {
+// TimezoneMenu возвращает меню раздела Часовой пояс
+func TimezoneMenu() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
-		menu.Row(BtnSubscription),
+		menu.Row(BtnEditTimezone),
 		menu.Row(BtnBackToMenu),
 	)
 
