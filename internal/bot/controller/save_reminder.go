@@ -73,10 +73,10 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 	})
 }
 
-func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context) (gocron.NextRun, error) {
+func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context) (gocron.NewJob, error) {
 	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
-		return gocron.NextRun{}, err
+		return gocron.NewJob{}, err
 	}
 
 	params := gocron.FuncParams{
@@ -88,12 +88,12 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	// получаем часовой пояс пользователя
 	userTz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
 	if err != nil {
-		return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
+		return gocron.NewJob{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
 	}
 
 	loc, err := time.LoadLocation(userTz.Name)
 	if err != nil {
-		return gocron.NextRun{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
+		return gocron.NewJob{}, fmt.Errorf("error while getting user's timezone: %s", r.Type)
 	}
 
 	switch r.Type {
@@ -108,7 +108,7 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	case model.EveryWeekType:
 		wd, err := view.ParseWeekday(r.Date)
 		if err != nil {
-			return gocron.NextRun{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
+			return gocron.NewJob{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
 		}
 
 		return c.scheduler.CreateEveryWeekReminder(wd, r.Time, c.SendReminder, params)
@@ -121,6 +121,6 @@ func (c *Controller) createReminder(ctx context.Context, telectx telebot.Context
 	case model.DateType:
 		return c.scheduler.CreateCalendarDateReminder(r.Date, r.Time, loc, c.SendReminder, params)
 	default:
-		return gocron.NextRun{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
+		return gocron.NewJob{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}
 }

@@ -25,10 +25,10 @@ func (c *Controller) Today(ctx context.Context, telectx telebot.Context) error {
 	}
 
 	// если сообщение прислал пользователь - это новое название напоминания
-	if !telectx.Message().Sender.IsBot {
-		// сохраняем новое название напоминания, если пользователь прислал повторно
-		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
-	}
+	// if !telectx.Message().Sender.IsBot {
+	// 	// сохраняем новое название напоминания, если пользователь прислал повторно
+	// 	c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	// }
 
 	// сохраняем дату
 	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)

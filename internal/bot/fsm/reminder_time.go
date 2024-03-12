@@ -34,6 +34,11 @@ func (n *reminderTime) Handle(ctx context.Context, telectx tele.Context) error {
 		if errors.Is(err, api_errors.ErrInvalidTime) {
 			return telectx.EditOrSend(messages.InvalidTimeMessage, view.BackToMenuBtn())
 		}
+
+		if errors.Is(err, api_errors.ErrTimeInPast) {
+			return telectx.EditOrSend(messages.TimeInPastMessage, view.BackToMenuBtn())
+		}
+
 		return err
 	}
 

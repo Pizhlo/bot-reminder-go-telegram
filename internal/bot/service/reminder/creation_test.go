@@ -11,6 +11,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSaveReminderName_New(t *testing.T) {
@@ -225,15 +226,8 @@ func TestProcessTime_ValidTime(t *testing.T) {
 
 		n.SaveName(tt.userID, tt.reminderName)
 
-		err := n.ProcessTime(tt.userID, tt.timeMsg)
+		err := n.ParseTime(tt.userID, tt.timeMsg)
 		assert.NoError(t, err)
-
-		result, ok := n.reminderMap[tt.userID]
-		assert.Equal(t, true, ok)
-
-		assert.Equal(t, tt.userID, result.TgID)
-		assert.Equal(t, tt.timeMsg, result.Time)
-		assert.Equal(t, tt.reminderName, result.Name)
 	}
 }
 
@@ -277,7 +271,7 @@ func TestProcessTime_InvalidTime(t *testing.T) {
 
 		n.SaveName(tt.userID, tt.reminderName)
 
-		err := n.ProcessTime(tt.userID, tt.timeMsg)
+		err := n.ParseTime(tt.userID, tt.timeMsg)
 
 		assert.Error(t, err)
 
@@ -287,18 +281,6 @@ func TestProcessTime_InvalidTime(t *testing.T) {
 		assert.Equal(t, tt.reminderName, result.Name)
 
 	}
-}
-
-func TestProcessTime_NotFound(t *testing.T) {
-	n := New(nil)
-
-	userID := int64(1)
-
-	err := n.ProcessTime(userID, "10:10")
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
-
-	_, ok := n.reminderMap[userID]
-	assert.Equal(t, false, ok)
 }
 
 func TestSaveDate(t *testing.T) {
@@ -1057,7 +1039,7 @@ func TestCheckFields_EmptyCreated(t *testing.T) {
 	n.SaveName(userID, random.String(4))
 	n.SaveType(userID, model.OnceMonthType)
 	n.SaveDate(userID, random.String(5))
-	n.saveTime(userID, random.String(4))
+	n.SaveTime(userID, random.String(4))
 
 	err := n.checkFields(userID)
 	assert.EqualError(t, err, "field Created is not filled")
@@ -1152,4 +1134,54 @@ func TestValidateDate_DatePassed(t *testing.T) {
 
 	err := n.ValidateDate(userID, dayOfMonth, tz)
 	assert.EqualError(t, err, api_errors.ErrInvalidDate.Error())
+}
+
+func TestValidateTime_Valid(t *testing.T) {
+	userID := int64(1)
+
+	n := New(nil)
+
+	n.SaveName(userID, random.String(10))
+
+	year, month, day := time.Now().Date()
+
+	var monthStr string
+	if month < 10 {
+		monthStr = fmt.Sprintf("0%d", month)
+	} else {
+		monthStr = fmt.Sprintf("%d", month)
+	}
+
+	date := fmt.Sprintf("%d.%s.%d", day, monthStr, year)
+
+	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "23:59"))
+	require.NoError(t, err)
+
+	err = n.ValidateTime(time.Local, userDateWithTime)
+	assert.NoError(t, err)
+}
+
+func TestValidateTime_Invalid(t *testing.T) {
+	userID := int64(1)
+
+	n := New(nil)
+
+	n.SaveName(userID, random.String(10))
+
+	year, month, day := time.Now().Date()
+
+	var monthStr string
+	if month < 10 {
+		monthStr = fmt.Sprintf("0%d", month)
+	} else {
+		monthStr = fmt.Sprintf("%d", month)
+	}
+
+	date := fmt.Sprintf("%d.%s.%d", day, monthStr, year)
+
+	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "00:00"))
+	require.NoError(t, err)
+
+	err = n.ValidateTime(time.Local, userDateWithTime)
+	assert.EqualError(t, err, api_errors.ErrTimeInPast.Error())
 }

@@ -62,8 +62,8 @@ func (n *ReminderService) SaveCreatedField(userID int64, tz *time.Location) erro
 	return nil
 }
 
-// ProcessTime обрабатывает время, которое прислал пользователь: валидирует и сохраняет в случае успеха
-func (n *ReminderService) ProcessTime(userID int64, timeMsg string) error {
+// ParseTime обрабатывает время, которое прислал пользователь: валидирует и сохраняет в случае успеха
+func (n *ReminderService) ParseTime(userID int64, timeMsg string) error {
 	// формат, в котором пользователь должен прислать время
 	layout := "15:04"
 
@@ -72,10 +72,21 @@ func (n *ReminderService) ProcessTime(userID int64, timeMsg string) error {
 		return api_errors.ErrInvalidTime
 	}
 
-	return n.saveTime(userID, timeMsg)
+	return nil
 }
 
-func (n *ReminderService) saveTime(userID int64, timeMsg string) error {
+// ValidateTime проверет, что время не прошло
+func (n *ReminderService) ValidateTime(loc *time.Location, userTime time.Time) error {
+	now := time.Now().In(loc)
+
+	if userTime.Before(now) {
+		return api_errors.ErrTimeInPast
+	}
+
+	return nil
+}
+
+func (n *ReminderService) SaveTime(userID int64, timeMsg string) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
