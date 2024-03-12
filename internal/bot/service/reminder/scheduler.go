@@ -31,7 +31,7 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 		sch, _ = c.getScheduler(r.TgID)
 	}
 
-	c.logger.Debugf("Stating job for user %d. Job: %+v", r.TgID, r)
+	c.logger.Debugf("Starting job for user %d. Job: %+v", r.TgID, r)
 
 	switch r.Type {
 	case model.EverydayType:
