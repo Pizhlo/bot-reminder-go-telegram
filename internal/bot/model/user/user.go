@@ -17,12 +17,10 @@ func (p *User) HasTimezone() bool {
 type Timezone struct {
 	TGID int64
 	Name string
-	Lon  float64
-	Lat  float64
 }
 
 func (o Timezone) IsUnknown() bool {
-	return o.Name == "" && o.Lon == 0 && o.Lat == 0
+	return o.Name == ""
 }
 
 var ErrNotFound = errors.New("not found")

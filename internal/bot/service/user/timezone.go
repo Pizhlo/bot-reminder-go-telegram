@@ -22,8 +22,6 @@ func (s *UserService) ProcessTimezone(ctx context.Context, userID int64, locatio
 		TGID: userID,
 		Timezone: user.Timezone{
 			Name: tz,
-			Lon:  float64(location.Long),
-			Lat:  float64(location.Lat),
 		},
 	}
 

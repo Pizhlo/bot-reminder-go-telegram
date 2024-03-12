@@ -24,22 +24,22 @@ func New(bot *tele.Bot, controller *controller.Controller) *Server {
 }
 
 func (s *Server) Start(ctx context.Context) {
-	s.loadFSM(ctx)
+	s.loadUsers(ctx)
 	s.setupBot(ctx)
 }
 
-func (s *Server) RegisterUser(userID int64, known bool) {
+func (s *Server) RegisterUserInFSM(userID int64, known bool) {
 	s.fsm[userID] = fsm.NewFSM(s.controller, known)
 }
 
-func (s *Server) loadFSM(ctx context.Context) {
+func (s *Server) loadUsers(ctx context.Context) {
 	users, err := s.controller.GetAllUsers(ctx)
 	if err != nil {
 		s.logger.Fatalf("error while loading all users: %v", err)
 	}
 
 	for _, user := range users {
-		s.RegisterUser(user.TGID, true)
+		s.RegisterUserInFSM(user.TGID, true)
 
 	}
 
