@@ -342,7 +342,7 @@ func (s *Scheduler) makeTime(userTime string, loc *time.Location) (gocron.AtTime
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing user's time %s: %w", userTime, err)
 	}
-	tLoc := t.In(loc)
+	//tLoc := t.In(loc)
 
-	return gocron.NewAtTimes(gocron.NewAtTime(uint(tLoc.Hour()), uint(tLoc.Minute()), 0)), nil
+	return gocron.NewAtTimes(gocron.NewAtTime(uint(t.Hour()), uint(t.Minute()), 0)), nil
 }

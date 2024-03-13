@@ -64,7 +64,7 @@ type state interface {
 	Next() state
 }
 
-func NewFSM(controller *controller.Controller, known bool) *FSM {
+func NewFSM(controller *controller.Controller) *FSM {
 	fsm := &FSM{mu: sync.RWMutex{}, logger: logger.New()}
 
 	fsm.location = newLocationState(fsm, controller)
@@ -96,11 +96,7 @@ func NewFSM(controller *controller.Controller, known bool) *FSM {
 	fsm.Once = newOnceReminderState(controller, fsm)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
-	if !known {
-		//fsm.current = fsm.Start
-	} else {
-		fsm.current = fsm.DefaultState
-	}
+	fsm.current = fsm.DefaultState
 
 	return fsm
 }

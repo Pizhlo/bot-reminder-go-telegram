@@ -28,8 +28,8 @@ func (s *Server) Start(ctx context.Context) {
 	s.setupBot(ctx)
 }
 
-func (s *Server) RegisterUserInFSM(userID int64, known bool) {
-	s.fsm[userID] = fsm.NewFSM(s.controller, known)
+func (s *Server) RegisterUserInFSM(userID int64) {
+	s.fsm[userID] = fsm.NewFSM(s.controller)
 }
 
 func (s *Server) loadUsers(ctx context.Context) {
@@ -41,7 +41,7 @@ func (s *Server) loadUsers(ctx context.Context) {
 	s.controller.SaveUsers(ctx, users)
 
 	for _, user := range users {
-		s.RegisterUserInFSM(user.TGID, true)
+		s.RegisterUserInFSM(user.TGID)
 	}
 
 }

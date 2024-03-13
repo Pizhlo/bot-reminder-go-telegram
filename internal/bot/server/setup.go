@@ -26,6 +26,8 @@ func (s *Server) setupBot(ctx context.Context) {
 		// 	return err
 		// }
 
+		//s.RegisterUserInFSM(telectx.Chat().ID)
+
 		err := s.controller.AcceptTimezone(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
@@ -109,9 +111,9 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// /start command
 	restricted.Handle(commands.StartCommand, func(telectx tele.Context) error {
-		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-			s.RegisterUserInFSM(telectx.Chat().ID, false)
-		}
+		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+		// 	s.RegisterUserInFSM(telectx.Chat().ID)
+		// }
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.StartCmd(ctx, telectx)
@@ -125,9 +127,9 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// /menu command
 	restricted.Handle(commands.MenuCommand, func(telectx tele.Context) error {
-		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-			s.RegisterUserInFSM(telectx.Chat().ID, false)
-		}
+		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+		// 	s.RegisterUserInFSM(telectx.Chat().ID)
+		// }
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.MenuCmd(ctx, telectx)
@@ -140,9 +142,9 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	restricted.Handle(commands.HelpCommand, func(telectx tele.Context) error {
-		if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-			s.RegisterUserInFSM(telectx.Chat().ID, false)
-		}
+		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+		// 	s.RegisterUserInFSM(telectx.Chat().ID)
+		// }
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.HelpCmd(ctx, telectx)
@@ -426,7 +428,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnCreateReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
 
-		err := c.EditOrSend(messages.ReminderNameMessage, view.BackToMenuBtn())
+		err := c.EditOrSend(messages.ReminderNameMessage, view.BackToRemindersAndMenu())
 		if err != nil {
 			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err

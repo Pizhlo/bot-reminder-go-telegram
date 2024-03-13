@@ -86,13 +86,26 @@ func ReminderTypes() *tele.ReplyMarkup {
 		menu.Row(BtnEveryWeekReminder, BtnSeveralDaysReminder),
 		menu.Row(BtnOnceMonthReminder, BtnOnceYear),
 		menu.Row(BtnOnce),
+		menu.Row(BtnReminders),
 		menu.Row(BtnBackToMenu),
 	)
 
 	return menu
 }
 
-// BackToReminderMenuBtns возвращает меню с кнопками: Назад к напоминаниям, в меню
+// BackToRemindersAndMenu возвращает меню с кнопками: назад к напоминаниями, назад в меню
+func BackToRemindersAndMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnReminders),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// BackToReminderMenuBtns возвращает меню с кнопками: Назад к типам напоминаний, в меню
 func BackToReminderMenuBtns() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 

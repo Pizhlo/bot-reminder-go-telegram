@@ -39,8 +39,8 @@ func MainMenu() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
-		menu.Row(BtnTimezone),
 		menu.Row(BtnNotes, BtnReminders),
+		menu.Row(BtnTimezone),
 	)
 
 	return menu
