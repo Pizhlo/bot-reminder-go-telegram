@@ -19,31 +19,27 @@ create table if not exists notes.notes (
 	user_id int not null,
 	"text" text,	
 	created timestamp not null,
-	unique(id, user_id),
 	primary key(id, user_id),
-	foreign key (user_id) references users.users(id) on delete cascade,
+	foreign key (user_id) references users.users(id) on delete cascade
 );
 
-CREATE SCHEMA notes;
+CREATE OR REPLACE FUNCTION set_note_id()
+RETURNS TRIGGER AS $f$
+DECLARE
+max_identifier INTEGER;
+BEGIN
+  SELECT MAX(id)+1 INTO max_identifier
+  FROM notes.notes
+  WHERE user_id = NEW.user_id;
+IF max_identifier IS NULL THEN
+    max_identifier := 1;
+END IF;
+NEW.id := max_identifier;
+RETURN NEW;
+END;
+$f$ LANGUAGE plpgsql;
 
-CREATE TABLE IF NOT EXISTS notes.notes (
-    id SERIAL NOT NULL,
-    user_id INT NOT NULL,
-    "text" TEXT,
-    created TIMESTAMP NOT NULL,
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES users.users(id) ON DELETE CASCADE
-);
-
-
-
-
--- Создание триггера для заполнения таблицы "users.timezones" при внесении записи в "users.users"
--- CREATE OR REPLACE FUNCTION insert_into_timezone() RETURNS TRIGGER AS $$
--- BEGIN
---     IF NEW.timezone <> '' THEN
---         INSERT INTO users.timezones (user_id, timezone) VALUES (NEW.user_id, NEW.timezone);
---     END IF;
---     RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
+CREATE TRIGGER before_insert_trigger_notes
+BEFORE INSERT ON notes.notes
+FOR EACH ROW
+EXECUTE FUNCTION set_note_id();
