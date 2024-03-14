@@ -28,23 +28,6 @@ CREATE TABLE IF NOT EXISTS reminders.reminders (
     FOREIGN KEY (type_id) REFERENCES reminders.types(id) ON DELETE CASCADE
 );
 
-CREATE OR REPLACE FUNCTION set_reminder_id()
-RETURNS TRIGGER AS $f$
-DECLARE
-max_identifier INTEGER;
-BEGIN
-  SELECT MAX(id)+1 INTO max_identifier
-  FROM reminders.reminders
-  WHERE user_id = NEW.user_id;
-IF max_identifier IS NULL THEN
-    max_identifier := 1;
-END IF;
-NEW.id := max_identifier;
-RETURN NEW;
-END;
-$f$ LANGUAGE plpgsql;
-
-CREATE TRIGGER before_insert_trigger_notes
-BEFORE INSERT ON reminders.reminders
-FOR EACH ROW
-EXECUTE FUNCTION set_reminder_id();
+CREATE VIEW reminders.reminders_view AS 
+SELECT id, user_id, row_number()over(partition by user_id order by id) AS reminder_number
+FROM reminders.reminders;
