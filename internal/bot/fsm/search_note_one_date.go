@@ -35,7 +35,7 @@ func (n *searchNoteOneDate) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }
 
 func (n *searchNoteOneDate) Name() string {
@@ -69,5 +69,5 @@ func (n *selectedDay) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }

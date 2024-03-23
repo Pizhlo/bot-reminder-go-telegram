@@ -98,7 +98,7 @@ func TestSave_DBError(t *testing.T) {
 
 	sqlErr := sql.ErrNoRows
 
-	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(int64(0), sqlErr)
+	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(uuid.New(), sqlErr)
 
 	err = n.Save(context.Background(), userID)
 	assert.EqualError(t, err, sqlErr.Error())
@@ -129,10 +129,10 @@ func TestSaveJobID(t *testing.T) {
 	err = n.ParseTime(userID, reminder.Time)
 	require.NoError(t, err)
 
-	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 	// сохраняем job ID
-	err = n.SaveJobID(context.Background(), uuid.New(), userID)
+	err = n.SaveJobID(context.Background(), uuid.New(), userID, uuid.New())
 	require.NoError(t, err)
 }
 
@@ -163,19 +163,9 @@ func TestSaveJobID_DBError(t *testing.T) {
 
 	sqlErr := sql.ErrNoRows
 
-	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(sqlErr)
+	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(sqlErr)
 
 	// сохраняем job ID
-	err = n.SaveJobID(context.Background(), uuid.New(), userID)
+	err = n.SaveJobID(context.Background(), uuid.New(), userID, uuid.New())
 	require.EqualError(t, err, sqlErr.Error())
-}
-
-func TestSaveJobID_NotFoundInMap(t *testing.T) {
-	userID := int64(1)
-
-	n := New(nil)
-
-	// сохраняем job ID
-	err := n.SaveJobID(context.Background(), uuid.New(), userID)
-	require.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
 }

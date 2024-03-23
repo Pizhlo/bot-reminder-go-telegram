@@ -3,18 +3,19 @@ package reminder
 import (
 	"context"
 
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/google/uuid"
 )
 
-// Save сохраняет напоминание
+// Save проверяет заполненость полей сохраняет напоминание в БД
 func (s *ReminderService) Save(ctx context.Context, userID int64) error {
-	// проверяем, заполнены ли все поля в напоминании
-	if err := s.checkFields(userID); err != nil {
+	r, err := s.GetFromMemory(userID)
+	if err != nil {
 		return err
 	}
 
-	r, err := s.GetFromMemory(userID)
-	if err != nil {
+	// проверяем, заполнены ли все поля в напоминании
+	if err := s.checkFields(r); err != nil {
 		return err
 	}
 
@@ -23,19 +24,25 @@ func (s *ReminderService) Save(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	s.SaveID(userID, id)
-
-	return nil
+	return s.SaveID(userID, id)
 }
 
 // SaveJobID сохраняет в базе ID задачи, связанной с напоминанием
-func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, userID int64) error {
-	r, err := s.GetFromMemory(userID)
-	if err != nil {
-		return err
-	}
+func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, userID int64, reminderID uuid.UUID) error {
+	// r, err := s.GetFromMemory(userID)
+	// if err != nil {
+	// 	return err
+	// }
 
-	s.logger.Debugf("Reminder service: saving user's job. Model: %+v\n", r)
+	s.logger.Debugf("Reminder service: saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)
 
-	return s.reminderEditor.SaveJob(ctx, userID, r.ID, jobID)
+	return s.reminderEditor.SaveJob(ctx, reminderID, jobID)
+}
+
+// Clear очищает память после успешного сохранения
+func (s *ReminderService) Clear(userID int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.reminderMap[userID] = model.Reminder{}
 }

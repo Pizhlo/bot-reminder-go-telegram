@@ -52,5 +52,5 @@ func (s *Server) HandleError(ctx tele.Context, err error) {
 	s.controller.HandleError(ctx, err, s.fsm[ctx.Chat().ID].Name())
 
 	// устанавливаем состояние в дефолтное
-	s.fsm[ctx.Chat().ID].SetState(s.fsm[ctx.Chat().ID].DefaultState)
+	s.fsm[ctx.Chat().ID].SetToDefault()
 }

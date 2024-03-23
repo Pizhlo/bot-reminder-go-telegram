@@ -86,7 +86,6 @@ func ReminderTypes() *tele.ReplyMarkup {
 		menu.Row(BtnEveryWeekReminder, BtnSeveralDaysReminder),
 		menu.Row(BtnOnceMonthReminder, BtnOnceYear),
 		menu.Row(BtnOnce),
-		menu.Row(BtnReminders),
 		menu.Row(BtnBackToMenu),
 	)
 

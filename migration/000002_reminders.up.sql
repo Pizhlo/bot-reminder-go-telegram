@@ -16,14 +16,14 @@ INSERT INTO reminders.types VALUES
 (7, 'date');
 
 CREATE TABLE IF NOT EXISTS reminders.reminders (
-    id SERIAL NOT NULL,
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
     user_id INT NOT NULL,
     "text" TEXT,
     type_id int not null,
     date text not null,
     time text not null,
     created TIMESTAMP NOT NULL,
-    PRIMARY KEY (id, user_id),
+    PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES users.users(id) ON DELETE CASCADE,
     FOREIGN KEY (type_id) REFERENCES reminders.types(id) ON DELETE CASCADE
 );

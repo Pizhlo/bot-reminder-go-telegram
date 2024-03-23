@@ -10,6 +10,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -565,7 +566,7 @@ func TestGetFromMemory_NotFound(t *testing.T) {
 func TestSaveID(t *testing.T) {
 	userID := int64(1)
 	reminderName := random.String(10)
-	reminderID := int64(1)
+	reminderID := uuid.New()
 
 	n := New(nil)
 
@@ -584,7 +585,7 @@ func TestSaveID(t *testing.T) {
 
 func TestSaveID_NotFound(t *testing.T) {
 	userID := int64(1)
-	reminderID := int64(1)
+	reminderID := uuid.New()
 
 	n := New(nil)
 
@@ -599,7 +600,7 @@ func TestSaveID_NotFound(t *testing.T) {
 func TestGetID(t *testing.T) {
 	userID := int64(1)
 	reminderName := random.String(10)
-	reminderID := int64(1)
+	reminderID := uuid.New()
 
 	n := New(nil)
 
@@ -619,9 +620,8 @@ func TestGetID_NotFound(t *testing.T) {
 
 	n := New(nil)
 
-	id, err := n.GetID(userID)
+	_, err := n.GetID(userID)
 	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
-	assert.Equal(t, int64(0), id)
 }
 
 func TestProcessMinutes(t *testing.T) {
@@ -986,62 +986,63 @@ func TestSaveCalendarDate_Valid_DateType(t *testing.T) {
 	assert.Equal(t, curDate, result.Date)
 }
 
-func TestCheckFields_NotFound(t *testing.T) {
+func TestCheckFields_EmptyTgID(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.TgID = 0
 
-	err := n.checkFields(userID)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	err := n.checkFields(&reminder)
+	assert.EqualError(t, err, "field TgID is not filled")
+}
+
+func TestCheckFields_EmptyName(t *testing.T) {
+	n := New(nil)
+
+	reminder := random.Reminder()
+	reminder.Name = ""
+
+	err := n.checkFields(&reminder)
+	assert.EqualError(t, err, "field Name is not filled")
 }
 
 func TestCheckFields_EmptyType(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Type = ""
 
-	n.SaveName(userID, random.String(4))
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Type is not filled")
 }
 
 func TestCheckFields_EmptyDate(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Date = ""
 
-	n.SaveName(userID, random.String(4))
-	n.SaveType(userID, model.OnceMonthType)
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Date is not filled")
 }
 
 func TestCheckFields_EmptyTime(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Time = ""
 
-	n.SaveName(userID, random.String(4))
-	n.SaveType(userID, model.OnceMonthType)
-	n.SaveDate(userID, random.String(5))
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Time is not filled")
 }
 
 func TestCheckFields_EmptyCreated(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Created = time.Time{}
 
-	n.SaveName(userID, random.String(4))
-	n.SaveType(userID, model.OnceMonthType)
-	n.SaveDate(userID, random.String(5))
-	n.SaveTime(userID, random.String(4))
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Created is not filled")
 }
 

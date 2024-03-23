@@ -2,25 +2,16 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	tele "gopkg.in/telebot.v3"
 )
 
-// DeleteReminder удаляет напоминание
-func (c *Controller) DeleteReminder(ctx context.Context, telectx tele.Context, reminderID int, userID int64) error {
-	// получаем айди задачи
-	jobID, err := c.reminderSrv.GetJobID(ctx, userID, reminderID)
+// DeleteReminderByViewID удаляет напоминание по айди, который видит пользователь
+func (c *Controller) DeleteReminderByViewID(ctx context.Context, telectx tele.Context, viewID int) error {
+	_, err := c.reminderSrv.DeleteByViewID(ctx, telectx.Chat().ID, viewID)
 	if err != nil {
-		return fmt.Errorf("error while getting job ID: %w", err)
+		return err
 	}
 
-	// удаляем из шедулера
-	err = c.reminderSrv.DeleteJob(telectx.Chat().ID, jobID)
-	if err != nil {
-		return fmt.Errorf("error while deleting job: %w", err)
-	}
-
-	// удаляем из базы
-	return c.reminderSrv.DeleteReminderByID(ctx, userID, reminderID)
+	return nil
 }

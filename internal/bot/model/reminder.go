@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ReminderType string
@@ -24,9 +26,15 @@ const (
 )
 
 type Reminder struct {
-	ID               int64
+	ID               uuid.UUID // ID in DB
+	ViewID           int64     // ID показываемый для пользователя
 	TgID             int64
 	Name, Date, Time string
 	Type             ReminderType
 	Created          time.Time
+	Job              Job
+}
+
+type Job struct {
+	ID uuid.UUID
 }

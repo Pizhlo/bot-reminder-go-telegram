@@ -1,11 +1,14 @@
 package reminder
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
+	"github.com/google/uuid"
 )
 
 // SaveName сохраняет название напоминания при создании
@@ -13,17 +16,10 @@ func (n *ReminderService) SaveName(userID int64, name string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	reminder, ok := n.reminderMap[userID]
-	if !ok {
-		reminder = model.Reminder{
-			TgID: userID,
-			Name: name,
-		}
-	} else {
-		reminder.Name = name
+	n.reminderMap[userID] = model.Reminder{
+		TgID: userID,
+		Name: name,
 	}
-
-	n.reminderMap[userID] = reminder
 }
 
 // SaveType сохраняет тип напоминания
@@ -138,7 +134,7 @@ func (n *ReminderService) GetFromMemory(userID int64) (*model.Reminder, error) {
 }
 
 // SaveID сохраняет ID напоминания, указанное в базе
-func (n *ReminderService) SaveID(userID int64, reminderID int64) error {
+func (n *ReminderService) SaveID(userID int64, reminderID uuid.UUID) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
@@ -155,27 +151,22 @@ func (n *ReminderService) SaveID(userID int64, reminderID int64) error {
 }
 
 // GetID возвращает ID напоминания
-func (n *ReminderService) GetID(userID int64) (int64, error) {
+func (n *ReminderService) GetID(userID int64) (uuid.UUID, error) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return 0, fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return uuid.UUID{}, fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
 	return r.ID, nil
 }
 
 // checkFields проверяет, заполнены ли все поля в напоминании
-func (n *ReminderService) checkFields(userID int64) error {
+func (n *ReminderService) checkFields(r *model.Reminder) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
-
-	r, ok := n.reminderMap[userID]
-	if !ok {
-		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
-	}
 
 	if r.TgID == 0 {
 		return errors.New("field TgID is not filled")
@@ -202,4 +193,31 @@ func (n *ReminderService) checkFields(userID int64) error {
 	}
 
 	return nil
+}
+
+// SaveAndStartReminder сохраняет напоминание в БД и создает таску в планировщике
+func (n *ReminderService) SaveAndStartReminder(ctx context.Context, userID int64, loc *time.Location, task gocron.Task) (gocron.NewJob, error) {
+	err := n.Save(ctx, userID)
+	if err != nil {
+		return gocron.NewJob{}, err
+	}
+
+	r, err := n.GetFromMemory(userID)
+	if err != nil {
+		return gocron.NewJob{}, err
+	}
+
+	// создаем отложенный вызов
+	nextRun, err := n.CreateReminder(ctx, loc, task, r)
+	if err != nil {
+		return gocron.NewJob{}, err
+	}
+
+	// сохраняем задачу в базе
+	err = n.SaveJobID(ctx, nextRun.JobID, userID, r.ID)
+	if err != nil {
+		return gocron.NewJob{}, err
+	}
+
+	return nextRun, nil
 }

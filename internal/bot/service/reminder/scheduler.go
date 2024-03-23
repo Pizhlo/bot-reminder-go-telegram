@@ -31,7 +31,7 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 		sch, _ = c.getScheduler(r.TgID)
 	}
 
-	c.logger.Debugf("Starting job for user %d. Job: %+v", r.TgID, r)
+	c.logger.Debugf("Starting job for user %d. Reminder: %+v", r.TgID, r)
 
 	switch r.Type {
 	case model.EverydayType:
@@ -90,8 +90,10 @@ func (c *ReminderService) getScheduler(tgID int64) (*gocron.Scheduler, error) {
 	return nil, errors.New("no scheduler found for this user")
 }
 
+// DeleteJob останавливает и удаляет таску в планировщике
 func (c *ReminderService) DeleteJob(tgID int64, jobID uuid.UUID) error {
 	if val, ok := c.schedulers[tgID]; ok {
+		c.logger.Debugf("Deleting job %v from scheduler", jobID)
 		return val.DeleteJob(jobID)
 	}
 
@@ -108,7 +110,12 @@ func (c *ReminderService) StartAllJobs(ctx context.Context, userID int64, loc *t
 	}
 
 	for _, r := range reminders {
-		_, err := c.CreateReminder(ctx, loc, f, &r)
+		newJob, err := c.CreateReminder(ctx, loc, f, &r)
+		if err != nil {
+			return err
+		}
+
+		err = c.SaveJobID(ctx, newJob.JobID, userID, r.ID)
 		if err != nil {
 			return err
 		}

@@ -13,45 +13,28 @@ import (
 // saveReminder сохраняет напоминание
 func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) error {
 	// достаем часовой пояс пользователя, чтобы установить поле created
-	userTz, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
-	if err != nil {
-		return fmt.Errorf("error while setting timezone (for setting 'created' field): %w", err)
-	}
-
-	// сохраняем поле created
-	err = c.reminderSrv.SaveCreatedField(telectx.Chat().ID, userTz)
-	if err != nil {
-		return err
-	}
-
-	err = c.reminderSrv.Save(ctx, telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
 	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return fmt.Errorf("error while loading user's timezone: %w", err)
 	}
 
-	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	// сохраняем поле created
+	err = c.reminderSrv.SaveCreatedField(telectx.Chat().ID, loc)
 	if err != nil {
 		return err
 	}
 
-	// создаем отложенный вызов
-	nextRun, err := c.reminderSrv.CreateReminder(ctx, loc, c.SendReminder, r)
-	if err != nil {
-		return err
-	}
-
-	// сохраняем задачу в базе
-	err = c.reminderSrv.SaveJobID(ctx, nextRun.JobID, telectx.Chat().ID)
+	nextRun, err := c.reminderSrv.SaveAndStartReminder(ctx, telectx.Chat().ID, loc, c.SendReminder)
 	if err != nil {
 		return err
 	}
 
 	layout := "02.01.2006 15:04:05"
+
+	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
 
 	nextRunMsg, err := view.ProcessTypeAndDate(r.Type, r.Date, r.Time)
 	if err != nil {
@@ -65,6 +48,8 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 	} else { // в остальных случаях срабатывает больше одного раза
 		verb = "будет срабатывать"
 	}
+
+	c.reminderSrv.Clear(telectx.Chat().ID)
 
 	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name, verb, nextRunMsg, nextRun.NextRun.Format(layout))
 

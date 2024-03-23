@@ -10,7 +10,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-// Состояние перечисления напомианий
+// Состояние перечисления заметок
 type listNote struct {
 	controller *controller.Controller
 	fsm        *FSM
@@ -23,12 +23,14 @@ func newListNoteState(FSM *FSM, controller *controller.Controller) *listNote {
 	return &listNote{controller, FSM, logger.New(), "list note", nil}
 }
 
+const deleteNotePrefix = "/dn"
+
 func (n *listNote) Handle(ctx context.Context, telectx tele.Context) error {
 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 	msg := telectx.Message().Text
 
-	if !strings.HasPrefix(msg, "/del") {
-		n.fsm.SetState(n.fsm.DefaultState)
+	if !strings.HasPrefix(msg, deleteNotePrefix) {
+		n.fsm.SetToDefault()
 		return n.fsm.Handle(ctx, telectx)
 	} else {
 		return n.controller.DeleteNoteByID(ctx, telectx)
@@ -45,5 +47,5 @@ func (n *listNote) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }

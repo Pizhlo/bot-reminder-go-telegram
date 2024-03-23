@@ -36,7 +36,7 @@ func (db *NoteRepo) DeleteNoteByID(ctx context.Context, userID int64, noteID int
 
 	_, err = tx.Exec(`delete from notes.notes where user_id = (select id from users.users where tg_id = $1) and id = (select id from notes.notes_view where notes.notes_view.note_number = $2 and user_id = (select id from users.users where tg_id = $1))`, userID, noteID)
 	if err != nil {
-		return fmt.Errorf("error while deleting all notes by user ID: %w", err)
+		return fmt.Errorf("error while deleting note by user ID: %w", err)
 	}
 
 	return tx.Commit()

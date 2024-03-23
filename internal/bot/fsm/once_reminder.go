@@ -48,7 +48,7 @@ func (n *onceReminder) Next() state {
 		return n.next
 	}
 
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }
 
 // Next state

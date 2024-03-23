@@ -28,7 +28,7 @@ func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.N
 
 		err := rows.Scan(&note.ID, &note.Text, &note.Created)
 		if err != nil {
-			return nil, fmt.Errorf("error while scanning note: %w", err)
+			return nil, fmt.Errorf("error while scanning note (get all by user id): %w", err)
 		}
 
 		notes = append(notes, note)
@@ -56,7 +56,7 @@ func (db *NoteRepo) GetByID(ctx context.Context, userID int64, noteID int) (*mod
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, api_errors.ErrNotesNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("error while scanning note (get by id): %w", err)
 	}
 
 	return &note, nil

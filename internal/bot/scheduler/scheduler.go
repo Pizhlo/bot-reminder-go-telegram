@@ -17,6 +17,11 @@ type Task func(ctx context.Context, reminder model.Reminder) error
 
 // Scheduler управляет отложенными вызовами
 type Scheduler struct {
+	scheduelrInterface
+}
+
+//go:generate mockgen -source ./scheduler.go -destination=./mocks/schediler.go
+type scheduelrInterface interface {
 	gocron.Scheduler
 }
 
