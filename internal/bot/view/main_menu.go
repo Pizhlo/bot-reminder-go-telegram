@@ -16,6 +16,9 @@ var (
 	// inline кнопка для возвращения в меню
 	BtnBackToMenu = tele.Btn{Text: "⬅️Меню", Unique: "menu"}
 
+	// inline кнопка чтобы создать еще одно напоминание
+	BtnCreateOneElseReminder = tele.Btn{Text: "🔄Создать еще", Unique: "create_reminder"}
+
 	// --------------- часовой пояс --------------
 
 	// inline кнопка изменения часового пояса
@@ -27,6 +30,18 @@ func BackToMenuBtn() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// BackToMenuAndCreateOneElse возвращает меню с кнопками: создать еще, назад в меню
+func BackToMenuAndCreateOneElse() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnCreateOneElseReminder),
 		menu.Row(BtnBackToMenu),
 	)
 
