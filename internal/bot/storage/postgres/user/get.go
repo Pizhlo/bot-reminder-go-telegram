@@ -48,3 +48,17 @@ func (db *UserRepo) GetAll(ctx context.Context) ([]*user.User, error) {
 
 	return res, nil
 }
+
+func (db *UserRepo) GetState(ctx context.Context, id int64) (string, error) {
+	state := ""
+
+	row := db.db.QueryRowContext(ctx, `select name from users.state_types 
+	where id = (select state_id from users.states where user_id = (select id from users.users where tg_id = $1)); `, id)
+
+	err := row.Scan(&state)
+	if err != nil {
+		return "", fmt.Errorf("error while scanning state: %w", err)
+	}
+
+	return state, nil
+}

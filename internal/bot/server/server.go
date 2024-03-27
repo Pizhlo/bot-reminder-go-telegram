@@ -42,8 +42,23 @@ func (s *Server) loadUsers(ctx context.Context) {
 
 	for _, user := range users {
 		s.RegisterUserInFSM(user.TGID)
+		err := s.setupState(ctx, user.TGID)
+		if err != nil {
+			s.logger.Errorf("error while setting state for user on startup: %v", err)
+		}
 	}
 
+}
+
+// setupState подготавливает бота к диалогу с пользователем.
+// Запрашивает последнее сохраненное состояние и устанавливает в него FSM
+func (s *Server) setupState(ctx context.Context, userID int64) error {
+	lastState, err := s.controller.GetState(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	return s.fsm[userID].SetFromString(lastState)
 }
 
 // HandleError обрабатывает ошибку: устанавливает состояние в дефолтное, передает контроллеру
@@ -53,4 +68,20 @@ func (s *Server) HandleError(ctx tele.Context, err error) {
 
 	// устанавливаем состояние в дефолтное
 	s.fsm[ctx.Chat().ID].SetToDefault()
+}
+
+// Shutdown сохраняет состояния бота в БД
+func (s *Server) Shutdown(ctx context.Context) {
+	users, err := s.controller.GetAllUsers(ctx)
+	if err != nil {
+		s.logger.Fatalf("error while loading all users: %v", err)
+	}
+
+	for _, u := range users {
+		current := s.fsm[u.TGID].Current()
+		err := s.controller.SaveState(ctx, u.TGID, current.Name())
+		if err != nil {
+			s.logger.Errorf("error while saving user's state on shutdown: %v", err)
+		}
+	}
 }

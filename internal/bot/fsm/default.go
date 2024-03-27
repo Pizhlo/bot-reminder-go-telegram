@@ -21,7 +21,7 @@ type defaultState struct {
 }
 
 func newDefaultState(controller *controller.Controller, FSM *FSM) *defaultState {
-	return &defaultState{fsm: FSM, controller: controller, logger: logger.New(), name: "default", next: nil}
+	return &defaultState{fsm: FSM, controller: controller, logger: logger.New(), name: defaultStateName, next: nil}
 }
 
 func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {

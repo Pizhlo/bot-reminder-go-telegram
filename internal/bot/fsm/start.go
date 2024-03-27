@@ -21,7 +21,7 @@ type start struct {
 }
 
 func newStartState(FSM *FSM, controller *controller.Controller, location state, defaultState state) *start {
-	return &start{controller, FSM, location, defaultState, logger.New(), "start", nil}
+	return &start{controller, FSM, location, defaultState, logger.New(), startStateName, nil}
 }
 
 // Отправляем пользователю запрос геолокации

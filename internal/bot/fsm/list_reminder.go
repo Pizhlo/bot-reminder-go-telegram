@@ -27,7 +27,7 @@ type listReminder struct {
 const deleteReminderPrefix = "/dr"
 
 func newListReminderState(c *controller.Controller, fsm *FSM) *listReminder {
-	return &listReminder{controller: c, fsm: fsm, logger: logger.New(), name: "list reminders", next: nil}
+	return &listReminder{controller: c, fsm: fsm, logger: logger.New(), name: listReminderName, next: nil}
 }
 
 func (n *listReminder) Handle(ctx context.Context, telectx tele.Context) error {
@@ -35,8 +35,7 @@ func (n *listReminder) Handle(ctx context.Context, telectx tele.Context) error {
 	msg := telectx.Message().Text
 
 	if !strings.HasPrefix(msg, deleteReminderPrefix) {
-		n.fsm.SetToDefault()
-		return n.fsm.Handle(ctx, telectx)
+		return n.controller.CreateNote(ctx, telectx)
 	} else {
 		before, found := strings.CutPrefix(msg, deleteReminderPrefix)
 		if !found {

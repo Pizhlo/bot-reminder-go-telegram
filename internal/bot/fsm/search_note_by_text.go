@@ -20,7 +20,7 @@ type searchNoteByTextState struct {
 }
 
 func newSearchNoteByTextState(controller *controller.Controller, FSM *FSM) *searchNoteByTextState {
-	return &searchNoteByTextState{controller, FSM, logger.New(), "search note by text", nil}
+	return &searchNoteByTextState{controller, FSM, logger.New(), searchNoteByTextStateName, nil}
 }
 
 func (n *searchNoteByTextState) Handle(ctx context.Context, telectx tele.Context) error {

@@ -19,7 +19,7 @@ type reminderName struct {
 }
 
 func newReminderNameState(controller *controller.Controller, FSM *FSM) *reminderName {
-	return &reminderName{controller, FSM, logger.New(), "reminder name", nil}
+	return &reminderName{controller, FSM, logger.New(), reminderNameState, nil}
 }
 
 func (n *reminderName) Handle(ctx context.Context, telectx tele.Context) error {

@@ -19,7 +19,7 @@ type createNote struct {
 }
 
 func newCreateNoteState(controller *controller.Controller, FSM *FSM) *createNote {
-	return &createNote{controller, FSM, logger.New(), "create note", nil}
+	return &createNote{controller, FSM, logger.New(), createNoteName, nil}
 }
 
 func (n *createNote) Handle(ctx context.Context, telectx tele.Context) error {

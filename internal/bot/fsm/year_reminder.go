@@ -19,7 +19,7 @@ type year struct {
 }
 
 func newYearState(controller *controller.Controller, FSM *FSM) *year {
-	return &year{controller, FSM, logger.New(), "every year", FSM.ReminderTime}
+	return &year{controller, FSM, logger.New(), yearReminderState, FSM.ReminderTime}
 }
 
 func (n *year) Handle(ctx context.Context, telectx tele.Context) error {

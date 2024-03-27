@@ -12,7 +12,7 @@ import (
 )
 
 // Состояние для обработки одноразового напоминания (дата выбирается в календаре)
-type onceReminder struct {
+type dateReminder struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
@@ -20,11 +20,11 @@ type onceReminder struct {
 	next       state
 }
 
-func newOnceReminderState(controller *controller.Controller, FSM *FSM) *onceReminder {
-	return &onceReminder{controller, FSM, logger.New(), "date reminder", FSM.ReminderTime}
+func newDateReminderState(controller *controller.Controller, FSM *FSM) *dateReminder {
+	return &dateReminder{controller, FSM, logger.New(), dateReminderName, FSM.ReminderTime}
 }
 
-func (n *onceReminder) Handle(ctx context.Context, telectx tele.Context) error {
+func (n *dateReminder) Handle(ctx context.Context, telectx tele.Context) error {
 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	err := n.controller.ProcessDate(ctx, telectx)
@@ -39,11 +39,11 @@ func (n *onceReminder) Handle(ctx context.Context, telectx tele.Context) error {
 	return nil
 }
 
-func (n *onceReminder) Name() string {
+func (n *dateReminder) Name() string {
 	return n.name
 }
 
-func (n *onceReminder) Next() state {
+func (n *dateReminder) Next() state {
 	if n.next != nil {
 		return n.next
 	}
