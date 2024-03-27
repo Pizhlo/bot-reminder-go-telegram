@@ -11,6 +11,7 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
+// inline кнопка для удаления сработавшего напоминания
 var DeleteBtn = telebot.Btn{Text: "❌Удалить"}
 
 // SendReminder отправляет пользователю напоминание в указанное время
@@ -32,6 +33,7 @@ func (c *Controller) SendReminder(ctx context.Context, reminder model.Reminder) 
 	kb := &telebot.ReplyMarkup{}
 
 	kb.Inline(
+		kb.Row(view.BtnCheckReminder),
 		kb.Row(DeleteBtn),
 		kb.Row(view.BtnBackToMenu),
 	)

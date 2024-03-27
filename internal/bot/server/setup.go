@@ -15,8 +15,7 @@ import (
 )
 
 func (s *Server) setupBot(ctx context.Context) {
-	s.bot.Use(logger.Logging(ctx, s.logger))
-	s.bot.Use(middleware.AutoRespond())
+	s.bot.Use(logger.Logging(ctx, s.logger), s.CheckUser(ctx), middleware.AutoRespond())
 
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
@@ -99,6 +98,18 @@ func (s *Server) setupBot(ctx context.Context) {
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// кнопка чтобы скрыть клавиатуру у сработавшего напоминания
+	s.bot.Handle(&view.BtnCheckReminder, func(ctx tele.Context) error {
+		// отправляем сообщение без клавиатуры
+		err := ctx.Edit(ctx.Message().Text)
+		if err != nil {
+			s.HandleError(ctx, err)
 			return err
 		}
 
