@@ -54,8 +54,8 @@ func TestDeleteByID_Positive(t *testing.T) {
 
 	srv.SaveUser(1)
 
-	noteEditor.EXPECT().GetByID(gomock.Any(), gomock.All(), gomock.Any()).Return(&model.Note{}, nil)
-	noteEditor.EXPECT().DeleteNoteByID(gomock.Any(), gomock.All(), gomock.Any()).Return(nil)
+	noteEditor.EXPECT().GetByViewID(gomock.Any(), gomock.All(), gomock.Any()).Return(&model.Note{}, nil)
+	noteEditor.EXPECT().DeleteNoteByViewID(gomock.Any(), gomock.All(), gomock.Any()).Return(nil)
 
 	err := srv.DeleteByID(context.Background(), 1, 1)
 
@@ -71,7 +71,7 @@ func TestDeleteByID_NotesNotFound(t *testing.T) {
 
 	srv.SaveUser(1)
 
-	noteEditor.EXPECT().GetByID(gomock.Any(), gomock.All(), gomock.Any()).Return(nil, api_errors.ErrNotesNotFound)
+	noteEditor.EXPECT().GetByViewID(gomock.Any(), gomock.All(), gomock.Any()).Return(nil, api_errors.ErrNotesNotFound)
 
 	err := srv.DeleteByID(context.Background(), 1, 1)
 
