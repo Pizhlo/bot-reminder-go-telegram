@@ -11,7 +11,12 @@ import (
 func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error) {
 	var notes []model.Note
 
-	rows, err := db.db.QueryContext(ctx, `select id, text, created from notes.notes where user_id = (select id from users.users where tg_id = $1) and "text" LIKE '%' || $2 || '%'`, searchNote.TgID, searchNote.Text)
+	// and "text" LIKE '%' || $2 || '%'
+	rows, err := db.db.QueryContext(ctx, `select note_number, text, created from notes.notes 
+	join notes.notes_view on notes.notes_view.id = notes.notes.id
+	where notes.notes.user_id = (select id from users.users where tg_id = $1) 
+	and "text" LIKE '%' || $2 || '%'
+	order by created ASC; '`, searchNote.TgID, searchNote.Text)
 	if err != nil {
 		return nil, fmt.Errorf("error while searching notes by text: %w", err)
 	}
@@ -21,7 +26,7 @@ func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchByT
 
 		err := rows.Scan(&note.ID, &note.Text, &note.Created)
 		if err != nil {
-			return nil, fmt.Errorf("error while scanning note: %w", err)
+			return nil, fmt.Errorf("error while scanning note (search by text): %w", err)
 		}
 
 		notes = append(notes, note)
@@ -48,7 +53,7 @@ func (db *NoteRepo) SearchByOneDate(ctx context.Context, searchNote model.Search
 
 		err := rows.Scan(&note.ID, &note.Text, &note.Created)
 		if err != nil {
-			return nil, fmt.Errorf("error while scanning note: %w", err)
+			return nil, fmt.Errorf("error while scanning note (search by one date): %w", err)
 		}
 
 		notes = append(notes, note)
@@ -75,7 +80,7 @@ func (db *NoteRepo) SearchByTwoDates(ctx context.Context, searchNote *model.Sear
 
 		err := rows.Scan(&note.ID, &note.Text, &note.Created)
 		if err != nil {
-			return nil, fmt.Errorf("error while scanning note: %w", err)
+			return nil, fmt.Errorf("error while scanning note (search by two dates): %w", err)
 		}
 
 		notes = append(notes, note)

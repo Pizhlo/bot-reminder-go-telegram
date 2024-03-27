@@ -53,7 +53,7 @@ func (v *ReminderView) Message(reminders []model.Reminder) (string, error) {
 			return "", err
 		}
 
-		res += fmt.Sprintf("<b>%d. %s</b>\n\nСрабатывает: %s\nСоздано: %s\nУдалить: /del%d\n\n", i+1, reminder.Name, txt, reminder.Created.Format(createdFieldFormat), reminder.ID)
+		res += fmt.Sprintf("<b>%d. %s</b>\n\nСрабатывает: %s\nСоздано: %s\nУдалить: /dr%d\n\n", i+1, reminder.Name, txt, reminder.Created.Format(createdFieldFormat), reminder.ViewID)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""

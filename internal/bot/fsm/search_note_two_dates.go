@@ -35,7 +35,7 @@ func (n *searchNoteTwoDate) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }
 
 func (n *searchNoteTwoDate) Name() string {
@@ -72,7 +72,7 @@ func (n *selectedDayFirst) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }
 
 // Next state
@@ -110,5 +110,5 @@ func (n *selectedDaySecond) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }

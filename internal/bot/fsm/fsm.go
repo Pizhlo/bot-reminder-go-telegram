@@ -12,14 +12,16 @@ import (
 
 // Менеджер для управления состояниями бота
 type FSM struct {
-	// Состояние перечисления напомианий
+	// Состояние перечисления заметок
 	ListNote state
+	// Состояние перечисления напоминаний
+	ListReminder state
 	// Состояние создания заметки
 	createNote state
 	// Дефолтное состояние бота, в котором он воспринимает любой текст как заметку
-	DefaultState state
+	defaultState state
 	// Состояние для обработки команды старт (кнопки меню) от пользователя
-	Start state
+	start state
 	// Состояние для обработки геолокации от пользователя
 	location state
 	// Текущее состояние, в котором находится бот
@@ -69,11 +71,11 @@ func NewFSM(controller *controller.Controller) *FSM {
 
 	fsm.location = newLocationState(fsm, controller)
 
-	start := newStartState(fsm, controller, fsm.location, fsm.DefaultState)
-	fsm.Start = start
+	start := newStartState(fsm, controller, fsm.location, fsm.defaultState)
+	fsm.start = start
 
 	defaultState := newDefaultState(controller, fsm)
-	fsm.DefaultState = defaultState
+	fsm.defaultState = defaultState
 
 	// note
 	fsm.createNote = newCreateNoteState(controller, fsm)
@@ -83,6 +85,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 	fsm.SearchNoteTwoDates = newSearchNoteTwoDateState(controller, fsm)
 
 	// reminder
+	fsm.ListReminder = newListReminderState(controller, fsm)
 	fsm.ReminderName = newReminderNameState(controller, fsm)
 	fsm.ReminderTime = newReminderTimeState(controller, fsm)
 	fsm.SeveralTimesDay = newSeveralTimesState(controller, fsm)
@@ -96,7 +99,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 	fsm.Once = newOnceReminderState(controller, fsm)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
-	fsm.current = fsm.DefaultState
+	fsm.current = fsm.defaultState
 
 	return fsm
 }
@@ -108,6 +111,11 @@ func (f *FSM) SetState(state state) {
 	f.logger.Debugf("Setting state to: %v\n", state.Name())
 
 	f.current = state
+}
+
+// SetToDefault устанавливает текущее состояние FSM в дефолтное
+func (f *FSM) SetToDefault() {
+	f.current = f.defaultState
 }
 
 func (f *FSM) Handle(ctx context.Context, telectx tele.Context) error {

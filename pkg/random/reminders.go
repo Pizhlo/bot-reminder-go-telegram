@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/google/uuid"
 )
 
 // Reminders генерирует указанное количество напоминаний
@@ -27,7 +28,8 @@ func Reminder() model.Reminder {
 	randomType := reminderTypes[rand.Intn(len(reminderTypes))]
 
 	r := model.Reminder{
-		ID:      int64(Int(0, 10)),
+		ID:      uuid.New(),
+		ViewID:  int64(Int(1, 10)),
 		TgID:    1,
 		Name:    String(10),
 		Date:    String(10),

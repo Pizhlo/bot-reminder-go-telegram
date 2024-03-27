@@ -28,11 +28,11 @@ type noteEditor interface {
 	// DeleteAllByUserID удаляет все заметки пользователя по user ID
 	DeleteAllByUserID(ctx context.Context, userID int64) error
 
-	// DeleteNoteByID удаляет одну заметку. Для удаления необходим ID заметки и пользователя
-	DeleteNoteByID(ctx context.Context, userID int64, noteID int) error
+	// DeleteNoteByViewID удаляет одну заметку. Для удаления необходим ID заметки и пользователя
+	DeleteNoteByViewID(ctx context.Context, userID int64, viewID int) error
 
 	// GetByID возвращает заметку с переданным ID. Если такой заметки нет, возвращает ErrNotesNotFound
-	GetByID(ctx context.Context, userID int64, noteID int) (*model.Note, error)
+	GetByViewID(ctx context.Context, userID int64, viewID int) (*model.Note, error)
 
 	// SearchByText производит поиск по заметок по тексту. Если таких заметок нет, возвращает ErrNotesNotFound
 	SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error)

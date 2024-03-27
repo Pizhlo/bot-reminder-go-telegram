@@ -27,13 +27,13 @@ type ReminderService struct {
 //go:generate mockgen -source ./service.go -destination=./mocks/reminder_editor.go
 type reminderEditor interface {
 	// Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
-	Save(ctx context.Context, reminder *model.Reminder) (int64, error)
+	Save(ctx context.Context, reminder *model.Reminder) (uuid.UUID, error)
 
 	// GetAllByUserID достает из базы все напоминания пользователя по ID, возвращает ErrRemindersNotFound
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error)
 
 	// SaveJob сохраняет задачу в базе
-	SaveJob(ctx context.Context, userID, reminderID int64, jobID uuid.UUID) error
+	SaveJob(ctx context.Context, reminderID uuid.UUID, jobID uuid.UUID) error
 
 	// DeleteAllByUserID удаляет все напоминания пользователя по user ID
 	DeleteAllByUserID(ctx context.Context, userID int64) error
@@ -41,14 +41,20 @@ type reminderEditor interface {
 	// GetAllJobs возвращает айди всех задач пользователя
 	GetAllJobs(ctx context.Context, userID int64) ([]uuid.UUID, error)
 
-	// GetJobID возвращает айди задачи по айди пользователя и напоминания
-	GetJobID(ctx context.Context, userID int64, reminderID int) (uuid.UUID, error)
+	// GetJobID возвращает айди задачи по айди напоминания
+	GetJobID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error)
 
-	// DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания и пользователя
-	DeleteReminderByID(ctx context.Context, userID int64, reminderID int) error
+	// DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания
+	DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) error
 
-	// // GetByID возвращает напоминание с переданным ID. Если такого напоминания нет, возвращает ErrRemindersNotFound
-	// GetByID(ctx context.Context, userID int64, noteID int) (*model.Reminder, error)
+	// GetReminderID возвращает айди напоминания в базе. Ищет по пользователю и view id
+	GetReminderID(ctx context.Context, userID int64, viewID int) (uuid.UUID, error)
+
+	// DeleteJob удаляет таску из базы и связанное напоминание
+	DeleteJobAndReminder(ctx context.Context, jobID uuid.UUID) error
+
+	// GetByViewID возвращает напоминание с переданным viewID. Если такого напоминания нет, возвращает ErrRemindersNotFound
+	GetByViewID(ctx context.Context, userID int64, viewID int) (*model.Reminder, error)
 
 	// // SearchByText производит поиск по напоминаний по тексту. Если таких напоминаний нет, возвращает ErrRemindersNotFound
 	// SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Reminder, error)

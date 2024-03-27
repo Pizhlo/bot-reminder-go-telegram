@@ -1,9 +1,14 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Note struct {
-	ID      int // id in DB
+	ID      uuid.UUID // id in DB
+	ViewID  int
 	TgID    int64
 	Text    string
 	Created time.Time

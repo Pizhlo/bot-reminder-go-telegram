@@ -32,7 +32,7 @@ func (n *location) Handle(ctx context.Context, telectx tele.Context) error {
 		return telectx.EditOrSend("Во время обработки произошла ошибка. Повтори попытку позднее", view.BackToMenuBtn())
 	}
 
-	n.fsm.SetState(n.fsm.DefaultState)
+	n.fsm.SetToDefault()
 
 	return nil
 }
@@ -45,5 +45,5 @@ func (n *location) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }

@@ -38,7 +38,7 @@ func (n *everyWeek) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }
 
 type weekDay struct {
@@ -72,5 +72,5 @@ func (n *weekDay) Next() state {
 	if n.next != nil {
 		return n.next
 	}
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }

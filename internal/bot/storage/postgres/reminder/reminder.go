@@ -1,6 +1,7 @@
 package reminder
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 )
@@ -20,4 +21,11 @@ func New(dbURl string) (*ReminderRepo, error) {
 		return nil, fmt.Errorf("cannot connect to a db: %w", err)
 	}
 	return &ReminderRepo{db}, nil
+}
+
+func (db *ReminderRepo) tx(ctx context.Context) (*sql.Tx, error) {
+	return db.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+		ReadOnly:  false,
+	})
 }

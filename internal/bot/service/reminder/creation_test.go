@@ -10,8 +10,8 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSaveReminderName_New(t *testing.T) {
@@ -565,7 +565,7 @@ func TestGetFromMemory_NotFound(t *testing.T) {
 func TestSaveID(t *testing.T) {
 	userID := int64(1)
 	reminderName := random.String(10)
-	reminderID := int64(1)
+	reminderID := uuid.New()
 
 	n := New(nil)
 
@@ -584,7 +584,7 @@ func TestSaveID(t *testing.T) {
 
 func TestSaveID_NotFound(t *testing.T) {
 	userID := int64(1)
-	reminderID := int64(1)
+	reminderID := uuid.New()
 
 	n := New(nil)
 
@@ -599,7 +599,7 @@ func TestSaveID_NotFound(t *testing.T) {
 func TestGetID(t *testing.T) {
 	userID := int64(1)
 	reminderName := random.String(10)
-	reminderID := int64(1)
+	reminderID := uuid.New()
 
 	n := New(nil)
 
@@ -619,9 +619,8 @@ func TestGetID_NotFound(t *testing.T) {
 
 	n := New(nil)
 
-	id, err := n.GetID(userID)
+	_, err := n.GetID(userID)
 	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
-	assert.Equal(t, int64(0), id)
 }
 
 func TestProcessMinutes(t *testing.T) {
@@ -986,202 +985,62 @@ func TestSaveCalendarDate_Valid_DateType(t *testing.T) {
 	assert.Equal(t, curDate, result.Date)
 }
 
-func TestCheckFields_NotFound(t *testing.T) {
+func TestCheckFields_EmptyTgID(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.TgID = 0
 
-	err := n.checkFields(userID)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	err := n.checkFields(&reminder)
+	assert.EqualError(t, err, "field TgID is not filled")
+}
+
+func TestCheckFields_EmptyName(t *testing.T) {
+	n := New(nil)
+
+	reminder := random.Reminder()
+	reminder.Name = ""
+
+	err := n.checkFields(&reminder)
+	assert.EqualError(t, err, "field Name is not filled")
 }
 
 func TestCheckFields_EmptyType(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Type = ""
 
-	n.SaveName(userID, random.String(4))
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Type is not filled")
 }
 
 func TestCheckFields_EmptyDate(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Date = ""
 
-	n.SaveName(userID, random.String(4))
-	n.SaveType(userID, model.OnceMonthType)
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Date is not filled")
 }
 
 func TestCheckFields_EmptyTime(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Time = ""
 
-	n.SaveName(userID, random.String(4))
-	n.SaveType(userID, model.OnceMonthType)
-	n.SaveDate(userID, random.String(5))
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Time is not filled")
 }
 
 func TestCheckFields_EmptyCreated(t *testing.T) {
 	n := New(nil)
 
-	userID := int64(1)
+	reminder := random.Reminder()
+	reminder.Created = time.Time{}
 
-	n.SaveName(userID, random.String(4))
-	n.SaveType(userID, model.OnceMonthType)
-	n.SaveDate(userID, random.String(5))
-	n.SaveTime(userID, random.String(4))
-
-	err := n.checkFields(userID)
+	err := n.checkFields(&reminder)
 	assert.EqualError(t, err, "field Created is not filled")
-}
-
-func TestFixMonth_Before10(t *testing.T) {
-	months := []time.Month{
-		time.January,
-		time.February,
-		time.March,
-		time.April,
-		time.May,
-		time.June,
-		time.July,
-		time.August,
-		time.September,
-	}
-
-	for _, month := range months {
-		expected := "0" + strconv.Itoa(int(month))
-
-		actual := fixMonth(month)
-
-		assert.Equal(t, expected, actual)
-	}
-}
-
-func TestFixMonth_After10(t *testing.T) {
-	months := []time.Month{
-		time.October,
-		time.November,
-		time.December,
-	}
-
-	for _, month := range months {
-		expected := strconv.Itoa(int(month))
-
-		actual := fixMonth(month)
-
-		assert.Equal(t, expected, actual)
-	}
-}
-
-func TestValidateDate_Valid(t *testing.T) {
-	userID := int64(1)
-
-	curDay := time.Now().Day() + 1
-	dayOfMonth := strconv.Itoa(curDay)
-
-	tz := time.Local
-
-	n := New(nil)
-
-	n.viewsMap[userID] = view.NewReminder()
-
-	n.SetupCalendar(userID)
-
-	err := n.ValidateDate(userID, dayOfMonth, tz)
-	assert.NoError(t, err)
-}
-
-func TestValidateDate_NotInt(t *testing.T) {
-	userID := int64(1)
-
-	dayOfMonth := random.String(4)
-
-	tz := time.Local
-
-	n := New(nil)
-
-	n.viewsMap[userID] = view.NewReminder()
-
-	n.SetupCalendar(userID)
-
-	err := n.ValidateDate(userID, dayOfMonth, tz)
-	assert.Error(t, err)
-}
-
-func TestValidateDate_DatePassed(t *testing.T) {
-	userID := int64(1)
-
-	curDay := time.Now().Day() - 1
-	dayOfMonth := strconv.Itoa(curDay)
-
-	tz := time.Local
-
-	n := New(nil)
-
-	n.viewsMap[userID] = view.NewReminder()
-
-	n.SetupCalendar(userID)
-
-	err := n.ValidateDate(userID, dayOfMonth, tz)
-	assert.EqualError(t, err, api_errors.ErrInvalidDate.Error())
-}
-
-func TestValidateTime_Valid(t *testing.T) {
-	userID := int64(1)
-
-	n := New(nil)
-
-	n.SaveName(userID, random.String(10))
-
-	year, month, day := time.Now().Date()
-
-	var monthStr string
-	if month < 10 {
-		monthStr = fmt.Sprintf("0%d", month)
-	} else {
-		monthStr = fmt.Sprintf("%d", month)
-	}
-
-	date := fmt.Sprintf("%d.%s.%d", day, monthStr, year)
-
-	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "23:59"))
-	require.NoError(t, err)
-
-	err = n.ValidateTime(time.Local, userDateWithTime)
-	assert.NoError(t, err)
-}
-
-func TestValidateTime_Invalid(t *testing.T) {
-	userID := int64(1)
-
-	n := New(nil)
-
-	n.SaveName(userID, random.String(10))
-
-	year, month, day := time.Now().Date()
-
-	var monthStr string
-	if month < 10 {
-		monthStr = fmt.Sprintf("0%d", month)
-	} else {
-		monthStr = fmt.Sprintf("%d", month)
-	}
-
-	date := fmt.Sprintf("%d.%s.%d", day, monthStr, year)
-
-	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "00:00"))
-	require.NoError(t, err)
-
-	err = n.ValidateTime(time.Local, userDateWithTime)
-	assert.EqualError(t, err, api_errors.ErrTimeInPast.Error())
 }

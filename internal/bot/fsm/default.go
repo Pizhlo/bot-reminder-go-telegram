@@ -29,7 +29,7 @@ func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
 
 	msg := telectx.Message().Text
 
-	if strings.HasPrefix(msg, "/del") {
+	if strings.HasPrefix(msg, "/dn") {
 		return n.controller.DeleteNoteByID(ctx, telectx)
 	}
 
@@ -41,9 +41,9 @@ func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
 	// 	return n.controller.ListNotes(ctx, telectx)
 
 	case commands.StartCommand:
-		n.fsm.SetState(n.fsm.Start)
+		n.fsm.SetState(n.fsm.start)
 		n.logger.Debugf("Default state: got /start command. Setting state to Start. Message: %s\n", msg)
-		return n.fsm.Start.Handle(ctx, telectx)
+		return n.fsm.start.Handle(ctx, telectx)
 
 	// case deleteAllNotesCommand:
 	// 	n.logger.Debugf("Default state: got /notes_del command. Calling controller.ConfirmDeleteAllNotes(). Message: %s\n", msg)
@@ -61,5 +61,5 @@ func (n *defaultState) Name() string {
 }
 
 func (n *defaultState) Next() state {
-	return n.fsm.DefaultState
+	return n.fsm.defaultState
 }

@@ -50,18 +50,32 @@ func (mr *MockreminderEditorMockRecorder) DeleteAllByUserID(ctx, userID interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllByUserID", reflect.TypeOf((*MockreminderEditor)(nil).DeleteAllByUserID), ctx, userID)
 }
 
-// DeleteReminderByID mocks base method.
-func (m *MockreminderEditor) DeleteReminderByID(ctx context.Context, userID int64, reminderID int) error {
+// DeleteJobAndReminder mocks base method.
+func (m *MockreminderEditor) DeleteJobAndReminder(ctx context.Context, jobID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteReminderByID", ctx, userID, reminderID)
+	ret := m.ctrl.Call(m, "DeleteJobAndReminder", ctx, jobID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteJobAndReminder indicates an expected call of DeleteJobAndReminder.
+func (mr *MockreminderEditorMockRecorder) DeleteJobAndReminder(ctx, jobID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteJobAndReminder", reflect.TypeOf((*MockreminderEditor)(nil).DeleteJobAndReminder), ctx, jobID)
+}
+
+// DeleteReminderByID mocks base method.
+func (m *MockreminderEditor) DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteReminderByID", ctx, reminderID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteReminderByID indicates an expected call of DeleteReminderByID.
-func (mr *MockreminderEditorMockRecorder) DeleteReminderByID(ctx, userID, reminderID interface{}) *gomock.Call {
+func (mr *MockreminderEditorMockRecorder) DeleteReminderByID(ctx, reminderID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReminderByID", reflect.TypeOf((*MockreminderEditor)(nil).DeleteReminderByID), ctx, userID, reminderID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReminderByID", reflect.TypeOf((*MockreminderEditor)(nil).DeleteReminderByID), ctx, reminderID)
 }
 
 // GetAllByUserID mocks base method.
@@ -94,26 +108,56 @@ func (mr *MockreminderEditorMockRecorder) GetAllJobs(ctx, userID interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllJobs", reflect.TypeOf((*MockreminderEditor)(nil).GetAllJobs), ctx, userID)
 }
 
-// GetJobID mocks base method.
-func (m *MockreminderEditor) GetJobID(ctx context.Context, userID int64, reminderID int) (uuid.UUID, error) {
+// GetByViewID mocks base method.
+func (m *MockreminderEditor) GetByViewID(ctx context.Context, userID int64, viewID int) (*model.Reminder, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetJobID", ctx, userID, reminderID)
+	ret := m.ctrl.Call(m, "GetByViewID", ctx, userID, viewID)
+	ret0, _ := ret[0].(*model.Reminder)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByViewID indicates an expected call of GetByViewID.
+func (mr *MockreminderEditorMockRecorder) GetByViewID(ctx, userID, viewID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByViewID", reflect.TypeOf((*MockreminderEditor)(nil).GetByViewID), ctx, userID, viewID)
+}
+
+// GetJobID mocks base method.
+func (m *MockreminderEditor) GetJobID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetJobID", ctx, reminderID)
 	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetJobID indicates an expected call of GetJobID.
-func (mr *MockreminderEditorMockRecorder) GetJobID(ctx, userID, reminderID interface{}) *gomock.Call {
+func (mr *MockreminderEditorMockRecorder) GetJobID(ctx, reminderID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobID", reflect.TypeOf((*MockreminderEditor)(nil).GetJobID), ctx, userID, reminderID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobID", reflect.TypeOf((*MockreminderEditor)(nil).GetJobID), ctx, reminderID)
+}
+
+// GetReminderID mocks base method.
+func (m *MockreminderEditor) GetReminderID(ctx context.Context, userID int64, viewID int) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReminderID", ctx, userID, viewID)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReminderID indicates an expected call of GetReminderID.
+func (mr *MockreminderEditorMockRecorder) GetReminderID(ctx, userID, viewID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReminderID", reflect.TypeOf((*MockreminderEditor)(nil).GetReminderID), ctx, userID, viewID)
 }
 
 // Save mocks base method.
-func (m *MockreminderEditor) Save(ctx context.Context, reminder *model.Reminder) (int64, error) {
+func (m *MockreminderEditor) Save(ctx context.Context, reminder *model.Reminder) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", ctx, reminder)
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -125,15 +169,15 @@ func (mr *MockreminderEditorMockRecorder) Save(ctx, reminder interface{}) *gomoc
 }
 
 // SaveJob mocks base method.
-func (m *MockreminderEditor) SaveJob(ctx context.Context, userID, reminderID int64, jobID uuid.UUID) error {
+func (m *MockreminderEditor) SaveJob(ctx context.Context, reminderID, jobID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveJob", ctx, userID, reminderID, jobID)
+	ret := m.ctrl.Call(m, "SaveJob", ctx, reminderID, jobID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveJob indicates an expected call of SaveJob.
-func (mr *MockreminderEditorMockRecorder) SaveJob(ctx, userID, reminderID, jobID interface{}) *gomock.Call {
+func (mr *MockreminderEditorMockRecorder) SaveJob(ctx, reminderID, jobID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveJob", reflect.TypeOf((*MockreminderEditor)(nil).SaveJob), ctx, userID, reminderID, jobID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveJob", reflect.TypeOf((*MockreminderEditor)(nil).SaveJob), ctx, reminderID, jobID)
 }

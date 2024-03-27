@@ -78,6 +78,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	// меню напоминаний
 	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
 		s.logger.Debugf("Reminders btn")
+		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListReminder)
 		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
@@ -93,7 +94,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 
-		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].DefaultState)
+		s.fsm[telectx.Chat().ID].SetToDefault()
 
 		err := s.controller.StartCmd(ctx, telectx)
 		if err != nil {
@@ -402,7 +403,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// удалить все напоминания - подтверждение
+	// удалить все напоминания
 	s.bot.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {
 		err := s.controller.ConfirmDeleteAllReminders(ctx, c)
 		if err != nil {
@@ -413,7 +414,7 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// удалить все напоминания
+	// удалить все напоминания - подтверждение
 	s.bot.Handle(&controller.BtnDeleteAllReminders, func(c tele.Context) error {
 		err := s.controller.DeleteAllReminders(ctx, c)
 		if err != nil {
@@ -428,7 +429,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Handle(&view.BtnCreateReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
 
-		err := c.EditOrSend(messages.ReminderNameMessage, view.BackToRemindersAndMenu())
+		err := c.EditOrSend(messages.ReminderNameMessage, view.BackToMenuBtn())
 		if err != nil {
 			s.controller.HandleError(c, err, s.fsm[c.Chat().ID].Name())
 			return err

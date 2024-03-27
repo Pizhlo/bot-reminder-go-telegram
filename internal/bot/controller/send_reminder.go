@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"gopkg.in/telebot.v3"
 )
+
+var DeleteBtn = telebot.Btn{Text: "❌Удалить"}
 
 // SendReminder отправляет пользователю напоминание в указанное время
 func (c *Controller) SendReminder(ctx context.Context, reminder model.Reminder) error {
@@ -21,20 +22,22 @@ func (c *Controller) SendReminder(ctx context.Context, reminder model.Reminder) 
 		return err
 	}
 
-	//unique := fmt.Sprintf("%d.%d", reminder.ID, reminder.TgID)
+	// передаем только айди напоминания, потому что айди пользователя сможем выяснить из контекста
+	unique := fmt.Sprintf("%d", reminder.ViewID)
 
 	// получаем кнопку для удаления сработавшего напоминания
-	deleteBtn := telebot.Btn{Text: "❌Удалить", Unique: fmt.Sprintf("%d-%d", reminder.ID, reminder.TgID), Data: fmt.Sprintf("%d-%d", reminder.ID, reminder.TgID)}
+	DeleteBtn.Unique = unique
+	DeleteBtn.Data = unique
 
 	kb := &telebot.ReplyMarkup{}
 
 	kb.Inline(
-		kb.Row(deleteBtn),
+		kb.Row(DeleteBtn),
 		kb.Row(view.BtnBackToMenu),
 	)
 
-	c.bot.Handle(&deleteBtn, func(telectx telebot.Context) error {
-		return c.processDeleteReminder(ctx, telectx, reminder.Name)
+	c.bot.Handle(&DeleteBtn, func(telectx telebot.Context) error {
+		return c.ProcessDeleteReminder(ctx, telectx)
 	})
 
 	_, err = c.bot.Send(&telebot.Chat{ID: reminder.TgID}, msg, &telebot.SendOptions{
@@ -43,37 +46,27 @@ func (c *Controller) SendReminder(ctx context.Context, reminder model.Reminder) 
 	})
 
 	if err != nil {
+		c.logger.Errorf("error while sending reminder to user: %v", err)
 		return err
 	}
 
 	return nil
 }
 
-// processDeleteReminder обрабатывает кнопку "Удалить" у сработавшего напоминания
-func (c *Controller) processDeleteReminder(ctx context.Context, telectx telebot.Context, reminderName string) error {
-	// userID_reminderID - для удаления
-	reminderAndUser := strings.Split(telectx.Callback().Unique, "-")
+// ProcessDeleteReminder обрабатывает кнопку "Удалить" у сработавшего напоминания
+func (c *Controller) ProcessDeleteReminder(ctx context.Context, telectx telebot.Context) error {
+	reminderID := telectx.Callback().Unique
 
-	reminderID, userID := reminderAndUser[0], reminderAndUser[1]
-
-	// конвертируем айди из string в int
 	reminderInt, err := strconv.Atoi(reminderID)
 	if err != nil {
 		return fmt.Errorf("error while converting string reminder ID to int: %w", err)
 	}
 
-	userInt, err := strconv.ParseInt(userID, 10, 64)
-	if err != nil {
-		return fmt.Errorf("error while converting string user ID to int64: %w", err)
-	}
-
-	// удаляем напоминание из базы и scheduler
-	err = c.DeleteReminder(ctx, telectx, reminderInt, userInt)
+	reminderName, err := c.reminderSrv.DeleteByViewID(ctx, telectx.Chat().ID, reminderInt)
 	if err != nil {
 		return err
 	}
 
-	// в случае успеха - отправляем сообщение
 	msg := fmt.Sprintf(messages.ReminderDeletedMessage, reminderName)
 
 	return telectx.Edit(msg, &telebot.SendOptions{

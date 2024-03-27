@@ -13,6 +13,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+const deleteNotePrefix = "/dn"
+
 // DeleteNoteByID удаляет одну заметку пользователя по ID заметки
 func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) error {
 	text := telectx.Message().Text
@@ -20,9 +22,9 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 	c.logger.Debugf("Controller: handling %s command\n", text)
 
 	// достаем айди заметки из сообщения (напр. /del6 -> 6)
-	noteIDString, found := strings.CutPrefix(text, "/del")
+	noteIDString, found := strings.CutPrefix(text, deleteNotePrefix)
 	if !found {
-		err := fmt.Errorf("error in controller.DeleteNoteByID(): not found suffix `/del` in message text: %s", text)
+		err := fmt.Errorf("error in controller.DeleteNoteByID(): not found suffix %s in message text: %s", deleteNotePrefix, text)
 
 		return err
 	}
@@ -52,6 +54,6 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 	msg := fmt.Sprintf(messages.NoteDeletedSuccessMessage, noteID)
 	return telectx.EditOrSend(msg, &tele.SendOptions{
 		ParseMode:   htmlParseMode,
-		ReplyMarkup: view.BackToMenuBtn(),
+		ReplyMarkup: view.NotesAndMenuBtns(),
 	})
 }
