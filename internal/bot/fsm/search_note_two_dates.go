@@ -14,7 +14,7 @@ type searchNoteTwoDate struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -39,7 +39,7 @@ func (n *searchNoteTwoDate) Next() state {
 }
 
 func (n *searchNoteTwoDate) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 // Next state
@@ -61,7 +61,7 @@ func newSelectedDayFirst(controller *controller.Controller, FSM *FSM) *selectedD
 }
 
 func (n *selectedDayFirst) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *selectedDayFirst) Handle(ctx context.Context, telectx tele.Context) error {
@@ -99,7 +99,7 @@ func newSelectedDaySecond(controller *controller.Controller, FSM *FSM) *selected
 }
 
 func (n *selectedDaySecond) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *selectedDaySecond) Handle(ctx context.Context, telectx tele.Context) error {

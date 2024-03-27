@@ -14,7 +14,7 @@ type severalDays struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -29,7 +29,7 @@ func (n *severalDays) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *severalDays) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *severalDays) Next() state {

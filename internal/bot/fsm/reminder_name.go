@@ -14,7 +14,7 @@ type reminderName struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -28,7 +28,7 @@ func (n *reminderName) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *reminderName) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *reminderName) Next() state {

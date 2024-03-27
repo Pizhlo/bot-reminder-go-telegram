@@ -16,7 +16,7 @@ type start struct {
 	location     state
 	defaultState state
 	logger       *logrus.Logger
-	name         string
+	name         stateName
 	next         state
 }
 
@@ -41,7 +41,7 @@ func (n *start) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *start) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *start) Next() state {

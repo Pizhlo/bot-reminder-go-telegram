@@ -14,7 +14,7 @@ type everyWeek struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -31,7 +31,7 @@ func (n *everyWeek) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *everyWeek) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *everyWeek) Next() state {
@@ -65,7 +65,7 @@ func (n *weekDay) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *weekDay) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *weekDay) Next() state {

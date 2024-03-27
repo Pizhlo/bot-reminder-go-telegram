@@ -16,7 +16,7 @@ type defaultState struct {
 	fsm        *FSM
 	controller *controller.Controller
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -57,7 +57,7 @@ func (n *defaultState) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *defaultState) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *defaultState) Next() state {

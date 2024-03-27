@@ -14,7 +14,7 @@ type minutesDuration struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -29,7 +29,7 @@ func (n *minutesDuration) Handle(ctx context.Context, telectx tele.Context) erro
 }
 
 func (n *minutesDuration) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *minutesDuration) Next() state {

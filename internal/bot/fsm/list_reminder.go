@@ -19,7 +19,7 @@ type listReminder struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -62,7 +62,7 @@ func (n *listReminder) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *listReminder) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *listReminder) Next() state {
