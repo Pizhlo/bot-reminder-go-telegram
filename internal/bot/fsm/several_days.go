@@ -19,7 +19,7 @@ type severalDays struct {
 }
 
 func newSeveralDaysState(controller *controller.Controller, FSM *FSM) *severalDays {
-	return &severalDays{controller, FSM, logger.New(), "once in several days", nil}
+	return &severalDays{controller, FSM, logger.New(), severalDaysState, nil}
 }
 
 func (n *severalDays) Handle(ctx context.Context, telectx tele.Context) error {

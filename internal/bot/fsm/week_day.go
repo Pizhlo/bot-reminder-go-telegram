@@ -19,7 +19,7 @@ type everyWeek struct {
 }
 
 func newEveryWeekState(controller *controller.Controller, FSM *FSM) *everyWeek {
-	return &everyWeek{controller, FSM, logger.New(), "every week", newWeekDayState(controller, FSM)}
+	return &everyWeek{controller, FSM, logger.New(), weekDayState, newWeekDayState(controller, FSM)}
 }
 
 func (n *everyWeek) Handle(ctx context.Context, telectx tele.Context) error {

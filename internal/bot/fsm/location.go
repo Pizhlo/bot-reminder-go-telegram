@@ -20,7 +20,7 @@ type location struct {
 }
 
 func newLocationState(FSM *FSM, controller *controller.Controller) *location {
-	return &location{controller, FSM, logger.New(), "location", nil}
+	return &location{controller, FSM, logger.New(), locationStateName, nil}
 }
 
 // Обрабатываем геолокацию пользователя

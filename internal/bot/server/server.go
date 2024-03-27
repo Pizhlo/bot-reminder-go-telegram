@@ -42,8 +42,23 @@ func (s *Server) loadUsers(ctx context.Context) {
 
 	for _, user := range users {
 		s.RegisterUserInFSM(user.TGID)
+		err := s.setupState(ctx, user.TGID)
+		if err != nil {
+			s.logger.Errorf("error while setting state for user on startup: %v", err)
+		}
 	}
 
+}
+
+// setupState подготавливает бота к диалогу с пользователем.
+// Запрашивает последнее сохраненное состояние и устанавливает в него FSM
+func (s *Server) setupState(ctx context.Context, userID int64) error {
+	lastState, err := s.controller.GetState(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	return s.fsm[userID].SetFromString(lastState)
 }
 
 // HandleError обрабатывает ошибку: устанавливает состояние в дефолтное, передает контроллеру

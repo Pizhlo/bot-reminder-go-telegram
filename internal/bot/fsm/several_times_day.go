@@ -19,7 +19,7 @@ type severalTimes struct {
 }
 
 func newSeveralTimesState(controller *controller.Controller, FSM *FSM) *severalTimes {
-	return &severalTimes{controller, FSM, logger.New(), "several times a day", nil}
+	return &severalTimes{controller, FSM, logger.New(), severalTimesDayState, nil}
 }
 
 func (n *severalTimes) Handle(ctx context.Context, telectx tele.Context) error {

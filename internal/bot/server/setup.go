@@ -607,7 +607,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// date
 	s.bot.Handle(&view.BtnOnce, func(c tele.Context) error {
-		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Once)
+		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Date)
 
 		s.controller.SetupReminderCalendar(ctx, c)
 		s.controller.SetReminderCalendar(c.Chat().ID)

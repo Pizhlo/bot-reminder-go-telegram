@@ -23,7 +23,7 @@ type reminderTime struct {
 }
 
 func newReminderTimeState(controller *controller.Controller, FSM *FSM) *reminderTime {
-	return &reminderTime{controller, FSM, logger.New(), "reminder time", FSM.defaultState}
+	return &reminderTime{controller, FSM, logger.New(), reminderTimeState, FSM.defaultState}
 }
 
 func (n *reminderTime) Handle(ctx context.Context, telectx tele.Context) error {

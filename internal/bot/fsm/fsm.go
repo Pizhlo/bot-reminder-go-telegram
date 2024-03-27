@@ -2,12 +2,37 @@ package fsm
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
+)
+
+// названия состояний
+const (
+	defaultStateName           = "default"
+	startStateName             = "start"
+	listNoteName               = "list_note"
+	createNoteName             = "create_note"
+	daysDurationName           = "days_duration"
+	hoursStateName             = "hours"
+	listReminderName           = "list_reminder"
+	locationStateName          = "location"
+	minutesStateName           = "minutes_duration"
+	monthStateName             = "month"
+	dateReminderName           = "date_reminder"
+	reminderNameState          = "reminder_name"
+	reminderTimeState          = "reminder_time"
+	searchNoteByTextStateName  = "search_note_by_text"
+	searchNoteByDatetStateName = "search_note_by_date"
+	searchNoteByTwoDatesState  = "search_note_by_two_dates"
+	severalDaysState           = "several_days"
+	severalTimesDayState       = "several_times_a_day"
+	weekDayState               = "every_week"
+	yearReminderState          = "every_year"
 )
 
 // Менеджер для управления состояниями бота
@@ -50,7 +75,7 @@ type FSM struct {
 	// Состояние для обработки напоминаний раз в год
 	Year state
 	// Состояние для обработки одноразового напоминания (дата выбирается в календаре)
-	Once state
+	Date state
 	// Состояние для поиска заметок по одной дате
 	SearchNoteOneDate state
 	//Состояние для поиска заметок по двум датам
@@ -96,7 +121,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 	fsm.DaysDuration = newDaysDurationState(controller, fsm)
 	fsm.Month = newMonthState(controller, fsm)
 	fsm.Year = newYearState(controller, fsm)
-	fsm.Once = newOnceReminderState(controller, fsm)
+	fsm.Date = newDateReminderState(controller, fsm)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	fsm.current = fsm.defaultState
@@ -104,6 +129,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 	return fsm
 }
 
+// SetState устанавливает текущее состояние в переданное
 func (f *FSM) SetState(state state) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -115,7 +141,7 @@ func (f *FSM) SetState(state state) {
 
 // SetToDefault устанавливает текущее состояние FSM в дефолтное
 func (f *FSM) SetToDefault() {
-	f.current = f.defaultState
+	f.SetState(f.defaultState)
 }
 
 func (f *FSM) Handle(ctx context.Context, telectx tele.Context) error {
@@ -138,4 +164,64 @@ func (f *FSM) SetNext() {
 // Current возвращает текущее состояние
 func (f *FSM) Current() state {
 	return f.current
+}
+
+// SetFromString устанавливает текущее состояние в переданное по названию
+func (s *FSM) SetFromString(stateStr string) error {
+	state, err := s.parseString(stateStr)
+	if err != nil {
+		return err
+	}
+
+	s.SetState(state)
+	return nil
+}
+
+// parseString парсит переданное название состояния.
+// Возвращает ошибку, если такого состояния не найдено
+func (s *FSM) parseString(state string) (state, error) {
+	switch state {
+	case startStateName:
+		return s.start, nil
+	case defaultStateName:
+		return s.defaultState, nil
+	case listNoteName:
+		return s.ListNote, nil
+	case createNoteName:
+		return s.createNote, nil
+	case daysDurationName:
+		return s.DaysDuration, nil
+	case hoursStateName:
+		return s.HoursDuration, nil
+	case listReminderName:
+		return s.ListReminder, nil
+	case locationStateName:
+		return s.location, nil
+	case minutesStateName:
+		return s.MinutesDuration, nil
+	case monthStateName:
+		return s.Month, nil
+	case dateReminderName:
+		return s.Date, nil
+	case reminderNameState:
+		return s.ReminderName, nil
+	case reminderTimeState:
+		return s.ReminderTime, nil
+	case searchNoteByTextStateName:
+		return s.SearchNoteByText, nil
+	case searchNoteByDatetStateName:
+		return s.SearchNoteOneDate, nil
+	case searchNoteByTwoDatesState:
+		return s.SearchNoteTwoDates, nil
+	case severalDaysState:
+		return s.SeveralDays, nil
+	case severalTimesDayState:
+		return s.SeveralTimesDay, nil
+	case weekDayState:
+		return s.EveryWeek, nil
+	case yearReminderState:
+		return s.Year, nil
+	default:
+		return nil, fmt.Errorf("unknown state: %s", state)
+	}
 }

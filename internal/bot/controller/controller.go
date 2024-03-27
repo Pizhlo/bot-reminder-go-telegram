@@ -167,3 +167,7 @@ func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
 func (c *Controller) SaveState(ctx context.Context, tgID int64, state string) error {
 	return c.userSrv.SaveState(ctx, tgID, state)
 }
+
+func (c *Controller) GetState(ctx context.Context, tgID int64) (string, error) {
+	return c.userSrv.GetState(ctx, tgID)
+}

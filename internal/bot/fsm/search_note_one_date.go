@@ -19,7 +19,7 @@ type searchNoteOneDate struct {
 }
 
 func newSearchNoteOneDateState(controller *controller.Controller, FSM *FSM) *searchNoteOneDate {
-	return &searchNoteOneDate{controller, FSM, logger.New(), "search note by one date", newSelectedDay(controller, FSM)}
+	return &searchNoteOneDate{controller, FSM, logger.New(), searchNoteByDatetStateName, newSelectedDay(controller, FSM)}
 }
 
 func (n *searchNoteOneDate) Handle(ctx context.Context, telectx tele.Context) error {

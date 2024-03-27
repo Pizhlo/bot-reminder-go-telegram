@@ -23,7 +23,7 @@ type month struct {
 }
 
 func newMonthState(controller *controller.Controller, FSM *FSM) *month {
-	return &month{controller, FSM, logger.New(), "month", FSM.ReminderTime}
+	return &month{controller, FSM, logger.New(), monthStateName, FSM.ReminderTime}
 }
 
 func (n *month) Handle(ctx context.Context, telectx tele.Context) error {

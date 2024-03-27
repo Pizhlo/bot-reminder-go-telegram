@@ -20,7 +20,7 @@ type listNote struct {
 }
 
 func newListNoteState(FSM *FSM, controller *controller.Controller) *listNote {
-	return &listNote{controller, FSM, logger.New(), "list note", nil}
+	return &listNote{controller, FSM, logger.New(), listNoteName, nil}
 }
 
 const deleteNotePrefix = "/dn"

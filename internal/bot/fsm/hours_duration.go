@@ -19,7 +19,7 @@ type hoursDuration struct {
 }
 
 func newHoursDurationState(controller *controller.Controller, FSM *FSM) *hoursDuration {
-	return &hoursDuration{controller, FSM, logger.New(), "hours duration", nil}
+	return &hoursDuration{controller, FSM, logger.New(), hoursStateName, nil}
 }
 
 func (n *hoursDuration) Handle(ctx context.Context, telectx tele.Context) error {

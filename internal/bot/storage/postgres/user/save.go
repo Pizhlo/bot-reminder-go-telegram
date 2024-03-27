@@ -34,8 +34,9 @@ func (db *UserRepo) SaveState(ctx context.Context, id int64, state string) error
 		return fmt.Errorf("unable to create transaction: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, `insert into users.states (user_id, state) values((select id from users.users where tg_id = $1), $2)
-	on conflict (user_id) do update set state=$2`, id, state)
+	_, err = tx.ExecContext(ctx, `insert into users.states (user_id, state_id) values((select id from users.users where tg_id = $1),
+	(select id from users.state_types where name = $2))
+	on conflict (user_id) do update set state_id=(select id from users.state_types where name = $2);`, id, state)
 	if err != nil {
 		return fmt.Errorf("error while saving user's state in DB: %w", err)
 	}

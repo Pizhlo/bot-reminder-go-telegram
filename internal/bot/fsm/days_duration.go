@@ -24,7 +24,7 @@ type daysDuration struct {
 }
 
 func newDaysDurationState(controller *controller.Controller, FSM *FSM) *daysDuration {
-	return &daysDuration{controller, FSM, logger.New(), "days duration", FSM.ReminderTime}
+	return &daysDuration{controller, FSM, logger.New(), daysDurationName, FSM.ReminderTime}
 }
 
 func (n *daysDuration) Handle(ctx context.Context, telectx tele.Context) error {
