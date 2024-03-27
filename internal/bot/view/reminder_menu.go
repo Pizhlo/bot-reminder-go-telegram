@@ -19,6 +19,9 @@ var (
 	// inline кнопка удаления всех напоминаний
 	BtnDeleteAllReminders = tele.Btn{Text: "❌Удалить все", Unique: "delete_reminders"}
 
+	// inline кнопка сработавшего напоминания, чтобы скрыть клавиатуру
+	BtnCheckReminder = tele.Btn{Text: "✅", Unique: "hide_kb"}
+
 	// --------------- типы --------------
 
 	// inline кнопка для возвращения к выбору типа напоминания
