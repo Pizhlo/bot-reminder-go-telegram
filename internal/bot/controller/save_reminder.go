@@ -54,7 +54,7 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name, verb, nextRunMsg, nextRun.NextRun.Format(layout))
 
 	return telectx.EditOrSend(msg, &telebot.SendOptions{
-		ReplyMarkup: view.BackToMenuBtn(),
+		ReplyMarkup: view.BackToMenuAndCreateOneElse(),
 		ParseMode:   htmlParseMode,
 	})
 }
