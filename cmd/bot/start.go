@@ -139,6 +139,8 @@ func Start(confName, path string) {
 				}
 				logger.Info("gently shutdown")
 
+				server.Shutdown(ctx)
+
 			case <-shutdownCtx.Done():
 				logger.Error("forcing shutdown")
 			}

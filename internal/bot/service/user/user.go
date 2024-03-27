@@ -24,6 +24,7 @@ type userEditor interface {
 	Get(ctx context.Context, userID int64) (*user.User, error)
 	Save(ctx context.Context, id int64, u *user.User) error
 	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
+	SaveState(ctx context.Context, id int64, state string) error
 }
 
 type timezoneEditor interface {
@@ -106,4 +107,8 @@ func (s *UserService) checkInRepo(ctx context.Context, tgID int64) bool {
 	}
 
 	return u != nil
+}
+
+func (s *UserService) SaveState(ctx context.Context, tgID int64, state string) error {
+	return s.userEditor.SaveState(ctx, tgID, state)
 }

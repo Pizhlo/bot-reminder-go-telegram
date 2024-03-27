@@ -162,3 +162,8 @@ func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
 
 	return c.reminderSrv.CreateScheduler(ctx, tgID, loc, c.SendReminder)
 }
+
+// SaveState сохраняет в БД состояние бота с переданным пользователем
+func (c *Controller) SaveState(ctx context.Context, tgID int64, state string) error {
+	return c.userSrv.SaveState(ctx, tgID, state)
+}

@@ -54,3 +54,19 @@ func (s *Server) HandleError(ctx tele.Context, err error) {
 	// устанавливаем состояние в дефолтное
 	s.fsm[ctx.Chat().ID].SetToDefault()
 }
+
+// Shutdown сохраняет состояния бота в БД
+func (s *Server) Shutdown(ctx context.Context) {
+	users, err := s.controller.GetAllUsers(ctx)
+	if err != nil {
+		s.logger.Fatalf("error while loading all users: %v", err)
+	}
+
+	for _, u := range users {
+		current := s.fsm[u.TGID].Current()
+		err := s.controller.SaveState(ctx, u.TGID, current.Name())
+		if err != nil {
+			s.logger.Errorf("error while saving user's state on shutdown: %v", err)
+		}
+	}
+}
