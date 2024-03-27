@@ -15,7 +15,7 @@ type searchNoteByTextState struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -41,7 +41,7 @@ func (n *searchNoteByTextState) Handle(ctx context.Context, telectx tele.Context
 }
 
 func (n *searchNoteByTextState) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *searchNoteByTextState) Next() state {

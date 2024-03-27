@@ -14,7 +14,7 @@ type year struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -36,7 +36,7 @@ func (n *year) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *year) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *year) Next() state {
@@ -65,7 +65,7 @@ func (n *year) Next() state {
 // }
 
 // func (n *selectedDateYear) Name() string {
-// 	return n.name
+// 	return string(n.name)
 // }
 
 // func (n *selectedDateYear) Next() state {

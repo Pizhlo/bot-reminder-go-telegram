@@ -15,7 +15,7 @@ type location struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -38,7 +38,7 @@ func (n *location) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *location) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *location) Next() state {

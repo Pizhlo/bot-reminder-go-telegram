@@ -14,7 +14,7 @@ type searchNoteOneDate struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -39,7 +39,7 @@ func (n *searchNoteOneDate) Next() state {
 }
 
 func (n *searchNoteOneDate) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 // Next state
@@ -58,7 +58,7 @@ func newSelectedDay(controller *controller.Controller, FSM *FSM) *selectedDay {
 }
 
 func (n *selectedDay) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *selectedDay) Handle(ctx context.Context, telectx tele.Context) error {

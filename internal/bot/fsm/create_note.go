@@ -14,7 +14,7 @@ type createNote struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -28,7 +28,7 @@ func (n *createNote) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *createNote) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *createNote) Next() state {

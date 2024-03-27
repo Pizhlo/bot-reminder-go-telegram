@@ -16,7 +16,7 @@ type dateReminder struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -40,7 +40,7 @@ func (n *dateReminder) Handle(ctx context.Context, telectx tele.Context) error {
 }
 
 func (n *dateReminder) Name() string {
-	return n.name
+	return string(n.name)
 }
 
 func (n *dateReminder) Next() state {
@@ -86,7 +86,7 @@ func (n *dateReminder) Next() state {
 // }
 
 // func (n *selectedDateOnce) Name() string {
-// 	return n.name
+// 	return string(n.name)
 // }
 
 // func (n *selectedDateOnce) Next() state {

@@ -11,28 +11,30 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+type stateName string
+
 // названия состояний
 const (
-	defaultStateName           = "default"
-	startStateName             = "start"
-	listNoteName               = "list_note"
-	createNoteName             = "create_note"
-	daysDurationName           = "days_duration"
-	hoursStateName             = "hours"
-	listReminderName           = "list_reminder"
-	locationStateName          = "location"
-	minutesStateName           = "minutes_duration"
-	monthStateName             = "month"
-	dateReminderName           = "date_reminder"
-	reminderNameState          = "reminder_name"
-	reminderTimeState          = "reminder_time"
-	searchNoteByTextStateName  = "search_note_by_text"
-	searchNoteByDatetStateName = "search_note_by_date"
-	searchNoteByTwoDatesState  = "search_note_by_two_dates"
-	severalDaysState           = "several_days"
-	severalTimesDayState       = "several_times_a_day"
-	weekDayState               = "every_week"
-	yearReminderState          = "every_year"
+	defaultStateName           stateName = "default"
+	startStateName             stateName = "start"
+	listNoteName               stateName = "list_note"
+	createNoteName             stateName = "create_note"
+	daysDurationName           stateName = "days_duration"
+	hoursStateName             stateName = "hours"
+	listReminderName           stateName = "list_reminder"
+	locationStateName          stateName = "location"
+	minutesStateName           stateName = "minutes_duration"
+	monthStateName             stateName = "month"
+	dateReminderName           stateName = "date_reminder"
+	reminderNameState          stateName = "reminder_name"
+	reminderTimeState          stateName = "reminder_time"
+	searchNoteByTextStateName  stateName = "search_note_by_text"
+	searchNoteByDatetStateName stateName = "search_note_by_date"
+	searchNoteByTwoDatesState  stateName = "search_note_by_two_dates"
+	severalDaysState           stateName = "several_days"
+	severalTimesDayState       stateName = "several_times_a_day"
+	weekDayState               stateName = "every_week"
+	yearReminderState          stateName = "every_year"
 )
 
 // Менеджер для управления состояниями бота
@@ -168,7 +170,8 @@ func (f *FSM) Current() state {
 
 // SetFromString устанавливает текущее состояние в переданное по названию
 func (s *FSM) SetFromString(stateStr string) error {
-	state, err := s.parseString(stateStr)
+	stateName := stateName(stateStr)
+	state, err := s.parseString(stateName)
 	if err != nil {
 		return err
 	}
@@ -179,7 +182,7 @@ func (s *FSM) SetFromString(stateStr string) error {
 
 // parseString парсит переданное название состояния.
 // Возвращает ошибку, если такого состояния не найдено
-func (s *FSM) parseString(state string) (state, error) {
+func (s *FSM) parseString(state stateName) (state, error) {
 	switch state {
 	case startStateName:
 		return s.start, nil
