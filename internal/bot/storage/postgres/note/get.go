@@ -26,7 +26,7 @@ func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.N
 	for rows.Next() {
 		note := model.Note{}
 
-		err := rows.Scan(&note.ID, &note.Text, &note.Created)
+		err := rows.Scan(&note.ViewID, &note.Text, &note.Created)
 		if err != nil {
 			return nil, fmt.Errorf("error while scanning note (get all by user id): %w", err)
 		}
@@ -42,7 +42,7 @@ func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.N
 }
 
 // GetByID возвращает заметку с переданным ID. Если такой заметки нет, возвращает ErrNotesNotFound
-func (db *NoteRepo) GetByID(ctx context.Context, userID int64, noteID int) (*model.Note, error) {
+func (db *NoteRepo) GetByViewID(ctx context.Context, userID int64, noteID int) (*model.Note, error) {
 	note := model.Note{}
 
 	row := db.db.QueryRowContext(ctx, `select note_number, text, created from notes.notes 
@@ -51,7 +51,7 @@ func (db *NoteRepo) GetByID(ctx context.Context, userID int64, noteID int) (*mod
 	and notes.notes_view.note_number = $2
 	order by created ASC;`, userID, noteID)
 
-	err := row.Scan(&note.ID, &note.Text, &note.Created)
+	err := row.Scan(&note.ViewID, &note.Text, &note.Created)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, api_errors.ErrNotesNotFound

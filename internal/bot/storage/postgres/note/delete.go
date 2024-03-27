@@ -25,7 +25,7 @@ func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
 }
 
 // DeleteNoteByID удаляет одну заметку. Для удаления необходим ID заметки и пользователя
-func (db *NoteRepo) DeleteNoteByID(ctx context.Context, userID int64, noteID int) error {
+func (db *NoteRepo) DeleteNoteByViewID(ctx context.Context, userID int64, noteID int) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,

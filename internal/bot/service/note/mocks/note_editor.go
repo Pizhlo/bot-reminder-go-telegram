@@ -49,18 +49,18 @@ func (mr *MocknoteEditorMockRecorder) DeleteAllByUserID(ctx, userID interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllByUserID", reflect.TypeOf((*MocknoteEditor)(nil).DeleteAllByUserID), ctx, userID)
 }
 
-// DeleteNoteByID mocks base method.
-func (m *MocknoteEditor) DeleteNoteByID(ctx context.Context, userID int64, noteID int) error {
+// DeleteNoteByViewID mocks base method.
+func (m *MocknoteEditor) DeleteNoteByViewID(ctx context.Context, userID int64, viewID int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteNoteByID", ctx, userID, noteID)
+	ret := m.ctrl.Call(m, "DeleteNoteByViewID", ctx, userID, viewID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteNoteByID indicates an expected call of DeleteNoteByID.
-func (mr *MocknoteEditorMockRecorder) DeleteNoteByID(ctx, userID, noteID interface{}) *gomock.Call {
+// DeleteNoteByViewID indicates an expected call of DeleteNoteByViewID.
+func (mr *MocknoteEditorMockRecorder) DeleteNoteByViewID(ctx, userID, viewID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoteByID", reflect.TypeOf((*MocknoteEditor)(nil).DeleteNoteByID), ctx, userID, noteID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoteByViewID", reflect.TypeOf((*MocknoteEditor)(nil).DeleteNoteByViewID), ctx, userID, viewID)
 }
 
 // GetAllByUserID mocks base method.
@@ -78,19 +78,19 @@ func (mr *MocknoteEditorMockRecorder) GetAllByUserID(ctx, userID interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByUserID", reflect.TypeOf((*MocknoteEditor)(nil).GetAllByUserID), ctx, userID)
 }
 
-// GetByID mocks base method.
-func (m *MocknoteEditor) GetByID(ctx context.Context, userID int64, noteID int) (*model.Note, error) {
+// GetByViewID mocks base method.
+func (m *MocknoteEditor) GetByViewID(ctx context.Context, userID int64, viewID int) (*model.Note, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", ctx, userID, noteID)
+	ret := m.ctrl.Call(m, "GetByViewID", ctx, userID, viewID)
 	ret0, _ := ret[0].(*model.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByID indicates an expected call of GetByID.
-func (mr *MocknoteEditorMockRecorder) GetByID(ctx, userID, noteID interface{}) *gomock.Call {
+// GetByViewID indicates an expected call of GetByViewID.
+func (mr *MocknoteEditorMockRecorder) GetByViewID(ctx, userID, viewID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MocknoteEditor)(nil).GetByID), ctx, userID, noteID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByViewID", reflect.TypeOf((*MocknoteEditor)(nil).GetByViewID), ctx, userID, viewID)
 }
 
 // Save mocks base method.

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/google/uuid"
 )
 
 // Notes генерирует необходимое количество заметок
@@ -21,7 +22,8 @@ func Notes(n int) []model.Note {
 // Note генерирует одну заметку, заполненную рандомными данными
 func Note() model.Note {
 	return model.Note{
-		ID:      Int(0, 10),
+		ID:      uuid.New(),
+		ViewID:  Int(1, 10),
 		TgID:    1,
 		Text:    String(10),
 		Created: time.Now(),

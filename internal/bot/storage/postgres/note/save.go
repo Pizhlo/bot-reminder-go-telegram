@@ -18,7 +18,7 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 		return fmt.Errorf("error while creating transaction: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, `insert into notes.notes (user_id, text, created) values((select id from users.users where tg_id=$1), $2, $3) returning id`, note.TgID, note.Text, note.Created)
+	_, err = tx.ExecContext(ctx, `insert into notes.notes (user_id, text, created) values((select id from users.users where tg_id=$1), $2, $3)`, note.TgID, note.Text, note.Created)
 	if err != nil {
 		return fmt.Errorf("error inserting note: %w", err)
 	}

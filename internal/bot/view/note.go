@@ -47,7 +47,7 @@ func (v *NoteView) Message(notes []model.Note) string {
 	v.pages = make([]string, 0)
 
 	for i, note := range notes {
-		res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /dn%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ID, note.Text)
+		res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /dn%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ViewID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""

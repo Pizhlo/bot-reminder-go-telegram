@@ -15,7 +15,7 @@ create table if not exists users.timezones (
 CREATE SCHEMA notes;
 
 create table if not exists notes.notes (
-	id serial not null,
+	id uuid NOT NULL DEFAULT gen_random_uuid(),
 	user_id int not null,
 	"text" text,	
 	created timestamp not null,
