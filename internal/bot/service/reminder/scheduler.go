@@ -14,11 +14,6 @@ import (
 )
 
 func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location, f gocron.Task, r *model.Reminder) (gocron.NewJob, error) {
-	params := gocron.FuncParams{
-		Ctx:      ctx,
-		Reminder: *r,
-	}
-
 	var sch *gocron.Scheduler
 	var err error
 	sch, err = c.getScheduler(r.TgID)
@@ -35,28 +30,40 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 
 	switch r.Type {
 	case model.EverydayType:
-		return sch.CreateEverydayJob(r.Time, f, params, loc)
+		return sch.CreateEverydayJob(r.Time, f, ctx, r)
 	case model.SeveralTimesDayType:
 		if r.Date == "minutes" {
-			return sch.CreateMinutesReminder(r.Time, f, params)
+			return sch.CreateMinutesReminder(r.Time, f, ctx, r)
 		}
 
-		return sch.CreateHoursReminder(r.Time, f, params)
+		return sch.CreateHoursReminder(r.Time, f, ctx, r)
 	case model.EveryWeekType:
 		wd, err := view.ParseWeekday(r.Date)
 		if err != nil {
 			return gocron.NewJob{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
 		}
 
-		return sch.CreateEveryWeekReminder(wd, r.Time, f, params, loc)
+		return sch.CreateEveryWeekReminder(wd, r.Time, f, ctx, r)
 	case model.SeveralDaysType:
-		return sch.CreateSeveralDaysReminder(r.Date, r.Time, f, params, loc)
+		return sch.CreateSeveralDaysReminder(r.Date, r.Time, f, ctx, r)
 	case model.OnceMonthType:
-		return sch.CreateMonthlyReminder(r.Date, r.Time, f, params, loc)
+		return sch.CreateMonthlyReminder(r.Date, r.Time, f, ctx, r)
 	case model.OnceYearType:
-		return sch.CreateOnceInYearReminder(r.Date, r.Time, f, params)
+		return sch.CreateOnceInYearReminder(r.Date, r.Time, f, ctx, r)
 	case model.DateType:
-		return sch.CreateCalendarDateReminder(r.Date, r.Time, loc, f, params)
+		// создаем отложенный вызов отправки напоминания
+		newJob, err := sch.CreateCalendarDateReminder(r.Date, r.Time, f, ctx, r)
+		if err != nil {
+			return gocron.NewJob{}, err
+		}
+
+		// создаем отложенный вызов удаления напоминания из БД
+		_, err = sch.CreateCalendarDateReminder(r.Date, r.Time, c.DeleteReminder, ctx, r)
+		if err != nil {
+			return gocron.NewJob{}, err
+		}
+
+		return newJob, nil
 	default:
 		return gocron.NewJob{}, fmt.Errorf("unknown type of reminder: %s", r.Type)
 	}

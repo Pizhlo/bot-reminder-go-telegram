@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func task(ctx context.Context, reminder model.Reminder) error {
+func task(ctx context.Context, reminder *model.Reminder) error {
 	return nil
 }
 

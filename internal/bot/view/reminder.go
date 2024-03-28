@@ -172,7 +172,7 @@ func (v *ReminderView) Clear() {
 // купить хлеб
 //
 // Напоминание сработало 23.10.2023 в 18:00
-func ReminderMessage(reminder model.Reminder) (string, error) {
+func ReminderMessage(reminder *model.Reminder) (string, error) {
 	name := reminder.Name
 
 	date, err := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)

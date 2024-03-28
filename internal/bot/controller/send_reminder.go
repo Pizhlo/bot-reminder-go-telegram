@@ -15,7 +15,7 @@ import (
 var DeleteBtn = telebot.Btn{Text: "❌Удалить"}
 
 // SendReminder отправляет пользователю напоминание в указанное время
-func (c *Controller) SendReminder(ctx context.Context, reminder model.Reminder) error {
+func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder) error {
 	c.logger.Debugf("Sending reminder to: %d\n", reminder.TgID)
 
 	msg, err := view.ReminderMessage(reminder)
