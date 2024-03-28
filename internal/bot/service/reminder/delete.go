@@ -43,9 +43,9 @@ func (n *ReminderService) DeleteAll(ctx context.Context, userID int64) error {
 }
 
 // deleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания и пользователя
-func (n *ReminderService) deleteReminderByID(ctx context.Context, userID int64, reminder *model.Reminder) error {
+func (n *ReminderService) deleteReminderByID(ctx context.Context, reminder *model.Reminder) error {
 	// удаляем из шедулера
-	err := n.DeleteJob(userID, reminder.Job.ID)
+	err := n.DeleteJob(reminder.TgID, reminder.Job.ID)
 	if err != nil {
 		return fmt.Errorf("error while deleting job: %w", err)
 	}
@@ -63,5 +63,11 @@ func (n *ReminderService) DeleteByViewID(ctx context.Context, userID int64, view
 	}
 
 	// обрабатываем
-	return r.Name, n.deleteReminderByID(ctx, userID, r)
+	return r.Name, n.deleteReminderByID(ctx, r)
+}
+
+// DeleteReminder удаляет переданное напоминание из БД.
+// Используется для удаления одноразовых напоминаний
+func (n *ReminderService) DeleteReminder(ctx context.Context, reminder *model.Reminder) error {
+	return n.reminderEditor.DeleteReminderByID(ctx, reminder.ID)
 }
