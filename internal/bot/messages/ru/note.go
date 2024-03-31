@@ -12,6 +12,8 @@ const NoNotesFoundByDateMessage = "У тебя нет заметок, созда
 const NoNotesFoundByTwoDatesMessage = "У тебя нет заметок, созданных в промежутке между %s и %s"
 const SearchOneDateMessage = "Выбери, за какую дату искать заметки"
 const FirstDateBeforeSecondMessage = "Вторая дата раньше первой, выбери другую:"
+const SecondDateInFutureMessage = "Вторая дата еще не наступила, выбери другую:"
+const FirstDateInFutureMessage = "Первая дата еще не наступила, выбери другую:"
 
 const SearchByTwoDatesFirstDateMessage = "Выбери первую дату:"
 const SearchByTwoDatesSecondDateMessage = "Выбери вторую дату:"

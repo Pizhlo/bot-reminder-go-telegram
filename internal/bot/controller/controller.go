@@ -83,10 +83,10 @@ func (c *Controller) HandleError(ctx tele.Context, err error, state string) {
 	}
 
 	_, channelErr := c.bot.Send(&tele.Chat{ID: -1001890622926}, msg, &tele.SendOptions{
-		ParseMode: markdownParseMode,
+		ParseMode: htmlParseMode,
 	})
 	if channelErr != nil {
-		c.logger.Errorf("Error while sending error message to channel. Error: %+v\n", editErr)
+		c.logger.Errorf("Error while sending error message to channel. Error: %+v\n", channelErr)
 	}
 }
 

@@ -56,6 +56,13 @@ func (s *NoteService) ValidateSearchDate(userID int64, date time.Time) error {
 		return api_errors.ErrSecondDateBeforeFirst
 	}
 
+	// вторая дата не должна быть в будущем
+	today := time.Now()
+
+	if date.After(today) {
+		return api_errors.ErrSecondDateFuture
+	}
+
 	return nil
 }
 

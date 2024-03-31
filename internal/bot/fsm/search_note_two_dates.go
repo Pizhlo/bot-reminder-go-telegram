@@ -49,14 +49,14 @@ type selectedDayFirst struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
 func newSelectedDayFirst(controller *controller.Controller, FSM *FSM) *selectedDayFirst {
 	return &selectedDayFirst{controller: controller,
 		fsm: FSM, logger: logger.New(),
-		name: "search notes by two dates: first selected day",
+		name: searchNoteByTwoDatesStateFirstDay,
 		next: newSelectedDaySecond(controller, FSM)}
 }
 
@@ -65,7 +65,13 @@ func (n *selectedDayFirst) Name() string {
 }
 
 func (n *selectedDayFirst) Handle(ctx context.Context, telectx tele.Context) error {
-	return n.controller.SearchNoteByTwoDatesFirstDate(ctx, telectx)
+	err := n.controller.SearchNoteByTwoDatesFirstDate(ctx, telectx)
+	if err != nil {
+		return err
+	}
+
+	n.fsm.SetNext()
+	return nil
 }
 
 func (n *selectedDayFirst) Next() state {
@@ -82,7 +88,7 @@ type selectedDaySecond struct {
 	controller *controller.Controller
 	fsm        *FSM
 	logger     *logrus.Logger
-	name       string
+	name       stateName
 	next       state
 }
 
@@ -90,7 +96,7 @@ func newSelectedDaySecond(controller *controller.Controller, FSM *FSM) *selected
 	s := &selectedDaySecond{controller: controller,
 		fsm:    FSM,
 		logger: logger.New(),
-		name:   "search notes by two dates: second selected day",
+		name:   searchNoteByTwoDatesStateSecondDay,
 		next:   nil}
 
 	s.next = s

@@ -15,26 +15,28 @@ type stateName string
 
 // названия состояний
 const (
-	defaultStateName           stateName = "default"
-	startStateName             stateName = "start"
-	listNoteName               stateName = "list_note"
-	createNoteName             stateName = "create_note"
-	daysDurationName           stateName = "days_duration"
-	hoursStateName             stateName = "hours"
-	listReminderName           stateName = "list_reminder"
-	locationStateName          stateName = "location"
-	minutesStateName           stateName = "minutes_duration"
-	monthStateName             stateName = "month"
-	dateReminderName           stateName = "date_reminder"
-	reminderNameState          stateName = "reminder_name"
-	reminderTimeState          stateName = "reminder_time"
-	searchNoteByTextStateName  stateName = "search_note_by_text"
-	searchNoteByDatetStateName stateName = "search_note_by_date"
-	searchNoteByTwoDatesState  stateName = "search_note_by_two_dates"
-	severalDaysState           stateName = "several_days"
-	severalTimesDayState       stateName = "several_times_a_day"
-	weekDayState               stateName = "every_week"
-	yearReminderState          stateName = "every_year"
+	defaultStateName                   stateName = "default"
+	startStateName                     stateName = "start"
+	listNoteName                       stateName = "list_note"
+	createNoteName                     stateName = "create_note"
+	daysDurationName                   stateName = "days_duration"
+	hoursStateName                     stateName = "hours"
+	listReminderName                   stateName = "list_reminder"
+	locationStateName                  stateName = "location"
+	minutesStateName                   stateName = "minutes_duration"
+	monthStateName                     stateName = "month"
+	dateReminderName                   stateName = "date_reminder"
+	reminderNameState                  stateName = "reminder_name"
+	reminderTimeState                  stateName = "reminder_time"
+	searchNoteByTextStateName          stateName = "search_note_by_text"
+	searchNoteByDatetStateName         stateName = "search_note_by_date"
+	searchNoteByTwoDatesState          stateName = "search_note_by_two_dates"
+	searchNoteByTwoDatesStateFirstDay  stateName = "search_note_by_two_dates_first_day"
+	searchNoteByTwoDatesStateSecondDay stateName = "search_note_by_two_dates_second_day"
+	severalDaysState                   stateName = "several_days"
+	severalTimesDayState               stateName = "several_times_a_day"
+	weekDayState                       stateName = "every_week"
+	yearReminderState                  stateName = "every_year"
 )
 
 // Менеджер для управления состояниями бота
@@ -158,9 +160,7 @@ func (f *FSM) Name() string {
 
 // SetNext переключает состояние бота на следующее
 func (f *FSM) SetNext() {
-	next := f.current.Next()
-	f.logger.Debugf("Setting state to next. Next: %v\n", next.Name())
-	f.current = next
+	f.SetState(f.current.Next())
 }
 
 // Current возвращает текущее состояние
@@ -173,7 +173,8 @@ func (s *FSM) SetFromString(stateStr string) error {
 	stateName := stateName(stateStr)
 	state, err := s.parseString(stateName)
 	if err != nil {
-		return err
+		logrus.Errorf("error while setting state on start: %v", err)
+		s.SetToDefault()
 	}
 
 	s.SetState(state)
