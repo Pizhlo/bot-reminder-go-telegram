@@ -6,7 +6,6 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -17,17 +16,16 @@ import (
 type reminderTime struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newReminderTimeState(controller *controller.Controller, FSM *FSM) *reminderTime {
-	return &reminderTime{controller, FSM, logger.New(), reminderTimeState, FSM.defaultState}
+	return &reminderTime{controller, FSM, reminderTimeState, FSM.defaultState}
 }
 
 func (n *reminderTime) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	err := n.controller.ReminderTime(ctx, telectx)
 	if err != nil {

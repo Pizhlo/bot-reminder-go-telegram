@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -15,26 +14,28 @@ type stateName string
 
 // названия состояний
 const (
-	defaultStateName           stateName = "default"
-	startStateName             stateName = "start"
-	listNoteName               stateName = "list_note"
-	createNoteName             stateName = "create_note"
-	daysDurationName           stateName = "days_duration"
-	hoursStateName             stateName = "hours"
-	listReminderName           stateName = "list_reminder"
-	locationStateName          stateName = "location"
-	minutesStateName           stateName = "minutes_duration"
-	monthStateName             stateName = "month"
-	dateReminderName           stateName = "date_reminder"
-	reminderNameState          stateName = "reminder_name"
-	reminderTimeState          stateName = "reminder_time"
-	searchNoteByTextStateName  stateName = "search_note_by_text"
-	searchNoteByDatetStateName stateName = "search_note_by_date"
-	searchNoteByTwoDatesState  stateName = "search_note_by_two_dates"
-	severalDaysState           stateName = "several_days"
-	severalTimesDayState       stateName = "several_times_a_day"
-	weekDayState               stateName = "every_week"
-	yearReminderState          stateName = "every_year"
+	defaultStateName                   stateName = "default"
+	startStateName                     stateName = "start"
+	listNoteName                       stateName = "list_note"
+	createNoteName                     stateName = "create_note"
+	daysDurationName                   stateName = "days_duration"
+	hoursStateName                     stateName = "hours"
+	listReminderName                   stateName = "list_reminder"
+	locationStateName                  stateName = "location"
+	minutesStateName                   stateName = "minutes_duration"
+	monthStateName                     stateName = "month"
+	dateReminderName                   stateName = "date_reminder"
+	reminderNameState                  stateName = "reminder_name"
+	reminderTimeState                  stateName = "reminder_time"
+	searchNoteByTextStateName          stateName = "search_note_by_text"
+	searchNoteByDatetStateName         stateName = "search_note_by_date"
+	searchNoteByTwoDatesState          stateName = "search_note_by_two_dates"
+	searchNoteByTwoDatesStateFirstDay  stateName = "search_note_by_two_dates_first_day"
+	searchNoteByTwoDatesStateSecondDay stateName = "search_note_by_two_dates_second_day"
+	severalDaysState                   stateName = "several_days"
+	severalTimesDayState               stateName = "several_times_a_day"
+	weekDayState                       stateName = "every_week"
+	yearReminderState                  stateName = "every_year"
 )
 
 // Менеджер для управления состояниями бота
@@ -83,7 +84,6 @@ type FSM struct {
 	//Состояние для поиска заметок по двум датам
 	SearchNoteTwoDates state
 	mu                 sync.RWMutex
-	logger             *logrus.Logger
 }
 
 // Интерфейс для управления состояниями бота
@@ -94,7 +94,7 @@ type state interface {
 }
 
 func NewFSM(controller *controller.Controller) *FSM {
-	fsm := &FSM{mu: sync.RWMutex{}, logger: logger.New()}
+	fsm := &FSM{mu: sync.RWMutex{}}
 
 	fsm.location = newLocationState(fsm, controller)
 
@@ -136,7 +136,7 @@ func (f *FSM) SetState(state state) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	f.logger.Debugf("Setting state to: %v\n", state.Name())
+	logrus.Debugf("Setting state to: %v\n", state.Name())
 
 	f.current = state
 }
@@ -147,24 +147,28 @@ func (f *FSM) SetToDefault() {
 }
 
 func (f *FSM) Handle(ctx context.Context, telectx tele.Context) error {
-	f.logger.Debugf("Handling request. Current state: %v. Command: %s\n", f.current.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. Current state: %v. Command: %s\n", f.current.Name(), telectx.Message().Text)
 	return f.current.Handle(ctx, telectx)
 }
 
 // Name возвращает название текущего состояния
 func (f *FSM) Name() string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	return f.current.Name()
 }
 
 // SetNext переключает состояние бота на следующее
 func (f *FSM) SetNext() {
-	next := f.current.Next()
-	f.logger.Debugf("Setting state to next. Next: %v\n", next.Name())
-	f.current = next
+	f.SetState(f.current.Next())
 }
 
 // Current возвращает текущее состояние
 func (f *FSM) Current() state {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	return f.current
 }
 
@@ -173,7 +177,8 @@ func (s *FSM) SetFromString(stateStr string) error {
 	stateName := stateName(stateStr)
 	state, err := s.parseString(stateName)
 	if err != nil {
-		return err
+		logrus.Errorf("error while setting state on start: %v", err)
+		s.SetToDefault()
 	}
 
 	s.SetState(state)
@@ -183,6 +188,9 @@ func (s *FSM) SetFromString(stateStr string) error {
 // parseString парсит переданное название состояния.
 // Возвращает ошибку, если такого состояния не найдено
 func (s *FSM) parseString(state stateName) (state, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	switch state {
 	case startStateName:
 		return s.start, nil

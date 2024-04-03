@@ -5,7 +5,6 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/fsm"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -14,13 +13,14 @@ type Server struct {
 	bot        *tele.Bot
 	fsm        map[int64]*fsm.FSM
 	controller *controller.Controller
-	logger     *logrus.Logger
 }
 
 func New(bot *tele.Bot, controller *controller.Controller) *Server {
-	return &Server{bot: bot, fsm: make(map[int64]*fsm.FSM, 0),
+	return &Server{
+		bot:        bot,
+		fsm:        make(map[int64]*fsm.FSM, 0),
 		controller: controller,
-		logger:     logger.New()}
+	}
 }
 
 func (s *Server) Start(ctx context.Context) {
@@ -35,7 +35,7 @@ func (s *Server) RegisterUserInFSM(userID int64) {
 func (s *Server) loadUsers(ctx context.Context) {
 	users, err := s.controller.GetAllUsers(ctx)
 	if err != nil {
-		s.logger.Fatalf("error while loading all users: %v", err)
+		logrus.Fatalf("error while loading all users: %v", err)
 	}
 
 	s.controller.SaveUsers(ctx, users)
@@ -44,7 +44,7 @@ func (s *Server) loadUsers(ctx context.Context) {
 		s.RegisterUserInFSM(user.TGID)
 		err := s.setupState(ctx, user.TGID)
 		if err != nil {
-			s.logger.Errorf("error while setting state for user on startup: %v", err)
+			logrus.Errorf("error while setting state for user on startup: %v", err)
 		}
 	}
 
@@ -74,14 +74,14 @@ func (s *Server) HandleError(ctx tele.Context, err error) {
 func (s *Server) Shutdown(ctx context.Context) {
 	users, err := s.controller.GetAllUsers(ctx)
 	if err != nil {
-		s.logger.Fatalf("error while loading all users: %v", err)
+		logrus.Fatalf("error while loading all users: %v", err)
 	}
 
 	for _, u := range users {
 		current := s.fsm[u.TGID].Current()
 		err := s.controller.SaveState(ctx, u.TGID, current.Name())
 		if err != nil {
-			s.logger.Errorf("error while saving user's state on shutdown: %v", err)
+			logrus.Errorf("error while saving user's state on shutdown: %v", err)
 		}
 	}
 }

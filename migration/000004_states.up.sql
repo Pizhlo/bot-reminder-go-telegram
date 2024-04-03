@@ -33,4 +33,6 @@ INSERT INTO users.state_types VALUES
 (17, 'several_days'),
 (18, 'several_times_a_day'),
 (19, 'every_week'),
-(20, 'every_year');
+(20, 'every_year'),
+(21, 'search_note_by_two_dates_first_day'),
+(22, 'search_note_by_two_dates_second_day');

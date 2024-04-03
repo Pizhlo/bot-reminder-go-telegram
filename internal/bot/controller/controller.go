@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
@@ -18,9 +17,8 @@ import (
 )
 
 type Controller struct {
-	mu     sync.Mutex
-	logger *logrus.Logger
-	bot    *tele.Bot
+	mu  sync.Mutex
+	bot *tele.Bot
 	// отвечает за информацию о пользователях
 	userSrv *user.UserService
 	// отвечает за обработку заметок
@@ -41,7 +39,7 @@ const (
 )
 
 func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, reminderSrv *reminder.ReminderService) *Controller {
-	return &Controller{logger: logger.New(),
+	return &Controller{
 		userSrv:          userSrv,
 		noteSrv:          noteSrv,
 		bot:              bot,
@@ -79,14 +77,14 @@ func (c *Controller) HandleError(ctx tele.Context, err error, state string) {
 
 	editErr := ctx.EditOrSend(messages.ErrorMessageUser, view.BackToMenuBtn())
 	if editErr != nil {
-		c.logger.Errorf("Error while sending error message to user. Error: %+v\n", editErr)
+		logrus.Errorf("Error while sending error message to user. Error: %+v\n", editErr)
 	}
 
 	_, channelErr := c.bot.Send(&tele.Chat{ID: -1001890622926}, msg, &tele.SendOptions{
-		ParseMode: markdownParseMode,
+		ParseMode: htmlParseMode,
 	})
 	if channelErr != nil {
-		c.logger.Errorf("Error while sending error message to channel. Error: %+v\n", editErr)
+		logrus.Errorf("Error while sending error message to channel. Error: %+v\n", channelErr)
 	}
 }
 
@@ -115,7 +113,7 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 	}
 
 	if len(errors) > 0 {
-		c.logger.Fatalf("error while saving users on start: errors: %v", errors)
+		logrus.Fatalf("error while saving users on start: errors: %v", errors)
 	}
 }
 

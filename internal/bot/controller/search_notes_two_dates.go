@@ -31,6 +31,13 @@ func (c *Controller) SearchNoteByTwoDatesFirstDate(ctx context.Context, telectx 
 	}
 
 	firstDate := time.Date(c.noteSrv.CurYear(telectx.Chat().ID), c.noteSrv.CurMonth(telectx.Chat().ID), day, 0, 0, 0, 0, loc)
+
+	today := time.Now()
+
+	if firstDate.After(today) {
+		return api_errors.ErrFirstDayFuture
+	}
+
 	c.noteSrv.SaveFirstDate(telectx.Chat().ID, firstDate)
 
 	return telectx.EditOrSend(messages.SearchByTwoDatesSecondDateMessage, c.noteSrv.Calendar(telectx.Chat().ID))
@@ -83,6 +90,20 @@ func (c *Controller) SearchNoteByTwoDatesSecondDate(ctx context.Context, telectx
 
 func (c *Controller) SecondDateBeforeFirst(ctx context.Context, telectx tele.Context) error {
 	return telectx.EditOrSend(messages.FirstDateBeforeSecondMessage, &tele.SendOptions{
+		ReplyMarkup: c.noteSrv.Calendar(telectx.Chat().ID),
+		ParseMode:   htmlParseMode,
+	})
+}
+
+func (c *Controller) SecondDateInFuture(ctx context.Context, telectx tele.Context) error {
+	return telectx.EditOrSend(messages.SecondDateInFutureMessage, &tele.SendOptions{
+		ReplyMarkup: c.noteSrv.Calendar(telectx.Chat().ID),
+		ParseMode:   htmlParseMode,
+	})
+}
+
+func (c *Controller) FirstDateInFuture(ctx context.Context, telectx tele.Context) error {
+	return telectx.EditOrSend(messages.FirstDateInFutureMessage, &tele.SendOptions{
 		ReplyMarkup: c.noteSrv.Calendar(telectx.Chat().ID),
 		ParseMode:   htmlParseMode,
 	})

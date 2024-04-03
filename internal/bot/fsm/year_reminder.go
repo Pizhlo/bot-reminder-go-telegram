@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -13,17 +12,16 @@ import (
 type year struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newYearState(controller *controller.Controller, FSM *FSM) *year {
-	return &year{controller, FSM, logger.New(), yearReminderState, FSM.ReminderTime}
+	return &year{controller, FSM, yearReminderState, FSM.ReminderTime}
 }
 
 func (n *year) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	err := n.controller.SaveCalendarDate(ctx, telectx)
 	if err != nil {
@@ -49,17 +47,17 @@ func (n *year) Next() state {
 // type selectedDateYear struct {
 // 	controller *controller.Controller
 // 	fsm        *FSM
-// 	logger     *logrus.Logger
+//
 // 	name       string
 // 	next       state
 // }
 
 // func newSelectedDateYear(controller *controller.Controller, FSM *FSM) *selectedDateYear {
-// 	return &selectedDateYear{controller: controller, fsm: FSM, logger: logger.New(), name: "year: selected date", next: nil}
+// 	return &selectedDateYear{controller: controller, fsm: FSM,  name: "year: selected date", next: nil}
 // }
 
 // func (n *selectedDateYear) Handle(ctx context.Context, telectx tele.Context) error {
-// 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+// 	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 // 	return n.controller.SaveCalendarDate(ctx, telectx)
 // }

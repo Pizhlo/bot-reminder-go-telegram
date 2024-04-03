@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -103,14 +104,21 @@ func (n *ReminderService) SaveCalendarDate(userID int64, dayOfMonth string) erro
 
 	var date string
 
-	monthStr := fixMonth(month)
+	monthStr := fixInt(int(month))
+
+	dayInt, err := strconv.Atoi(dayOfMonth)
+	if err != nil {
+		return err
+	}
+
+	day := fixInt(int(dayInt))
 
 	if r.Type == model.OnceYearType {
-		date = fmt.Sprintf("%s.%s", dayOfMonth, monthStr)
+		date = fmt.Sprintf("%s.%s", day, monthStr)
 	} else if r.Type == model.DateType {
 
 		year := n.viewsMap[userID].Year()
-		date = fmt.Sprintf("%s.%s.%d", dayOfMonth, monthStr, year)
+		date = fmt.Sprintf("%s.%s.%d", day, monthStr, year)
 	}
 
 	r.Date = date
@@ -130,7 +138,9 @@ func (n *ReminderService) GetFromMemory(userID int64) (*model.Reminder, error) {
 		return nil, fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
-	return &r, nil
+	rCopy := r
+
+	return &rCopy, nil
 }
 
 // SaveID сохраняет ID напоминания, указанное в базе

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -19,12 +18,11 @@ const (
 type NoteView struct {
 	pages       []string
 	currentPage int
-	logger      *logrus.Logger
 	calendar    *Calendar
 }
 
 func NewNote() *NoteView {
-	return &NoteView{pages: make([]string, 0), currentPage: 0, logger: logger.New(), calendar: new()}
+	return &NoteView{pages: make([]string, 0), currentPage: 0, calendar: new()}
 }
 
 var (
@@ -65,14 +63,14 @@ func (v *NoteView) Message(notes []model.Note) string {
 
 // Next возвращает следующую страницу сообщений
 func (v *NoteView) Next() string {
-	v.logger.Debugf("noteView: getting next page. Current: %d\n", v.currentPage)
+	logrus.Debugf("noteView: getting next page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == v.total()-1 {
-		v.logger.Debugf("noteView: current page is the last. Setting current page to 0.\n")
+		logrus.Debugf("noteView: current page is the last. Setting current page to 0.\n")
 		v.currentPage = 0
 	} else {
 		v.currentPage++
-		v.logger.Debugf("noteView: incrementing current page. New value: %d\n", v.currentPage)
+		logrus.Debugf("noteView: incrementing current page. New value: %d\n", v.currentPage)
 	}
 
 	return v.pages[v.currentPage]
@@ -80,14 +78,14 @@ func (v *NoteView) Next() string {
 
 // Previous возвращает предыдущую страницу сообщений
 func (v *NoteView) Previous() string {
-	v.logger.Debugf("noteView: getting previous page. Current: %d\n", v.currentPage)
+	logrus.Debugf("noteView: getting previous page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == 0 {
-		v.logger.Debugf("noteView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
+		logrus.Debugf("noteView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
 		v.currentPage = v.total() - 1
 	} else {
 		v.currentPage--
-		v.logger.Debugf("noteView: decrementing current page. New value: %d\n", v.currentPage)
+		logrus.Debugf("noteView: decrementing current page. New value: %d\n", v.currentPage)
 	}
 
 	return v.pages[v.currentPage]
@@ -95,7 +93,7 @@ func (v *NoteView) Previous() string {
 
 // Last возвращает последнюю страницу сообщений
 func (v *NoteView) Last() string {
-	v.logger.Debugf("noteView: getting the last page. Current: %d\n", v.currentPage)
+	logrus.Debugf("noteView: getting the last page. Current: %d\n", v.currentPage)
 
 	v.currentPage = v.total() - 1
 
@@ -104,7 +102,7 @@ func (v *NoteView) Last() string {
 
 // First возвращает первую страницу сообщений
 func (v *NoteView) First() string {
-	v.logger.Debugf("noteView: getting the first page. Current: %d\n", v.currentPage)
+	logrus.Debugf("noteView: getting the first page. Current: %d\n", v.currentPage)
 
 	v.currentPage = 0
 

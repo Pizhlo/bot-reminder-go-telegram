@@ -2,12 +2,15 @@ package controller
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/telebot.v3"
 )
 
@@ -16,7 +19,7 @@ var DeleteBtn = telebot.Btn{Text: "❌Удалить"}
 
 // SendReminder отправляет пользователю напоминание в указанное время
 func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder) error {
-	c.logger.Debugf("Sending reminder to: %d\n", reminder.TgID)
+	logrus.Debugf("Sending reminder to: %d\n", reminder.TgID)
 
 	msg, err := view.ReminderMessage(reminder)
 	if err != nil {
@@ -48,7 +51,7 @@ func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder)
 	})
 
 	if err != nil {
-		c.logger.Errorf("error while sending reminder to user: %v", err)
+		logrus.Errorf("error while sending reminder to user: %v", err)
 		return err
 	}
 
@@ -66,7 +69,10 @@ func (c *Controller) ProcessDeleteReminder(ctx context.Context, telectx telebot.
 
 	reminderName, err := c.reminderSrv.DeleteByViewID(ctx, telectx.Chat().ID, reminderInt)
 	if err != nil {
-		return err
+		if !errors.Is(err, sql.ErrNoRows) {
+			// значит, что напоминание уже автоматически удалилось
+			return nil
+		}
 	}
 
 	msg := fmt.Sprintf(messages.ReminderDeletedMessage, reminderName)

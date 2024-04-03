@@ -6,12 +6,13 @@ import (
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 // StartCmd отправляет приветственное сообщение и меню на команду /start
 func (c *Controller) StartCmd(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Controller: handling /start (or menu btn)\n")
+	logrus.Debugf("Controller: handling /start (or menu btn)\n")
 
 	kb := view.MainMenu()
 

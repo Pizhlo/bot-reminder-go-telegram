@@ -7,38 +7,41 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	logger "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 	"gopkg.in/telebot.v3/middleware"
 )
 
 func (s *Server) setupBot(ctx context.Context) {
-	s.bot.Use(logger.Logging(ctx, s.logger), s.CheckUser(ctx), middleware.AutoRespond())
+	s.bot.Use(logger.Logging(ctx), middleware.AutoRespond())
 
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
-		// err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		// if err != nil {
-		// 	s.HandleError(telectx, err)
-		// 	return err
-		// }
-
-		//s.RegisterUserInFSM(telectx.Chat().ID)
-
-		err := s.controller.AcceptTimezone(ctx, telectx)
+		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
 		}
+
+		//s.RegisterUserInFSM(telectx.Chat().ID)
+
+		logrus.Debugf("location")
+
+		// err := s.controller.AcceptTimezone(ctx, telectx)
+		// if err != nil {
+		// 	s.HandleError(telectx, err)
+		// 	return err
+		// }
 
 		return nil
 	})
 
 	// часовой пояс
 	s.bot.Handle(&view.BtnTimezone, func(telectx tele.Context) error {
-		s.logger.Debugf("Timezone btn")
+		logrus.Debugf("Timezone btn")
 		err := s.controller.Timezone(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
@@ -50,7 +53,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// изменить часовой пояс
 	s.bot.Handle(&view.BtnEditTimezone, func(telectx tele.Context) error {
-		s.logger.Debugf("Edit timezone btn")
+		logrus.Debugf("Edit timezone btn")
 		err := s.controller.RequestLocation(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
@@ -62,7 +65,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// меню заметок
 	s.bot.Handle(&view.BtnNotes, func(telectx tele.Context) error {
-		s.logger.Debugf("Notes btn")
+		logrus.Debugf("Notes btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.ListNotes(ctx, telectx)
@@ -76,7 +79,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// меню напоминаний
 	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
-		s.logger.Debugf("Reminders btn")
+		logrus.Debugf("Reminders btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListReminder)
 		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
@@ -89,7 +92,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// назад в меню
 	s.bot.Handle(&view.BtnBackToMenu, func(telectx tele.Context) error {
-		s.logger.Debugf("Menu btn")
+		logrus.Debugf("Menu btn")
 		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 
@@ -119,7 +122,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	// restricted: only known users
 
 	restricted := s.bot.Group()
-	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
+	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx), middleware.AutoRespond())
 
 	// /start command
 	restricted.Handle(commands.StartCommand, func(telectx tele.Context) error {
@@ -169,7 +172,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
-		s.logger.Debugf("on text")
+		logrus.Debugf("on text")
 		//return s.controller.CreateNote(ctx, telectx)
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {
@@ -299,6 +302,8 @@ func (s *Server) setupBot(ctx context.Context) {
 			return err
 		}
 
+		s.fsm[c.Chat().ID].SetNext()
+
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
@@ -308,6 +313,14 @@ func (s *Server) setupBot(ctx context.Context) {
 				if err != nil {
 					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
 						return s.controller.SecondDateBeforeFirst(ctx, c)
+					}
+
+					if errors.Is(err, api_errors.ErrSecondDateFuture) {
+						return s.controller.SecondDateInFuture(ctx, c)
+					}
+
+					if errors.Is(err, api_errors.ErrFirstDayFuture) {
+						return s.controller.FirstDateInFuture(ctx, c)
 					}
 
 					s.HandleError(c, err)
@@ -643,26 +656,26 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				// s.fsm[c.Chat().ID].SetNext()
-				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
-				// if err != nil {
-				// 	// если режим - дата (одноразовое напоминание) и проверка не прошла
-				// 	if errors.Is(err, api_errors.ErrInvalidDate) {
-				// 		return s.controller.InvalidDate(ctx, c)
-				// 	}
-				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
-				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
-				// 	}
+				err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				if err != nil {
+					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+						return s.controller.SecondDateBeforeFirst(ctx, c)
+					}
 
-				// 	s.HandleError(telectx, err)
-				// 	return err
-				// }
+					if errors.Is(err, api_errors.ErrSecondDateFuture) {
+						return s.controller.SecondDateInFuture(ctx, c)
+					}
 
-				// s.fsm[c.Chat().ID].SetNext()
-				// s.controller.ResetCalendars(c.Chat().ID)
-				// return nil
+					if errors.Is(err, api_errors.ErrFirstDayFuture) {
+						return s.controller.FirstDateInFuture(ctx, c)
+					}
 
-				return s.fsm[c.Chat().ID].Handle(ctx, c)
+					s.HandleError(c, err)
+					return err
+				}
+
+				return nil
+
 			})
 		}
 
@@ -681,23 +694,25 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				// s.fsm[c.Chat().ID].SetNext()
-				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
-				// if err != nil {
-				// 	if errors.Is(err, api_errors.ErrInvalidDate) {
-				// 		return s.controller.InvalidDate(ctx, c)
-				// 	}
-				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
-				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
-				// 	}
+				err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				if err != nil {
+					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+						return s.controller.SecondDateBeforeFirst(ctx, c)
+					}
 
-				// 	s.HandleError(telectx, err)
-				// 	return err
-				// }
+					if errors.Is(err, api_errors.ErrSecondDateFuture) {
+						return s.controller.SecondDateInFuture(ctx, c)
+					}
 
-				// s.fsm[c.Chat().ID].SetNext()
-				// s.controller.ResetCalendars(c.Chat().ID)
-				return s.fsm[c.Chat().ID].Handle(ctx, c)
+					if errors.Is(err, api_errors.ErrFirstDayFuture) {
+						return s.controller.FirstDateInFuture(ctx, c)
+					}
+
+					s.HandleError(c, err)
+					return err
+				}
+
+				return nil
 			})
 		}
 
@@ -716,23 +731,25 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				// s.fsm[c.Chat().ID].SetNext()
-				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
-				// if err != nil {
-				// 	if errors.Is(err, api_errors.ErrInvalidDate) {
-				// 		return s.controller.InvalidDate(ctx, c)
-				// 	}
-				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
-				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
-				// 	}
+				err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				if err != nil {
+					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+						return s.controller.SecondDateBeforeFirst(ctx, c)
+					}
 
-				// 	s.HandleError(telectx, err)
-				// 	return err
-				// }
+					if errors.Is(err, api_errors.ErrSecondDateFuture) {
+						return s.controller.SecondDateInFuture(ctx, c)
+					}
 
-				// s.fsm[c.Chat().ID].SetNext()
-				// s.controller.ResetCalendars(c.Chat().ID)
-				return s.fsm[c.Chat().ID].Handle(ctx, c)
+					if errors.Is(err, api_errors.ErrFirstDayFuture) {
+						return s.controller.FirstDateInFuture(ctx, c)
+					}
+
+					s.HandleError(c, err)
+					return err
+				}
+
+				return nil
 			})
 		}
 
@@ -751,20 +768,25 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		for _, btn := range btns {
 			s.bot.Handle(&btn, func(c tele.Context) error {
-				// s.fsm[c.Chat().ID].SetNext()
-				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
-				// if err != nil {
-				// 	if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
-				// 		return s.controller.SecondDateBeforeFirst(ctx, c)
-				// 	}
+				err := s.fsm[c.Chat().ID].Handle(ctx, c)
+				if err != nil {
+					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
+						return s.controller.SecondDateBeforeFirst(ctx, c)
+					}
 
-				// 	s.HandleError(telectx, err)
-				// 	return err
-				// }
+					if errors.Is(err, api_errors.ErrSecondDateFuture) {
+						return s.controller.SecondDateInFuture(ctx, c)
+					}
 
-				// s.fsm[c.Chat().ID].SetNext()
-				// s.controller.ResetCalendars(c.Chat().ID)
-				return s.fsm[c.Chat().ID].Handle(ctx, c)
+					if errors.Is(err, api_errors.ErrFirstDayFuture) {
+						return s.controller.FirstDateInFuture(ctx, c)
+					}
+
+					s.HandleError(c, err)
+					return err
+				}
+
+				return nil
 			})
 		}
 

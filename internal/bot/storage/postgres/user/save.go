@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	"github.com/sirupsen/logrus"
 )
 
 func (db *UserRepo) Save(ctx context.Context, id int64, tz *user.User) error {
@@ -33,6 +34,8 @@ func (db *UserRepo) SaveState(ctx context.Context, id int64, state string) error
 	if err != nil {
 		return fmt.Errorf("unable to create transaction: %w", err)
 	}
+
+	logrus.Debugf("saving state: %s", state)
 
 	_, err = tx.ExecContext(ctx, `insert into users.states (user_id, state_id) values((select id from users.users where tg_id = $1),
 	(select id from users.state_types where name = $2))

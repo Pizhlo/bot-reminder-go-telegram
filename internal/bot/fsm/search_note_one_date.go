@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
-	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -13,13 +11,12 @@ import (
 type searchNoteOneDate struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newSearchNoteOneDateState(controller *controller.Controller, FSM *FSM) *searchNoteOneDate {
-	return &searchNoteOneDate{controller, FSM, logger.New(), searchNoteByDatetStateName, newSelectedDay(controller, FSM)}
+	return &searchNoteOneDate{controller, FSM, searchNoteByDatetStateName, newSelectedDay(controller, FSM)}
 }
 
 func (n *searchNoteOneDate) Handle(ctx context.Context, telectx tele.Context) error {
@@ -48,13 +45,13 @@ func (n *searchNoteOneDate) Name() string {
 type selectedDay struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
-	name       string
-	next       state
+
+	name string
+	next state
 }
 
 func newSelectedDay(controller *controller.Controller, FSM *FSM) *selectedDay {
-	return &selectedDay{controller: controller, fsm: FSM, logger: logger.New(), name: "search notes by one date: selected day", next: nil}
+	return &selectedDay{controller: controller, fsm: FSM, name: "search notes by one date: selected day", next: nil}
 }
 
 func (n *selectedDay) Name() string {

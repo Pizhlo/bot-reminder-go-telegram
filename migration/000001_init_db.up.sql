@@ -2,7 +2,7 @@ CREATE SCHEMA users;
 
 CREATE TABLE IF NOT EXISTS users.users (
 	id serial not null primary key,
-	tg_id int not null unique
+	tg_id bigint not null unique
 );
 
 create table if not exists users.timezones (

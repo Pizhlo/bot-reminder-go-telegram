@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -13,17 +12,16 @@ import (
 type everyWeek struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newEveryWeekState(controller *controller.Controller, FSM *FSM) *everyWeek {
-	return &everyWeek{controller, FSM, logger.New(), weekDayState, newWeekDayState(controller, FSM)}
+	return &everyWeek{controller, FSM, weekDayState, newWeekDayState(controller, FSM)}
 }
 
 func (n *everyWeek) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	n.fsm.SetNext()
 
@@ -44,17 +42,17 @@ func (n *everyWeek) Next() state {
 type weekDay struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
-	name       string
-	next       state
+
+	name string
+	next state
 }
 
 func newWeekDayState(controller *controller.Controller, FSM *FSM) *weekDay {
-	return &weekDay{controller, FSM, logger.New(), "every week", FSM.ReminderTime}
+	return &weekDay{controller, FSM, "every week", FSM.ReminderTime}
 }
 
 func (n *weekDay) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	// если пользователь нажал кнопку
 	if telectx.Callback() != nil {

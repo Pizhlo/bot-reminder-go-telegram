@@ -19,6 +19,8 @@ type Config struct {
 	DBAddress          string
 	Token              string `mapstructure:"TOKEN,required"`
 	ChannelID          int64  `mapstructure:"CHANNEL_ID,required"`
+	BotURL             string `mapstructure:"BOT_URL"`
+	LogLvl             string `mapstructure:"LOG_LEVEL"`
 }
 
 func LoadConfig(file, path string) (*Config, error) {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/sirupsen/logrus"
 )
 
 // DeleteAll удаляет все напоминания пользователя из базы, останавливает таски
@@ -13,7 +14,7 @@ func (n *ReminderService) DeleteAll(ctx context.Context, userID int64) error {
 	// получаем айди всех задач пользователя, чтобы их остановить в шедулере
 	jobIDs, err := n.reminderEditor.GetAllJobs(ctx, userID)
 	if err != nil {
-		n.logger.Errorf("Reminder service: error getting all jobs' IDs. User ID: %d. Error: %+v\n", userID, err)
+		logrus.Errorf("Reminder service: error getting all jobs' IDs. User ID: %d. Error: %+v\n", userID, err)
 		return err
 	}
 
@@ -23,7 +24,7 @@ func (n *ReminderService) DeleteAll(ctx context.Context, userID int64) error {
 		// удаляем из БД
 		err = n.reminderEditor.DeleteJobAndReminder(ctx, id)
 		if err != nil {
-			n.logger.Errorf("error while deleting job from DB while deleting all jobs: %v\n", err)
+			logrus.Errorf("error while deleting job from DB while deleting all jobs: %v\n", err)
 			resultErr = errors.Join(err)
 			continue
 		}
@@ -32,7 +33,7 @@ func (n *ReminderService) DeleteAll(ctx context.Context, userID int64) error {
 		err := n.DeleteJob(userID, id)
 		if err != nil {
 			resultErr = errors.Join(err)
-			n.logger.Errorf("error while deleting all jobs from scheduler: deleting job: %v\n", err)
+			logrus.Errorf("error while deleting all jobs from scheduler: deleting job: %v\n", err)
 			continue
 		}
 	}
