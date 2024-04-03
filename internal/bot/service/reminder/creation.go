@@ -138,7 +138,9 @@ func (n *ReminderService) GetFromMemory(userID int64) (*model.Reminder, error) {
 		return nil, fmt.Errorf("error while getting reminder by user ID: reminder not found")
 	}
 
-	return &r, nil
+	rCopy := r
+
+	return &rCopy, nil
 }
 
 // SaveID сохраняет ID напоминания, указанное в базе

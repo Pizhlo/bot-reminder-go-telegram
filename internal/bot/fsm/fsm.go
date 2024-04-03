@@ -155,6 +155,9 @@ func (f *FSM) Handle(ctx context.Context, telectx tele.Context) error {
 
 // Name возвращает название текущего состояния
 func (f *FSM) Name() string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	return f.current.Name()
 }
 
@@ -165,6 +168,9 @@ func (f *FSM) SetNext() {
 
 // Current возвращает текущее состояние
 func (f *FSM) Current() state {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	return f.current
 }
 
@@ -184,6 +190,9 @@ func (s *FSM) SetFromString(stateStr string) error {
 // parseString парсит переданное название состояния.
 // Возвращает ошибку, если такого состояния не найдено
 func (s *FSM) parseString(state stateName) (state, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	switch state {
 	case startStateName:
 		return s.start, nil
