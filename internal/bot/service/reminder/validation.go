@@ -54,12 +54,12 @@ func (n *ReminderService) ValidateDate(userID int64, dayOfMonth string, timezone
 	return nil
 }
 
-func fixMonth(month time.Month) string {
-	if month < 10 {
-		return "0" + strconv.Itoa(int(month))
+func fixInt(i int) string {
+	if i < 10 {
+		return "0" + strconv.Itoa(int(i))
 	}
 
-	return strconv.Itoa(int(month))
+	return strconv.Itoa(int(i))
 }
 
 // ProcessMinutes обрабатывает количество минут: валидирует (число должно быть от 1 до 59) и сохраняет

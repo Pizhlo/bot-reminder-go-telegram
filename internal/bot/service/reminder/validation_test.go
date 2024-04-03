@@ -116,7 +116,7 @@ func TestValidateTime_Invalid(t *testing.T) {
 	assert.EqualError(t, err, api_errors.ErrTimeInPast.Error())
 }
 
-func TestFixMonth_Before10(t *testing.T) {
+func TestFixInt_Before10(t *testing.T) {
 	months := []time.Month{
 		time.January,
 		time.February,
@@ -132,13 +132,13 @@ func TestFixMonth_Before10(t *testing.T) {
 	for _, month := range months {
 		expected := "0" + strconv.Itoa(int(month))
 
-		actual := fixMonth(month)
+		actual := fixInt(int(month))
 
 		assert.Equal(t, expected, actual)
 	}
 }
 
-func TestFixMonth_After10(t *testing.T) {
+func TestFixInt_After10(t *testing.T) {
 	months := []time.Month{
 		time.October,
 		time.November,
@@ -148,7 +148,7 @@ func TestFixMonth_After10(t *testing.T) {
 	for _, month := range months {
 		expected := strconv.Itoa(int(month))
 
-		actual := fixMonth(month)
+		actual := fixInt(int(month))
 
 		assert.Equal(t, expected, actual)
 	}
