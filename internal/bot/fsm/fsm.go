@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -85,7 +84,6 @@ type FSM struct {
 	//Состояние для поиска заметок по двум датам
 	SearchNoteTwoDates state
 	mu                 sync.RWMutex
-	logger             *logrus.Logger
 }
 
 // Интерфейс для управления состояниями бота
@@ -96,7 +94,7 @@ type state interface {
 }
 
 func NewFSM(controller *controller.Controller) *FSM {
-	fsm := &FSM{mu: sync.RWMutex{}, logger: logger.New()}
+	fsm := &FSM{mu: sync.RWMutex{}}
 
 	fsm.location = newLocationState(fsm, controller)
 
@@ -138,7 +136,7 @@ func (f *FSM) SetState(state state) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	f.logger.Debugf("Setting state to: %v\n", state.Name())
+	logrus.Debugf("Setting state to: %v\n", state.Name())
 
 	f.current = state
 }
@@ -149,7 +147,7 @@ func (f *FSM) SetToDefault() {
 }
 
 func (f *FSM) Handle(ctx context.Context, telectx tele.Context) error {
-	f.logger.Debugf("Handling request. Current state: %v. Command: %s\n", f.current.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. Current state: %v. Command: %s\n", f.current.Name(), telectx.Message().Text)
 	return f.current.Handle(ctx, telectx)
 }
 

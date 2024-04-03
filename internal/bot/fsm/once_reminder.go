@@ -6,7 +6,6 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -15,17 +14,16 @@ import (
 type dateReminder struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newDateReminderState(controller *controller.Controller, FSM *FSM) *dateReminder {
-	return &dateReminder{controller, FSM, logger.New(), dateReminderName, FSM.ReminderTime}
+	return &dateReminder{controller, FSM, dateReminderName, FSM.ReminderTime}
 }
 
 func (n *dateReminder) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	err := n.controller.ProcessDate(ctx, telectx)
 	if err != nil {
@@ -57,13 +55,13 @@ func (n *dateReminder) Next() state {
 // type selectedDateOnce struct {
 // 	controller *controller.Controller
 // 	fsm        *FSM
-// 	logger     *logrus.Logger
+//
 // 	name       string
 // 	next       state
 // }
 
 // func newSelectedDateOnceState(controller *controller.Controller, FSM *FSM) *selectedDateOnce {
-// 	s := &selectedDateOnce{controller, FSM, logger.New(), "date reminder: selected date", FSM.ReminderTime}
+// 	s := &selectedDateOnce{controller, FSM,  "date reminder: selected date", FSM.ReminderTime}
 
 // 	// для случаев, когда пользователь несколько раз ввел не ту дату, проверка не прошла (дата уже прошла)
 // 	s.next = s
@@ -71,7 +69,7 @@ func (n *dateReminder) Next() state {
 // }
 
 // func (n *selectedDateOnce) Handle(ctx context.Context, telectx tele.Context) error {
-// 	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+// 	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 // 	err := n.controller.ProcessDate(ctx, telectx)
 // 	if err != nil {

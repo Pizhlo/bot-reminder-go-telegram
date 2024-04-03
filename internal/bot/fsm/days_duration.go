@@ -6,7 +6,6 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -18,17 +17,16 @@ import (
 type daysDuration struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newDaysDurationState(controller *controller.Controller, FSM *FSM) *daysDuration {
-	return &daysDuration{controller, FSM, logger.New(), daysDurationName, FSM.ReminderTime}
+	return &daysDuration{controller, FSM, daysDurationName, FSM.ReminderTime}
 }
 
 func (n *daysDuration) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
 	err := n.controller.DaysDuration(ctx, telectx)
 	if err != nil {

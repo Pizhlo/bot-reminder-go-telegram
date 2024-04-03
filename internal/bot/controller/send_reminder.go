@@ -10,6 +10,7 @@ import (
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/telebot.v3"
 )
 
@@ -18,7 +19,7 @@ var DeleteBtn = telebot.Btn{Text: "❌Удалить"}
 
 // SendReminder отправляет пользователю напоминание в указанное время
 func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder) error {
-	c.logger.Debugf("Sending reminder to: %d\n", reminder.TgID)
+	logrus.Debugf("Sending reminder to: %d\n", reminder.TgID)
 
 	msg, err := view.ReminderMessage(reminder)
 	if err != nil {
@@ -50,7 +51,7 @@ func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder)
 	})
 
 	if err != nil {
-		c.logger.Errorf("error while sending reminder to user: %v", err)
+		logrus.Errorf("error while sending reminder to user: %v", err)
 		return err
 	}
 

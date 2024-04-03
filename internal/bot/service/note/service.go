@@ -3,7 +3,6 @@ package note
 import (
 	"context"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -12,7 +11,6 @@ import (
 // NoteService отвечает за заметки: удаление, создание, выдача
 type NoteService struct {
 	noteEditor noteEditor
-	logger     *logrus.Logger
 	viewsMap   map[int64]*view.NoteView
 	searchMap  map[int64]model.SearchByTwoDates
 }
@@ -45,19 +43,20 @@ type noteEditor interface {
 }
 
 func New(noteEditor noteEditor) *NoteService {
-	return &NoteService{noteEditor: noteEditor,
-		logger:    logger.New(),
-		viewsMap:  make(map[int64]*view.NoteView),
-		searchMap: make(map[int64]model.SearchByTwoDates)}
+	return &NoteService{
+		noteEditor: noteEditor,
+		viewsMap:   make(map[int64]*view.NoteView),
+		searchMap:  make(map[int64]model.SearchByTwoDates),
+	}
 }
 
 // SaveUser сохраняет пользователя в мапе view
 func (n *NoteService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		n.logger.Debugf("Note service: user %d not found in the views map. Saving...\n", userID)
+		logrus.Debugf("Note service: user %d not found in the views map. Saving...\n", userID)
 		n.viewsMap[userID] = view.NewNote()
 	} else {
-		n.logger.Debugf("Note service: user %d already saved in the views map.\n", userID)
+		logrus.Debugf("Note service: user %d already saved in the views map.\n", userID)
 	}
 
 }

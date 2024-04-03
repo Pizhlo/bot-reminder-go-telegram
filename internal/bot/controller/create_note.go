@@ -8,14 +8,15 @@ import (
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 // CreateNote создает новую заметку пользователя
 func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Controller: saving note. Sender: %d\n", telectx.Chat().ID)
+	logrus.Debugf("Controller: saving note. Sender: %d\n", telectx.Chat().ID)
 
-	c.logger.Debugf("Controller: getting user's timezone. User ID: %d\n", telectx.Chat().ID)
+	logrus.Debugf("Controller: getting user's timezone. User ID: %d\n", telectx.Chat().ID)
 
 	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {

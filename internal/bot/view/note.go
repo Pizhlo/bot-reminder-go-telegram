@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -24,7 +23,7 @@ type NoteView struct {
 }
 
 func NewNote() *NoteView {
-	return &NoteView{pages: make([]string, 0), currentPage: 0, logger: logger.New(), calendar: new()}
+	return &NoteView{pages: make([]string, 0), currentPage: 0, calendar: new()}
 }
 
 var (

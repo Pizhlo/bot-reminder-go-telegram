@@ -7,6 +7,7 @@ import (
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -35,7 +36,7 @@ func (c *Controller) RequestLocation(ctx context.Context, telectx tele.Context) 
 
 // AcceptTimezone обрабатывает геолокацию пользователя
 func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Controller: handling location\n")
+	logrus.Debugf("Controller: handling location\n")
 
 	loc := model.UserTimezone{
 		Lat:  telectx.Message().Location.Lat,
@@ -45,7 +46,7 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 	// сохраняем пользователя и часовой пояс
 	u, err := c.userSrv.ProcessTimezoneAndSave(ctx, telectx.Chat().ID, loc)
 	if err != nil {
-		c.logger.Errorf("Controller: error while processing user's location: %v\n", err)
+		logrus.Errorf("Controller: error while processing user's location: %v\n", err)
 		return err
 	}
 

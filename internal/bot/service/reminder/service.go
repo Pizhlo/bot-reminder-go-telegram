@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
@@ -15,7 +14,6 @@ import (
 // ReminderService отвечает за напоминания: удаление, создание, выдача
 type ReminderService struct {
 	reminderEditor reminderEditor
-	logger         *logrus.Logger
 	viewsMap       map[int64]*view.ReminderView
 	// для сохранения напоминаний во время создания
 	reminderMap map[int64]model.Reminder
@@ -61,17 +59,22 @@ type reminderEditor interface {
 }
 
 func New(reminderEditor reminderEditor) *ReminderService {
-	return &ReminderService{reminderEditor: reminderEditor, logger: logger.New(), viewsMap: make(map[int64]*view.ReminderView),
-		reminderMap: make(map[int64]model.Reminder), mu: sync.Mutex{}, schedulers: make(map[int64]*gocron.Scheduler)}
+	return &ReminderService{
+		reminderEditor: reminderEditor,
+		viewsMap:       make(map[int64]*view.ReminderView),
+		reminderMap:    make(map[int64]model.Reminder),
+		mu:             sync.Mutex{},
+		schedulers:     make(map[int64]*gocron.Scheduler),
+	}
 }
 
 // SaveUser сохраняет пользователя в мапе view
 func (n *ReminderService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		n.logger.Debugf("Reminder service: user %d not found in the views map. Saving...\n", userID)
+		logrus.Debugf("Reminder service: user %d not found in the views map. Saving...\n", userID)
 		n.viewsMap[userID] = view.NewReminder()
 	} else {
-		n.logger.Debugf("Reminder service: user %d already saved in the views map.\n", userID)
+		logrus.Debugf("Reminder service: user %d already saved in the views map.\n", userID)
 	}
 
 }

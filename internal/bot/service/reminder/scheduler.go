@@ -11,6 +11,7 @@ import (
 	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location, f gocron.Task, r *model.Reminder) (gocron.NewJob, error) {
@@ -26,7 +27,7 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 		sch, _ = c.getScheduler(r.TgID)
 	}
 
-	c.logger.Debugf("Starting job for user %d. Reminder: %+v", r.TgID, r)
+	logrus.Debugf("Starting job for user %d. Reminder: %+v", r.TgID, r)
 
 	switch r.Type {
 	case model.EverydayType:
@@ -100,7 +101,7 @@ func (c *ReminderService) getScheduler(tgID int64) (*gocron.Scheduler, error) {
 // DeleteJob останавливает и удаляет таску в планировщике
 func (c *ReminderService) DeleteJob(tgID int64, jobID uuid.UUID) error {
 	if val, ok := c.schedulers[tgID]; ok {
-		c.logger.Debugf("Deleting job %v from scheduler", jobID)
+		logrus.Debugf("Deleting job %v from scheduler", jobID)
 		return val.DeleteJob(jobID)
 	}
 

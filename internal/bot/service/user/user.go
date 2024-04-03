@@ -6,14 +6,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/sirupsen/logrus"
 )
 
 // UserService отвечает за информацию о пользователях: айди, часовой пояс и т.п.
 type UserService struct {
-	logger *logrus.Logger
 	//userCache      userEditor
 	userEditor     userEditor
 	timezoneCache  timezoneCache  // in-memory cache
@@ -40,8 +38,11 @@ type timezoneCache interface {
 }
 
 func New(ctx context.Context, userEditor userEditor, timezoneCache timezoneCache, timezoneEditor timezoneEditor) *UserService {
-	srv := &UserService{userEditor: userEditor, logger: logger.New(),
-		timezoneCache: timezoneCache, timezoneEditor: timezoneEditor}
+	srv := &UserService{
+		userEditor:     userEditor,
+		timezoneCache:  timezoneCache,
+		timezoneEditor: timezoneEditor,
+	}
 
 	srv.loadAll(ctx)
 
@@ -51,19 +52,19 @@ func New(ctx context.Context, userEditor userEditor, timezoneCache timezoneCache
 func (s *UserService) loadAll(ctx context.Context) {
 	tzs, err := s.timezoneEditor.GetAll(ctx)
 	if err != nil {
-		s.logger.Fatalf("unable to load all timezones from DB on start: %v\n", err)
+		logrus.Fatalf("unable to load all timezones from DB on start: %v\n", err)
 	}
 
 	for _, tz := range tzs {
 		loc, err := time.LoadLocation(tz.Timezone.Name)
 		if err != nil {
-			s.logger.Fatalf("unable to load user's location on start. Location: %s. Error: %v", tz.Timezone.Name, err)
+			logrus.Fatalf("unable to load user's location on start. Location: %s. Error: %v", tz.Timezone.Name, err)
 		}
 
 		s.timezoneCache.Save(ctx, tz.TGID, loc)
 	}
 
-	s.logger.Debugf("Successfully saved %d users' timezone(s) to cache\n", len(tzs))
+	logrus.Debugf("Successfully saved %d users' timezone(s) to cache\n", len(tzs))
 }
 
 func (s *UserService) GetAll(ctx context.Context) ([]*user.User, error) {
@@ -84,13 +85,13 @@ func (s *UserService) CheckUser(ctx context.Context, tgID int64) bool {
 func (s *UserService) checkInCache(ctx context.Context, tgID int64) bool {
 	u, err := s.timezoneCache.Get(ctx, tgID)
 	if err != nil {
-		s.logger.Errorf("User service: Error while checking user in cache: %v\n", err)
+		logrus.Errorf("User service: Error while checking user in cache: %v\n", err)
 	} else {
-		s.logger.Debugf("User service: Found user in cache: %+v\n", u)
+		logrus.Debugf("User service: Found user in cache: %+v\n", u)
 	}
 
 	if u == nil {
-		s.logger.Debugf("User service: User not found in cache: %d\n", tgID)
+		logrus.Debugf("User service: User not found in cache: %d\n", tgID)
 	}
 
 	return u != nil
@@ -100,11 +101,11 @@ func (s *UserService) checkInRepo(ctx context.Context, tgID int64) bool {
 	u, err := s.userEditor.Get(ctx, tgID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			s.logger.Errorf("User service: Error while checking user in DB: %v\n", err)
+			logrus.Errorf("User service: Error while checking user in DB: %v\n", err)
 		}
-		s.logger.Debugf("User service: User not found in DB: %d\n", tgID)
+		logrus.Debugf("User service: User not found in DB: %d\n", tgID)
 	} else {
-		s.logger.Debugf("User service: Found user in DB: %+v\n", u)
+		logrus.Debugf("User service: Found user in DB: %+v\n", u)
 	}
 
 	return u != nil

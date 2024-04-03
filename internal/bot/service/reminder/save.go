@@ -5,6 +5,7 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // Save проверяет заполненость полей сохраняет напоминание в БД
@@ -34,7 +35,7 @@ func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, userID
 	// 	return err
 	// }
 
-	s.logger.Debugf("Reminder service: saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)
+	logrus.Debugf("Reminder service: saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)
 
 	return s.reminderEditor.SaveJob(ctx, reminderID, jobID)
 }

@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
-	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -13,13 +11,12 @@ import (
 type searchNoteTwoDate struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newSearchNoteTwoDateState(controller *controller.Controller, FSM *FSM) *searchNoteTwoDate {
-	return &searchNoteTwoDate{controller, FSM, logger.New(), searchNoteByTwoDatesState, newSelectedDayFirst(controller, FSM)}
+	return &searchNoteTwoDate{controller, FSM, searchNoteByTwoDatesState, newSelectedDayFirst(controller, FSM)}
 }
 
 func (n *searchNoteTwoDate) Handle(ctx context.Context, telectx tele.Context) error {
@@ -48,14 +45,14 @@ func (n *searchNoteTwoDate) Name() string {
 type selectedDayFirst struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
-	name       stateName
-	next       state
+
+	name stateName
+	next state
 }
 
 func newSelectedDayFirst(controller *controller.Controller, FSM *FSM) *selectedDayFirst {
 	return &selectedDayFirst{controller: controller,
-		fsm: FSM, logger: logger.New(),
+		fsm:  FSM,
 		name: searchNoteByTwoDatesStateFirstDay,
 		next: newSelectedDaySecond(controller, FSM)}
 }
@@ -87,17 +84,17 @@ func (n *selectedDayFirst) Next() state {
 type selectedDaySecond struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
-	name       stateName
-	next       state
+
+	name stateName
+	next state
 }
 
 func newSelectedDaySecond(controller *controller.Controller, FSM *FSM) *selectedDaySecond {
 	s := &selectedDaySecond{controller: controller,
-		fsm:    FSM,
-		logger: logger.New(),
-		name:   searchNoteByTwoDatesStateSecondDay,
-		next:   nil}
+		fsm: FSM,
+
+		name: searchNoteByTwoDatesStateSecondDay,
+		next: nil}
 
 	s.next = s
 

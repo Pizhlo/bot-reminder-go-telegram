@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -18,7 +17,6 @@ import (
 type listReminder struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
@@ -27,11 +25,11 @@ type listReminder struct {
 const deleteReminderPrefix = "/dr"
 
 func newListReminderState(c *controller.Controller, fsm *FSM) *listReminder {
-	return &listReminder{controller: c, fsm: fsm, logger: logger.New(), name: listReminderName, next: nil}
+	return &listReminder{controller: c, fsm: fsm, name: listReminderName, next: nil}
 }
 
 func (n *listReminder) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 	msg := telectx.Message().Text
 
 	if !strings.HasPrefix(msg, deleteReminderPrefix) {

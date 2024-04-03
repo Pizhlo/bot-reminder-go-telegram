@@ -7,7 +7,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
+	logger "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ import (
 )
 
 func (s *Server) setupBot(ctx context.Context) {
-	s.bot.Use(logger.Logging(ctx, s.logger), middleware.AutoRespond())
+	s.bot.Use(logger.Logging(ctx), middleware.AutoRespond())
 
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
@@ -41,7 +41,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// часовой пояс
 	s.bot.Handle(&view.BtnTimezone, func(telectx tele.Context) error {
-		s.logger.Debugf("Timezone btn")
+		logrus.Debugf("Timezone btn")
 		err := s.controller.Timezone(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
@@ -53,7 +53,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// изменить часовой пояс
 	s.bot.Handle(&view.BtnEditTimezone, func(telectx tele.Context) error {
-		s.logger.Debugf("Edit timezone btn")
+		logrus.Debugf("Edit timezone btn")
 		err := s.controller.RequestLocation(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
@@ -65,7 +65,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// меню заметок
 	s.bot.Handle(&view.BtnNotes, func(telectx tele.Context) error {
-		s.logger.Debugf("Notes btn")
+		logrus.Debugf("Notes btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.ListNotes(ctx, telectx)
@@ -79,7 +79,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// меню напоминаний
 	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
-		s.logger.Debugf("Reminders btn")
+		logrus.Debugf("Reminders btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListReminder)
 		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
@@ -92,7 +92,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// назад в меню
 	s.bot.Handle(&view.BtnBackToMenu, func(telectx tele.Context) error {
-		s.logger.Debugf("Menu btn")
+		logrus.Debugf("Menu btn")
 		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 
@@ -122,7 +122,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	// restricted: only known users
 
 	restricted := s.bot.Group()
-	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx, s.logger), middleware.AutoRespond())
+	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx), middleware.AutoRespond())
 
 	// /start command
 	restricted.Handle(commands.StartCommand, func(telectx tele.Context) error {
@@ -172,7 +172,7 @@ func (s *Server) setupBot(ctx context.Context) {
 	})
 
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
-		s.logger.Debugf("on text")
+		logrus.Debugf("on text")
 		//return s.controller.CreateNote(ctx, telectx)
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		if err != nil {

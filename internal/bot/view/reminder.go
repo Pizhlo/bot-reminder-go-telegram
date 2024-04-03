@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
@@ -21,7 +20,7 @@ type ReminderView struct {
 }
 
 func NewReminder() *ReminderView {
-	return &ReminderView{pages: make([]string, 0), currentPage: 0, logger: logger.New(), calendar: new()}
+	return &ReminderView{pages: make([]string, 0), currentPage: 0, calendar: new()}
 }
 
 var (

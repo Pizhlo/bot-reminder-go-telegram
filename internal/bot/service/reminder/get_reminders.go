@@ -3,6 +3,7 @@ package reminder
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -11,13 +12,13 @@ import (
 func (s *ReminderService) GetAll(ctx context.Context, userID int64) (string, *tele.ReplyMarkup, error) {
 	reminders, err := s.reminderEditor.GetAllByUserID(ctx, userID)
 	if err != nil {
-		s.logger.Errorf("Reminder service: error while getting all reminders by user ID %d: %v\n", userID, err)
+		logrus.Errorf("Reminder service: error while getting all reminders by user ID %d: %v\n", userID, err)
 		return "", nil, err
 	}
 
 	msg, err := s.viewsMap[userID].Message(reminders)
 	if err != nil {
-		s.logger.Errorf("Reminder service: error while making first message for all reminders by user ID %d: %v\n", userID, err)
+		logrus.Errorf("Reminder service: error while making first message for all reminders by user ID %d: %v\n", userID, err)
 		return "", nil, err
 	}
 

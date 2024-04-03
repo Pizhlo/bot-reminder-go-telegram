@@ -10,6 +10,7 @@ import (
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -19,7 +20,7 @@ const deleteNotePrefix = "/dn"
 func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) error {
 	text := telectx.Message().Text
 
-	c.logger.Debugf("Controller: handling %s command\n", text)
+	logrus.Debugf("Controller: handling %s command\n", text)
 
 	// достаем айди заметки из сообщения (напр. /del6 -> 6)
 	noteIDString, found := strings.CutPrefix(text, deleteNotePrefix)
@@ -49,7 +50,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 		return err
 	}
 
-	c.logger.Debugf("Controller: successfully deleted user's note by ID %d\n", noteID)
+	logrus.Debugf("Controller: successfully deleted user's note by ID %d\n", noteID)
 
 	msg := fmt.Sprintf(messages.NoteDeletedSuccessMessage, noteID)
 	return telectx.EditOrSend(msg, &tele.SendOptions{

@@ -9,7 +9,6 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/config"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	note_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
@@ -20,15 +19,14 @@ import (
 	reminder_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/reminder"
 	tz_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/timezone"
 	user_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/user"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 func Start(confName, path string) {
-	logger := logger.New()
-
 	err := func(ctx context.Context) error {
-		logger.Info("starting")
-		defer logger.Info("stopped")
+		logrus.Info("starting")
+		defer logrus.Info("stopped")
 
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
@@ -36,6 +34,25 @@ func Start(confName, path string) {
 		conf, err := config.LoadConfig(confName, path)
 		if err != nil {
 			return fmt.Errorf("unable to load config: %w", err)
+		}
+
+		switch conf.LogLvl {
+		case "info":
+			logrus.SetLevel(logrus.InfoLevel)
+		case "warn":
+			logrus.SetLevel(logrus.WarnLevel)
+		case "debug":
+			logrus.SetLevel(logrus.DebugLevel)
+		case "error":
+			logrus.SetLevel(logrus.ErrorLevel)
+		case "trace":
+			logrus.SetLevel(logrus.TraceLevel)
+		case "panic":
+			logrus.SetLevel(logrus.PanicLevel)
+		case "fatal":
+			logrus.SetLevel(logrus.PanicLevel)
+		default:
+			logrus.SetLevel(logrus.InfoLevel)
 		}
 
 		_ = func() context.Context {
@@ -93,12 +110,12 @@ func Start(confName, path string) {
 
 		controller := controller.New(userSrv, noteSrv, bot, reminderSrv)
 
-		logger.Debug("successfully created bot")
+		logrus.Debug("successfully created bot")
 
 		// server
 		server := server.New(bot, controller)
 
-		logger.Debug("starting server...")
+		logrus.Debug("starting server...")
 
 		server.Start(ctx)
 
@@ -106,7 +123,7 @@ func Start(confName, path string) {
 			//defer cancel()
 			_, msgErr := bot.Send(&tele.Chat{ID: conf.ChannelID}, messages.StartBotMessage)
 			if msgErr != nil {
-				logger.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
+				logrus.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
 			}
 
 			bot.Start()
@@ -137,22 +154,22 @@ func Start(confName, path string) {
 			case <-closer:
 				_, msgErr := bot.Send(&tele.Chat{ID: conf.ChannelID}, messages.ShutDownMessage)
 				if msgErr != nil {
-					logger.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
+					logrus.Errorf("Error while sending message 'Бот запущен': %v\n", msgErr)
 				}
-				logger.Info("gently shutdown")
+				logrus.Info("gently shutdown")
 
 				server.Shutdown(ctx)
 
 			case <-shutdownCtx.Done():
-				logger.Error("forcing shutdown")
+				logrus.Error("forcing shutdown")
 			}
 		}()
 
-		logger.Info("started")
+		logrus.Info("started")
 
 		<-ctx.Done()
 
-		logger.Info("shutting down")
+		logrus.Info("shutting down")
 
 		cancel()
 
@@ -160,6 +177,6 @@ func Start(confName, path string) {
 	}(context.Background())
 
 	if err != nil {
-		logger.Fatalf("unable to start: %v\n", err)
+		logrus.Fatalf("unable to start: %v\n", err)
 	}
 }

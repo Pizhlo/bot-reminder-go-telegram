@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -13,17 +12,16 @@ import (
 type reminderName struct {
 	controller *controller.Controller
 	fsm        *FSM
-	logger     *logrus.Logger
 	name       stateName
 	next       state
 }
 
 func newReminderNameState(controller *controller.Controller, FSM *FSM) *reminderName {
-	return &reminderName{controller, FSM, logger.New(), reminderNameState, nil}
+	return &reminderName{controller, FSM, reminderNameState, nil}
 }
 
 func (n *reminderName) Handle(ctx context.Context, telectx tele.Context) error {
-	n.logger.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
+	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 	return n.controller.ReminderName(ctx, telectx)
 }
 
