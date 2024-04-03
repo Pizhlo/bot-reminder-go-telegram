@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -66,7 +68,10 @@ func (c *Controller) ProcessDeleteReminder(ctx context.Context, telectx telebot.
 
 	reminderName, err := c.reminderSrv.DeleteByViewID(ctx, telectx.Chat().ID, reminderInt)
 	if err != nil {
-		return err
+		if !errors.Is(err, sql.ErrNoRows) {
+			// значит, что напоминание уже автоматически удалилось
+			return nil
+		}
 	}
 
 	msg := fmt.Sprintf(messages.ReminderDeletedMessage, reminderName)
