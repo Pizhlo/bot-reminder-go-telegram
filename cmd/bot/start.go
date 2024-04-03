@@ -74,8 +74,10 @@ func Start(confName, path string) {
 
 		// bot
 		bot, err := tele.NewBot(tele.Settings{
-			Token:  conf.Token,
-			Poller: &tele.LongPoller{Timeout: conf.Timeout},
+			URL:       conf.BotURL,
+			Token:     conf.Token,
+			Poller:    &tele.LongPoller{Timeout: conf.Timeout},
+			ParseMode: "html",
 		})
 		if err != nil {
 			return fmt.Errorf("cannot create a bot: %w", err)
