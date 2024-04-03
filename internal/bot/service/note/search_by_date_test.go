@@ -141,8 +141,8 @@ func TestGetSearchNote_Positive(t *testing.T) {
 
 func TestValidateSearchDate_Positive(t *testing.T) {
 	userID := int64(1)
-	date1 := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), time.Now().Second(), 0, time.Local)
-	date2 := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()+1, time.Now().Hour(), time.Now().Minute(), time.Now().Second(), 0, time.Local)
+	date1 := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()-1, time.Now().Hour(), time.Now().Minute(), time.Now().Second(), 0, time.Local)
+	date2 := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), time.Now().Second(), 0, time.Local)
 
 	srv := New(nil)
 

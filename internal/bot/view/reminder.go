@@ -15,7 +15,6 @@ import (
 type ReminderView struct {
 	pages       []string
 	currentPage int
-	logger      *logrus.Logger
 	calendar    *Calendar
 }
 
@@ -70,14 +69,14 @@ func (v *ReminderView) Message(reminders []model.Reminder) (string, error) {
 
 // Next возвращает следующую страницу сообщений
 func (v *ReminderView) Next() string {
-	v.logger.Debugf("ReminderView: getting next page. Current: %d\n", v.currentPage)
+	logrus.Debugf("ReminderView: getting next page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == v.total()-1 {
-		v.logger.Debugf("ReminderView: current page is the last. Setting current page to 0.\n")
+		logrus.Debugf("ReminderView: current page is the last. Setting current page to 0.\n")
 		v.currentPage = 0
 	} else {
 		v.currentPage++
-		v.logger.Debugf("ReminderView: incrementing current page. New value: %d\n", v.currentPage)
+		logrus.Debugf("ReminderView: incrementing current page. New value: %d\n", v.currentPage)
 	}
 
 	return v.pages[v.currentPage]
@@ -85,14 +84,14 @@ func (v *ReminderView) Next() string {
 
 // Previous возвращает предыдущую страницу сообщений
 func (v *ReminderView) Previous() string {
-	v.logger.Debugf("ReminderView: getting previous page. Current: %d\n", v.currentPage)
+	logrus.Debugf("ReminderView: getting previous page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == 0 {
-		v.logger.Debugf("ReminderView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
+		logrus.Debugf("ReminderView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
 		v.currentPage = v.total() - 1
 	} else {
 		v.currentPage--
-		v.logger.Debugf("ReminderView: decrementing current page. New value: %d\n", v.currentPage)
+		logrus.Debugf("ReminderView: decrementing current page. New value: %d\n", v.currentPage)
 	}
 
 	return v.pages[v.currentPage]
@@ -100,7 +99,7 @@ func (v *ReminderView) Previous() string {
 
 // Last возвращает последнюю страницу сообщений
 func (v *ReminderView) Last() string {
-	v.logger.Debugf("ReminderView: getting the last page. Current: %d\n", v.currentPage)
+	logrus.Debugf("ReminderView: getting the last page. Current: %d\n", v.currentPage)
 
 	v.currentPage = v.total() - 1
 
@@ -109,7 +108,7 @@ func (v *ReminderView) Last() string {
 
 // First возвращает первую страницу сообщений
 func (v *ReminderView) First() string {
-	v.logger.Debugf("ReminderView: getting the first page. Current: %d\n", v.currentPage)
+	logrus.Debugf("ReminderView: getting the first page. Current: %d\n", v.currentPage)
 
 	v.currentPage = 0
 

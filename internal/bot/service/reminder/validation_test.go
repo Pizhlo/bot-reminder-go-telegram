@@ -82,7 +82,14 @@ func TestValidateTime_Valid(t *testing.T) {
 		monthStr = fmt.Sprintf("%d", month)
 	}
 
-	date := fmt.Sprintf("%d.%s.%d", day, monthStr, year)
+	var dayStr string
+	if day < 10 {
+		dayStr = fmt.Sprintf("0%d", day)
+	} else {
+		dayStr = fmt.Sprintf("%d", day)
+	}
+
+	date := fmt.Sprintf("%s.%s.%d", dayStr, monthStr, year)
 
 	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "23:59"))
 	require.NoError(t, err)
@@ -107,7 +114,14 @@ func TestValidateTime_Invalid(t *testing.T) {
 		monthStr = fmt.Sprintf("%d", month)
 	}
 
-	date := fmt.Sprintf("%d.%s.%d", day, monthStr, year)
+	var dayStr string
+	if day < 10 {
+		dayStr = fmt.Sprintf("0%d", day)
+	} else {
+		dayStr = fmt.Sprintf("%d", day)
+	}
+
+	date := fmt.Sprintf("%s.%s.%d", dayStr, monthStr, year)
 
 	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "00:00"))
 	require.NoError(t, err)
