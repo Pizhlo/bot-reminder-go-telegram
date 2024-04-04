@@ -2,6 +2,7 @@ package reminder
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -71,10 +72,10 @@ func New(reminderEditor reminderEditor) *ReminderService {
 // SaveUser сохраняет пользователя в мапе view
 func (n *ReminderService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		logrus.Debugf("Reminder service: user %d not found in the views map. Saving...\n", userID)
+		logrus.Debugf(wrap(fmt.Sprintf("user %d not found in the views map. Saving...\n", userID)))
 		n.viewsMap[userID] = view.NewReminder()
 	} else {
-		logrus.Debugf("Reminder service: user %d already saved in the views map.\n", userID)
+		logrus.Debugf(wrap(fmt.Sprintf("user %d already saved in the views map.\n", userID)))
 	}
 
 }
@@ -83,4 +84,8 @@ func (n *ReminderService) SaveUser(userID int64) {
 func (n *ReminderService) SetupCalendar(userID int64) {
 	n.viewsMap[userID].SetCurMonth()
 	n.viewsMap[userID].SetCurYear()
+}
+
+func wrap(s string) string {
+	return fmt.Sprintf("Reminder service: %s", s)
 }

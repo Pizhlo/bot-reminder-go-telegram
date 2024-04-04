@@ -3,6 +3,8 @@ package user
 import (
 	"database/sql"
 	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 type UserRepo struct {
@@ -20,4 +22,10 @@ func New(dbURl string) (*UserRepo, error) {
 		return nil, fmt.Errorf("cannot connect to a db: %w", err)
 	}
 	return &UserRepo{db}, nil
+}
+
+func (db *UserRepo) Close() {
+	if err := db.db.Close(); err != nil {
+		logrus.Errorf("error on closing user repo: %v", err)
+	}
 }

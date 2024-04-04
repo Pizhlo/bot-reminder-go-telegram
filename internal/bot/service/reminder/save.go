@@ -2,6 +2,7 @@ package reminder
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/google/uuid"
@@ -35,7 +36,7 @@ func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, userID
 	// 	return err
 	// }
 
-	logrus.Debugf("Reminder service: saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)
+	logrus.Debugf(wrap(fmt.Sprintf("saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)))
 
 	return s.reminderEditor.SaveJob(ctx, reminderID, jobID)
 }

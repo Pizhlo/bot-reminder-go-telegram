@@ -3,6 +3,8 @@ package timezone
 import (
 	"database/sql"
 	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 type TimezoneRepo struct {
@@ -21,4 +23,10 @@ func New(dbURl string) (*TimezoneRepo, error) {
 	}
 
 	return &TimezoneRepo{conn}, nil
+}
+
+func (db *TimezoneRepo) Close() {
+	if err := db.db.Close(); err != nil {
+		logrus.Errorf("error on closing tz repo: %v", err)
+	}
 }

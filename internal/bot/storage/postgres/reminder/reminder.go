@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 type ReminderRepo struct {
@@ -28,4 +30,10 @@ func (db *ReminderRepo) tx(ctx context.Context) (*sql.Tx, error) {
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
 	})
+}
+
+func (db *ReminderRepo) Close() {
+	if err := db.db.Close(); err != nil {
+		logrus.Errorf("error on closing reminder repo: %v", err)
+	}
 }
