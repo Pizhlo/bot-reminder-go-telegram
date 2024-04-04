@@ -34,6 +34,7 @@ type Controller struct {
 	reminderCalendar map[int64]bool
 }
 
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 //go:generate mockgen -source ./controller.go -destination=./mocks/context.go
 type teleCtx interface {
 	// Bot returns the bot instance.

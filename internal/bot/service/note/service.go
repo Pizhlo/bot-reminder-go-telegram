@@ -16,7 +16,7 @@ type NoteService struct {
 	searchMap  map[int64]model.SearchByTwoDates
 }
 
-//go:generate mockgen -source ./service.go -destination=./mocks/note_editor.go
+//go:generate mockgen -source ./service.go -destination=../../mocks/note_srv.go -package=mocks
 type noteEditor interface {
 	// Save сохраняет заметку в базе данных. Для сохранения требуется: ID пользователя, содержимое заметки, дата создания
 	Save(ctx context.Context, note model.Note) error

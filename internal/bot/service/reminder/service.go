@@ -23,7 +23,7 @@ type ReminderService struct {
 	schedulers map[int64]*gocron.Scheduler
 }
 
-//go:generate mockgen -source ./service.go -destination=./mocks/reminder_editor.go
+//go:generate mockgen -source ./service.go -destination=../../mocks/reminder_srv.go -package=mocks
 type reminderEditor interface {
 	// Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
 	Save(ctx context.Context, reminder *model.Reminder) (uuid.UUID, error)

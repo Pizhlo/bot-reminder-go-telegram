@@ -19,6 +19,7 @@ type UserService struct {
 	timezoneEditor timezoneEditor // db
 }
 
+//go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type userEditor interface {
 	Get(ctx context.Context, userID int64) (*user.User, error)
 	Save(ctx context.Context, id int64, u *user.User) error
@@ -27,12 +28,14 @@ type userEditor interface {
 	GetState(ctx context.Context, id int64) (string, error)
 }
 
+//go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type timezoneEditor interface {
 	Get(ctx context.Context, userID int64) (*user.Timezone, error)
 	Save(ctx context.Context, id int64, tz *user.Timezone) error
 	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
 }
 
+//go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type timezoneCache interface {
 	Get(ctx context.Context, userID int64) (*time.Location, error)
 	Save(ctx context.Context, id int64, tz *time.Location)
