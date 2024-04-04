@@ -65,7 +65,7 @@ func TestSave_NotFoundInMap(t *testing.T) {
 	n := New(nil)
 
 	err := n.Save(context.Background(), userID)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 }
 
 func TestSave_DBError(t *testing.T) {

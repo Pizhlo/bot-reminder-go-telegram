@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
@@ -31,6 +32,151 @@ type Controller struct {
 	noteCalendar map[int64]bool
 	// отражает, используется ли календарь напоминаний
 	reminderCalendar map[int64]bool
+}
+
+//go:generate mockgen -source ./controller.go -destination=./mocks/context.go
+type teleCtx interface {
+	// Bot returns the bot instance.
+	Bot() *tele.Bot
+
+	// Update returns the original update.
+	Update() tele.Update
+
+	// Message returns stored message if such presented.
+	Message() *tele.Message
+
+	// Callback returns stored callback if such presented.
+	Callback() *tele.Callback
+
+	// Query returns stored query if such presented.
+	Query() *tele.Query
+
+	// InlineResult returns stored inline result if such presented.
+	InlineResult() *tele.InlineResult
+
+	// ShippingQuery returns stored shipping query if such presented.
+	ShippingQuery() *tele.ShippingQuery
+
+	// PreCheckoutQuery returns stored pre checkout query if such presented.
+	PreCheckoutQuery() *tele.PreCheckoutQuery
+
+	// Poll returns stored poll if such presented.
+	Poll() *tele.Poll
+
+	// PollAnswer returns stored poll answer if such presented.
+	PollAnswer() *tele.PollAnswer
+
+	// ChatMember returns chat member changes.
+	ChatMember() *tele.ChatMemberUpdate
+
+	// ChatJoinRequest returns cha
+	ChatJoinRequest() *tele.ChatJoinRequest
+
+	// Migration returns both migration from and to chat IDs.
+	Migration() (int64, int64)
+
+	// Sender returns the current recipient, depending on the context type.
+	// Returns nil if user is not presented.
+	Sender() *tele.User
+
+	// Chat returns the current chat, depending on the context type.
+	// Returns nil if chat is not presented.
+	Chat() *tele.Chat
+
+	// Recipient combines both Sender and Chat functions. If there is no user
+	// the chat will be returned. The native context cannot be without sender,
+	// but it is useful in the case when the context created intentionally
+	// by the NewContext constructor and have only Chat field inside.
+	Recipient() tele.Recipient
+
+	// Text returns the message text, depending on the context type.
+	// In the case when no related data presented, returns an empty string.
+	Text() string
+
+	// Entities returns the message entities, whether it's media caption's or the text's.
+	// In the case when no entities presented, returns a nil.
+	Entities() tele.Entities
+
+	// Data returns the current data, depending on the context type.
+	// If the context contains command, returns its arguments string.
+	// If the context contains payment, returns its payload.
+	// In the case when no related data presented, returns an empty string.
+	Data() string
+
+	// Args returns a raw slice of command or callback arguments as strings.
+	// The message arguments split by space, while the callback's ones by a "|" symbol.
+	Args() []string
+
+	// Send sends a message to the current recipient.
+	// See Send from bot.go.
+	Send(what interface{}, opts ...interface{}) error
+
+	// SendAlbum sends an album to the current recipient.
+	// See SendAlbum from bot.go.
+	SendAlbum(a tele.Album, opts ...interface{}) error
+
+	// Reply replies to the current message.
+	// See Reply from bot.go.
+	Reply(what interface{}, opts ...interface{}) error
+
+	// Forward forwards the given message to the current recipient.
+	// See Forward from bot.go.
+	Forward(msg tele.Editable, opts ...interface{}) error
+
+	// ForwardTo forwards the current message to the given recipient.
+	// See Forward from bot.go
+	ForwardTo(to tele.Recipient, opts ...interface{}) error
+
+	// Edit edits the current message.
+	// See Edit from bot.go.
+	Edit(what interface{}, opts ...interface{}) error
+
+	// EditCaption edits the caption of the current message.
+	// See EditCaption from bot.go.
+	EditCaption(caption string, opts ...interface{}) error
+
+	// EditOrSend edits the current message if the update is callback,
+	// otherwise the content is sent to the chat as a separate message.
+	EditOrSend(what interface{}, opts ...interface{}) error
+
+	// EditOrReply edits the current message if the update is callback,
+	// otherwise the content is replied as a separate message.
+	EditOrReply(what interface{}, opts ...interface{}) error
+
+	// Delete removes the current message.
+	// See Delete from bot.go.
+	Delete() error
+
+	// DeleteAfter waits for the duration to elapse and then removes the
+	// message. It handles an error automatically using b.OnError callback.
+	// It returns a Timer that can be used to cancel the call using its Stop method.
+	DeleteAfter(d time.Duration) *time.Timer
+
+	// Notify updates the chat action for the current recipient.
+	// See Notify from bot.go.
+	Notify(action tele.ChatAction) error
+
+	// Ship replies to the current shipping query.
+	// See Ship from bot.go.
+	Ship(what ...interface{}) error
+
+	// Accept finalizes the current deal.
+	// See Accept from bot.go.
+	Accept(errorMessage ...string) error
+
+	// Answer sends a response to the current inline query.
+	// See Answer from bot.go.
+	Answer(resp *tele.QueryResponse) error
+
+	// Respond sends a response for the current callback query.
+	// See Respond from bot.go.
+	Respond(resp ...*tele.CallbackResponse) error
+
+	// Get retrieves data from the context.
+	Get(key string) interface{}
+
+	// Set saves data in the context.
+	Set(key string, val interface{})
 }
 
 const (
