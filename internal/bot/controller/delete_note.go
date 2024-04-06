@@ -22,7 +22,7 @@ func (c *Controller) DeleteNoteByID(ctx context.Context, telectx tele.Context) e
 
 	logrus.Debugf("Controller: handling %s command\n", text)
 
-	// достаем айди заметки из сообщения (напр. /del6 -> 6)
+	// достаем айди заметки из сообщения (напр. /dn -> 6)
 	noteIDString, found := strings.CutPrefix(text, deleteNotePrefix)
 	if !found {
 		err := fmt.Errorf("error in controller.DeleteNoteByID(): not found suffix %s in message text: %s", deleteNotePrefix, text)
