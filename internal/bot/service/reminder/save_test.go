@@ -2,7 +2,7 @@ package reminder
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"testing"
 	"time"
 
@@ -96,12 +96,12 @@ func TestSave_DBError(t *testing.T) {
 	err = n.SaveCreatedField(userID, time.Local)
 	assert.NoError(t, err)
 
-	sqlErr := sql.ErrNoRows
+	testErr := errors.New("test error")
 
-	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(uuid.New(), sqlErr)
+	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(uuid.New(), testErr)
 
 	err = n.Save(context.Background(), userID)
-	assert.EqualError(t, err, sqlErr.Error())
+	assert.EqualError(t, err, testErr.Error())
 }
 
 func TestSaveJobID(t *testing.T) {
@@ -161,11 +161,11 @@ func TestSaveJobID_DBError(t *testing.T) {
 	err = n.ParseTime(userID, reminder.Time)
 	require.NoError(t, err)
 
-	sqlErr := sql.ErrNoRows
+	testErr := errors.New("test error")
 
-	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(sqlErr)
+	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(testErr)
 
 	// сохраняем job ID
 	err = n.SaveJobID(context.Background(), uuid.New(), userID, uuid.New())
-	require.EqualError(t, err, sqlErr.Error())
+	require.EqualError(t, err, testErr.Error())
 }

@@ -2,9 +2,7 @@ package controller
 
 import (
 	"context"
-	"errors"
 
-	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -24,17 +22,6 @@ var (
 // он хочет удалить все заметки. Также отправляет клавиатуру с кнопками подтверждения и отмены
 func (c *Controller) ConfirmDeleteAllNotes(ctx context.Context, telectx tele.Context) error {
 	logrus.Debugf("Controller: handling /notes_del command. Sending confirmation...\n")
-
-	// сначала проверяем, есть ли заметки у пользователя
-	_, _, err := c.noteSrv.GetAll(ctx, telectx.Chat().ID)
-	if err != nil {
-		if errors.Is(err, api_errors.ErrNotesNotFound) {
-			logrus.Errorf("Controller: cannot delete all user's notes: user doesn't have any notes yet. User ID: %d.\n", telectx.Chat().ID)
-			return telectx.EditOrSend(messages.UserDoesntHaveNotesMessage, view.BackToMenuBtn())
-		}
-		logrus.Errorf("Controller: error while handling /notes_del command: checking if user has notes. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
-		return err
-	}
 
 	selector.Inline(
 		selector.Row(BtnDeleteAllNotes, BtnNotDeleteAllNotes),

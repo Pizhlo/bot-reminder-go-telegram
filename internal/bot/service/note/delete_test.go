@@ -2,7 +2,7 @@ package note
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"testing"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -38,11 +38,13 @@ func TestDeleteAll_DBError(t *testing.T) {
 
 	srv.SaveUser(1)
 
-	noteEditor.EXPECT().DeleteAllByUserID(gomock.Any(), gomock.All()).Return(sql.ErrConnDone)
+	testErr := errors.New("test error")
+
+	noteEditor.EXPECT().DeleteAllByUserID(gomock.Any(), gomock.All()).Return(testErr)
 
 	err := srv.DeleteAll(context.Background(), 1)
 
-	assert.Equal(t, err, sql.ErrConnDone)
+	assert.Equal(t, err, testErr)
 }
 
 func TestDeleteByID_Positive(t *testing.T) {

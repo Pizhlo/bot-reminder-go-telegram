@@ -2,7 +2,7 @@ package note
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -114,7 +114,7 @@ func TestGetAll_DBError(t *testing.T) {
 		srv.SaveUser(tt.userID)
 
 		tt.notes = random.Notes(tt.notesNum)
-		tt.err = sql.ErrNoRows
+		tt.err = errors.New("test error")
 		tt.expectedText = view.Message(tt.notes)
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(nil, tt.err)
