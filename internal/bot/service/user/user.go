@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,8 +16,8 @@ import (
 type UserService struct {
 	//userCache      userEditor
 	userEditor     userEditor
-	timezoneCache  timezoneCache  // in-memory cache
-	timezoneEditor timezoneEditor // db
+	timezoneCache  *cache.TimezoneCache // in-memory cache
+	timezoneEditor timezoneEditor       // db
 }
 
 //go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
@@ -35,13 +36,7 @@ type timezoneEditor interface {
 	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
 }
 
-//go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
-type timezoneCache interface {
-	Get(ctx context.Context, userID int64) (*time.Location, error)
-	Save(ctx context.Context, id int64, tz *time.Location)
-}
-
-func New(ctx context.Context, userEditor userEditor, timezoneCache timezoneCache, timezoneEditor timezoneEditor) *UserService {
+func New(ctx context.Context, userEditor userEditor, timezoneCache *cache.TimezoneCache, timezoneEditor timezoneEditor) *UserService {
 	srv := &UserService{
 		userEditor:     userEditor,
 		timezoneCache:  timezoneCache,

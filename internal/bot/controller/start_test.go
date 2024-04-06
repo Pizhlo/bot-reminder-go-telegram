@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	mock_controller "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller/mocks"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	mock_controller "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"

@@ -81,7 +81,7 @@ func Start(confName, path string) {
 	bot, err := tele.NewBot(tele.Settings{
 		URL:       conf.BotURL,
 		Token:     conf.Token,
-		Poller:    &tele.LongPoller{Timeout: conf.Timeout},
+		Poller:    &tele.Webhook{},
 		ParseMode: "html",
 	})
 	if err != nil {

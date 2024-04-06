@@ -7,7 +7,6 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
-	time "time"
 
 	user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	gomock "github.com/golang/mock/gomock"
@@ -174,54 +173,4 @@ func (m *MocktimezoneEditor) Save(ctx context.Context, id int64, tz *user.Timezo
 func (mr *MocktimezoneEditorMockRecorder) Save(ctx, id, tz interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MocktimezoneEditor)(nil).Save), ctx, id, tz)
-}
-
-// MocktimezoneCache is a mock of timezoneCache interface.
-type MocktimezoneCache struct {
-	ctrl     *gomock.Controller
-	recorder *MocktimezoneCacheMockRecorder
-}
-
-// MocktimezoneCacheMockRecorder is the mock recorder for MocktimezoneCache.
-type MocktimezoneCacheMockRecorder struct {
-	mock *MocktimezoneCache
-}
-
-// NewMocktimezoneCache creates a new mock instance.
-func NewMocktimezoneCache(ctrl *gomock.Controller) *MocktimezoneCache {
-	mock := &MocktimezoneCache{ctrl: ctrl}
-	mock.recorder = &MocktimezoneCacheMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MocktimezoneCache) EXPECT() *MocktimezoneCacheMockRecorder {
-	return m.recorder
-}
-
-// Get mocks base method.
-func (m *MocktimezoneCache) Get(ctx context.Context, userID int64) (*time.Location, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, userID)
-	ret0, _ := ret[0].(*time.Location)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Get indicates an expected call of Get.
-func (mr *MocktimezoneCacheMockRecorder) Get(ctx, userID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MocktimezoneCache)(nil).Get), ctx, userID)
-}
-
-// Save mocks base method.
-func (m *MocktimezoneCache) Save(ctx context.Context, id int64, tz *time.Location) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Save", ctx, id, tz)
-}
-
-// Save indicates an expected call of Save.
-func (mr *MocktimezoneCacheMockRecorder) Save(ctx, id, tz interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MocktimezoneCache)(nil).Save), ctx, id, tz)
 }
