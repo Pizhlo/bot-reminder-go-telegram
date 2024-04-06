@@ -8,7 +8,7 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
-	mock_controller "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
 	model_user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
@@ -25,9 +25,9 @@ func TestTimezone(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	telectx := mock_controller.NewMockteleCtx(ctrl)
-	tzEditor := mock_controller.NewMocktimezoneEditor(ctrl)
-	userEditor := mock_controller.NewMockuserEditor(ctrl)
+	telectx := mocks.NewMockteleCtx(ctrl)
+	tzEditor := mocks.NewMocktimezoneEditor(ctrl)
+	userEditor := mocks.NewMockuserEditor(ctrl)
 	tz := tz_cache.New()
 
 	loc := time.FixedZone("Europe/Moscow", 1)
@@ -65,7 +65,7 @@ func TestRequestLocation(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	telectx := mock_controller.NewMockteleCtx(ctrl)
+	telectx := mocks.NewMockteleCtx(ctrl)
 
 	chat := &telebot.Chat{ID: int64(1), FirstName: random.String(5)}
 	telectx.EXPECT().Chat().Return(chat)
@@ -89,10 +89,10 @@ func TestAcceptTimezone(t *testing.T) {
 	defer ctrl.Finish()
 
 	// storage
-	telectx := mock_controller.NewMockteleCtx(ctrl)
-	tzEditor := mock_controller.NewMocktimezoneEditor(ctrl)
-	userEditor := mock_controller.NewMockuserEditor(ctrl)
-	reminderEditor := mock_controller.NewMockreminderEditor(ctrl)
+	telectx := mocks.NewMockteleCtx(ctrl)
+	tzEditor := mocks.NewMocktimezoneEditor(ctrl)
+	userEditor := mocks.NewMockuserEditor(ctrl)
+	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	tz := tz_cache.New()
 
 	// при создании user service
