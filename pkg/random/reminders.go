@@ -22,7 +22,7 @@ func Reminders(n int) []model.Reminder {
 
 // Reminder генерирует одно напоминание, заполненное рандомными данными
 func Reminder() model.Reminder {
-	reminderTypes := []model.ReminderType{model.SeveralTimesDayType, model.EverydayType, model.EveryWeekType}
+	reminderTypes := []model.ReminderType{model.EverydayType, model.EveryWeekType}
 	weekDays := []string{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 
 	randomType := reminderTypes[rand.Intn(len(reminderTypes))]
