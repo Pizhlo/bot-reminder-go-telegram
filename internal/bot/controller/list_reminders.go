@@ -13,13 +13,20 @@ import (
 
 // ListReminders показывает пользователю все его напоминания
 func (c *Controller) ListReminders(ctx context.Context, telectx tele.Context) error {
-	msg, kb, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
+	reminders, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrRemindersNotFound) {
 			return telectx.EditOrSend(messages.NoRemindersMessage, view.CreateReminderAndBackToMenu())
 		}
 		return err
 	}
+
+	msg, err := c.reminderSrv.Message(telectx.Chat().ID, reminders)
+	if err != nil {
+		return err
+	}
+
+	kb := c.reminderSrv.Keyboard(telectx.Chat().ID)
 
 	return telectx.EditOrSend(msg, &tele.SendOptions{
 		ReplyMarkup: kb,

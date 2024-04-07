@@ -2,28 +2,23 @@ package reminder
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/sirupsen/logrus"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	tele "gopkg.in/telebot.v3"
 )
 
 // GetAll обрабатывает запрос всех напоминаний пользователя. Возвращает: первую страницу напоминаний (в виде целого сообщения),
 // клавиатуру и ошибку
-func (s *ReminderService) GetAll(ctx context.Context, userID int64) (string, *tele.ReplyMarkup, error) {
-	reminders, err := s.reminderEditor.GetAllByUserID(ctx, userID)
-	if err != nil {
-		logrus.Errorf(wrap(fmt.Sprintf("error while getting all reminders by user ID %d: %v\n", userID, err)))
-		return "", nil, err
-	}
+func (s *ReminderService) GetAll(ctx context.Context, userID int64) ([]model.Reminder, error) {
+	return s.reminderEditor.GetAllByUserID(ctx, userID)
+}
 
-	msg, err := s.viewsMap[userID].Message(reminders)
-	if err != nil {
-		logrus.Errorf(wrap(fmt.Sprintf("error while making first message for all reminders by user ID %d: %v\n", userID, err)))
-		return "", nil, err
-	}
+func (s *ReminderService) Message(userID int64, reminders []model.Reminder) (string, error) {
+	return s.viewsMap[userID].Message(reminders)
+}
 
-	return msg, s.viewsMap[userID].Keyboard(), nil
+func (s *ReminderService) Keyboard(userID int64) *tele.ReplyMarkup {
+	return s.viewsMap[userID].Keyboard()
 }
 
 // NextPage обрабатывает кнопку переключения на следующую страницу

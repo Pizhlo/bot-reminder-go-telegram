@@ -2,7 +2,7 @@ package reminder
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"testing"
 
 	mock_reminder "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
@@ -32,10 +32,15 @@ func TestGetAll(t *testing.T) {
 
 	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return(expectedResult, nil)
 
-	msg, _, err := n.GetAll(context.Background(), userID)
+	reminders, err := n.GetAll(context.Background(), userID)
 	assert.NoError(t, err)
 
+	msg, err := n.Message(userID, reminders)
+	assert.NoError(t, err)
 	assert.Equal(t, view.First(), msg)
+
+	kb := n.Keyboard(userID)
+	assert.Equal(t, view.Keyboard(), kb)
 }
 
 func TestGetAll_Error(t *testing.T) {
@@ -48,12 +53,11 @@ func TestGetAll_Error(t *testing.T) {
 	n := New(reminderEditor)
 	n.SaveUser(userID)
 
-	sqlErr := sql.ErrNoRows
+	testErr := errors.New("test err")
 
-	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return(nil, sqlErr)
+	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return(nil, testErr)
 
-	msg, _, err := n.GetAll(context.Background(), userID)
-	assert.EqualError(t, err, sqlErr.Error())
+	_, err := n.GetAll(context.Background(), userID)
+	assert.EqualError(t, err, testErr.Error())
 
-	assert.Equal(t, "", msg)
 }
