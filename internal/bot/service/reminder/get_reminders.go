@@ -22,21 +22,21 @@ func (s *ReminderService) Keyboard(userID int64) *tele.ReplyMarkup {
 }
 
 // NextPage обрабатывает кнопку переключения на следующую страницу
-func (s *ReminderService) NextPage(userID int64) (string, *tele.ReplyMarkup) {
-	return s.viewsMap[userID].Next(), s.viewsMap[userID].Keyboard()
+func (s *ReminderService) NextPage(userID int64) string {
+	return s.viewsMap[userID].Next()
 }
 
 // PrevPage обрабатывает кнопку переключения на предыдущую страницу
-func (s *ReminderService) PrevPage(userID int64) (string, *tele.ReplyMarkup) {
-	return s.viewsMap[userID].Previous(), s.viewsMap[userID].Keyboard()
+func (s *ReminderService) PrevPage(userID int64) string {
+	return s.viewsMap[userID].Previous()
 }
 
 // LastPage обрабатывает кнопку переключения на последнюю страницу
-func (s *ReminderService) LastPage(userID int64) (string, *tele.ReplyMarkup) {
-	return s.viewsMap[userID].Last(), s.viewsMap[userID].Keyboard()
+func (s *ReminderService) LastPage(userID int64) string {
+	return s.viewsMap[userID].Last()
 }
 
 // FirstPage обрабатывает кнопку переключения на первую страницу
-func (s *ReminderService) FirstPage(userID int64) (string, *tele.ReplyMarkup) {
-	return s.viewsMap[userID].First(), s.viewsMap[userID].Keyboard()
+func (s *ReminderService) FirstPage(userID int64) string {
+	return s.viewsMap[userID].First()
 }
