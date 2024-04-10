@@ -17,10 +17,12 @@ func (n *ReminderService) SaveName(userID int64, name string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	n.reminderMap[userID] = model.Reminder{
-		TgID: userID,
-		Name: name,
-	}
+	r := n.reminderMap[userID]
+
+	r.TgID = userID
+	r.Name = name
+
+	n.reminderMap[userID] = r
 }
 
 // SaveType сохраняет тип напоминания
