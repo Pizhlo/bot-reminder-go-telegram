@@ -35,6 +35,10 @@ func TestReminderTime(t *testing.T) {
 	layout := "02.01.2006"
 
 	randomReminder := random.Reminder()
+
+	// for debug
+	t.Logf("random reminder: %+v", randomReminder)
+
 	randomReminder.Type = model.DateType
 	randomReminder.Date = time.Now().Add(24 * time.Hour).Format(layout)
 	randomReminder.Time = time.Now().Add(time.Hour).Format("15:04")

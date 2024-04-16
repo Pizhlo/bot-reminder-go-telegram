@@ -60,7 +60,7 @@ func (n *ReminderService) DeleteByViewID(ctx context.Context, userID int64, view
 	// получаем уникальный айди напоминания
 	r, err := n.reminderEditor.GetByViewID(ctx, userID, viewID)
 	if err != nil {
-		return "", fmt.Errorf(wrap(fmt.Sprintf("error while getting reminder ID: %v", err)))
+		return "", err
 	}
 
 	// обрабатываем

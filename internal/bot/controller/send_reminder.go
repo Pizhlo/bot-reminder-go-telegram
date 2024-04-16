@@ -71,7 +71,7 @@ func (c *Controller) ProcessDeleteReminder(ctx context.Context, telectx telebot.
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			// значит, что напоминание уже автоматически удалилось
-			return nil
+			return err
 		}
 	}
 
