@@ -32,16 +32,7 @@ func TestReminderTime(t *testing.T) {
 
 	chat := &tele.Chat{ID: int64(1)}
 
-	layout := "02.01.2006"
-
 	randomReminder := random.Reminder()
-
-	// for debug
-	t.Logf("random reminder: %+v", randomReminder)
-
-	randomReminder.Type = model.DateType
-	randomReminder.Date = time.Now().Add(24 * time.Hour).Format(layout)
-	randomReminder.Time = time.Now().Add(time.Hour).Format("15:04")
 
 	// при создании user service
 	tzEditor.EXPECT().GetAll(gomock.Any()).Return([]*model_user.User{
@@ -75,14 +66,14 @@ func TestReminderTime(t *testing.T) {
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	telectx.EXPECT().Chat().Return(chat).Times(9)
+	telectx.EXPECT().Chat().Return(chat).Times(8)
 
 	reminderSrv.SaveUser(chat.ID)
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
 	reminderSrv.SaveType(chat.ID, randomReminder.Type)
 	reminderSrv.SaveDate(chat.ID, randomReminder.Date)
 
-	telectx.EXPECT().Message().Return(&tele.Message{Text: randomReminder.Time}).Times(3)
+	telectx.EXPECT().Message().Return(&tele.Message{Text: randomReminder.Time}).Times(2)
 
 	expectedOpts := &tele.SendOptions{
 		ReplyMarkup: view.BackToMenuAndCreateOneElse(),
