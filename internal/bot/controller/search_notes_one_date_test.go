@@ -105,16 +105,7 @@ func TestSearchNoteBySelectedDate_InvalidCallback(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	noteEditor := mocks.NewMocknoteEditor(ctrl)
-	tzEditor := mocks.NewMocktimezoneEditor(ctrl)
-	tzCache := tz_cache.New()
-	// при создании user service
-	tzEditor.EXPECT().GetAll(gomock.Any()).Return([]*model_user.User{}, nil)
-
-	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
-
-	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(nil, nil, nil, nil)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
