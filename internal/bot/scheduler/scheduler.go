@@ -10,6 +10,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // Task - функция для отложенного вызова
@@ -149,6 +150,8 @@ func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime strin
 	if err != nil {
 		return NewJob{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
+
+	logrus.Errorf("weekday: %+v, user time: %s, cronTime: %+v", weekDay, userTime, cronTime)
 
 	j, err := s.NewJob(gocron.WeeklyJob(1, gocron.NewWeekdays(weekDay), cronTime), job)
 	if err != nil {
