@@ -144,14 +144,13 @@ func (s *Scheduler) CreateHoursReminder(hours string, task Task, params ...any) 
 
 // CreateEveryWeekReminder создает напоминание еженедельное напоминание
 func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime string, task Task, params ...any) (NewJob, error) {
+	logrus.Errorf("task: %+v, params: %+v", task, params)
 	job := makeTask(task, params...)
 
 	cronTime, err := s.makeTime(userTime)
 	if err != nil {
 		return NewJob{}, fmt.Errorf("error while creating cron time: %w", err)
 	}
-
-	logrus.Errorf("weekday: %+v, user time: %s, cronTime: %+v", weekDay, userTime, cronTime)
 
 	j, err := s.NewJob(gocron.WeeklyJob(1, gocron.NewWeekdays(weekDay), cronTime), job)
 	if err != nil {
