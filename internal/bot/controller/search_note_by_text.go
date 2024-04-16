@@ -27,7 +27,7 @@ func (c *Controller) SearchNoteByText(ctx context.Context, telectx tele.Context)
 		return err
 	}
 
-	return telectx.EditOrSend(message, kb, &tele.SendOptions{
+	return telectx.EditOrSend(message, &tele.SendOptions{
 		ReplyMarkup: kb,
 		ParseMode:   htmlParseMode,
 	})
