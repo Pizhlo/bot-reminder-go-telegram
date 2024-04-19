@@ -29,5 +29,5 @@ CREATE TABLE IF NOT EXISTS reminders.reminders (
 );
 
 CREATE VIEW reminders.reminders_view AS 
-SELECT id, user_id, row_number()over(partition by user_id order by id) AS reminder_number
+SELECT id, user_id, row_number()over(partition by user_id order by created) AS reminder_number
 FROM reminders.reminders;

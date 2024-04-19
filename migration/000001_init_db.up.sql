@@ -24,5 +24,5 @@ create table if not exists notes.notes (
 );
 
 CREATE VIEW notes.notes_view AS 
-SELECT id, user_id, row_number()over(partition by user_id order by id) AS note_number
+SELECT id, user_id, row_number()over(partition by user_id order by created) AS note_number
 FROM notes.notes;

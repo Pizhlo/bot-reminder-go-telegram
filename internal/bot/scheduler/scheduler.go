@@ -80,8 +80,6 @@ func (s *Scheduler) DeleteJob(id uuid.UUID) error {
 }
 
 func makeTask(task Task, params ...any) gocron.Task {
-	logrus.Errorf("making task. params: 1) %+v 2) %+v", params[0], params[1])
-
 	return gocron.NewTask(task, params...)
 }
 
