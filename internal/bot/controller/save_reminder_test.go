@@ -68,7 +68,10 @@ func TestSaveReminder(t *testing.T) {
 
 	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(randomReminder.ID, nil)
 
-	nextRun, err := reminderSrv.SaveAndStartReminder(context.Background(), chat.ID, loc, controller.SendReminder)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	nextRun, err := reminderSrv.SaveAndStartReminder(ctx, chat.ID, loc, controller.SendReminder)
 	assert.NoError(t, err)
 
 	nextRunMsg, err := view.ProcessTypeAndDate(randomReminder.Type, randomReminder.Date, randomReminder.Time)
@@ -89,6 +92,6 @@ func TestSaveReminder(t *testing.T) {
 
 	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(randomReminder.ID, nil)
 
-	err = controller.saveReminder(context.Background(), telectx)
+	err = controller.saveReminder(ctx, telectx)
 	assert.NoError(t, err)
 }

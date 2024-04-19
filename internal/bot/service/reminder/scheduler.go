@@ -62,11 +62,13 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 	case model.DateType:
 		logrus.Error("DateType")
 		// создаем отложенный вызов отправки напоминания
+		logrus.Errorf("creating func. params: %+v, %+v", ctx, r)
 		newJob, err := sch.CreateCalendarDateReminder(r.Date, r.Time, f, ctx, r)
 		if err != nil {
 			return gocron.NewJob{}, err
 		}
 
+		logrus.Errorf("creating deleting from db. params: %+v, %+v", ctx, r)
 		// создаем отложенный вызов удаления напоминания из БД
 		_, err = sch.CreateCalendarDateReminder(r.Date, r.Time, c.DeleteReminder, ctx, r)
 		if err != nil {
