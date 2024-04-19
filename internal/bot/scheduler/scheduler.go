@@ -321,7 +321,10 @@ func (s *Scheduler) CreateCalendarDateReminder(date, userTime string, task Task,
 		t2 = reflect.TypeOf(param1).Elem().Kind()
 	}
 
-	logrus.Errorf("param 1 type: %v. param 2 type: %v", t1, t2)
+	v1 := reflect.ValueOf(param1)
+	v2 := reflect.ValueOf(param2)
+
+	logrus.Errorf("param 1: type: %v, value: %v. param 2: type: %v, value: %v", t1, v1, t2, v2)
 
 	j, err := s.NewJob(gocron.OneTimeJob(oneTime), job)
 	if err != nil {
