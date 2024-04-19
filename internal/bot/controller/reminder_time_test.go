@@ -66,14 +66,14 @@ func TestReminderTime(t *testing.T) {
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	telectx.EXPECT().Chat().Return(chat).Times(8)
+	telectx.EXPECT().Chat().Return(chat).Times(9)
 
 	reminderSrv.SaveUser(chat.ID)
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
 	reminderSrv.SaveType(chat.ID, randomReminder.Type)
 	reminderSrv.SaveDate(chat.ID, randomReminder.Date)
 
-	telectx.EXPECT().Message().Return(&tele.Message{Text: randomReminder.Time}).Times(2)
+	telectx.EXPECT().Message().Return(&tele.Message{Text: randomReminder.Time}).Times(3)
 
 	expectedOpts := &tele.SendOptions{
 		ReplyMarkup: view.BackToMenuAndCreateOneElse(),
@@ -84,7 +84,10 @@ func TestReminderTime(t *testing.T) {
 		assert.Equal(t, expectedOpts, sendOpts)
 	}).Return(nil)
 
-	err := controller.ReminderTime(context.Background(), telectx)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err := controller.ReminderTime(ctx, telectx)
 	assert.NoError(t, err)
 }
 

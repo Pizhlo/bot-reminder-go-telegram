@@ -3,6 +3,7 @@ package gocron
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -304,6 +305,23 @@ func (s *Scheduler) CreateCalendarDateReminder(date, userTime string, task Task,
 	timeDate := time.Date(yearInt, time.Month(monthInt), dayInt, hourInt, minuteInt, 0, 0, s.loc)
 
 	oneTime := gocron.OneTimeJobStartDateTime(timeDate)
+
+	param1 := params[0]
+	param2 := params[1]
+
+	t1 := reflect.TypeOf(param1).Kind()
+
+	if t1 == reflect.Interface || t1 == reflect.Pointer {
+		t1 = reflect.TypeOf(param1).Elem().Kind()
+	}
+
+	t2 := reflect.TypeOf(param2).Kind()
+
+	if t2 == reflect.Interface || t2 == reflect.Pointer {
+		t2 = reflect.TypeOf(param1).Elem().Kind()
+	}
+
+	logrus.Errorf("param 1 type: %v. param 2 type: %v", t1, t2)
 
 	j, err := s.NewJob(gocron.OneTimeJob(oneTime), job)
 	if err != nil {
