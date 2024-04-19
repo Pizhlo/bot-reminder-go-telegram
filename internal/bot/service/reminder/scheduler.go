@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -63,6 +64,26 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 		logrus.Error("DateType")
 		// создаем отложенный вызов отправки напоминания
 		logrus.Errorf("creating func. params: %+v, %+v", ctx, r)
+
+		param1 := ctx
+		param2 := r
+
+		t1 := reflect.TypeOf(param1).Kind()
+
+		if t1 == reflect.Interface || t1 == reflect.Pointer {
+			t1 = reflect.TypeOf(param1).Elem().Kind()
+		}
+
+		t2 := reflect.TypeOf(param2).Kind()
+
+		if t2 == reflect.Interface || t2 == reflect.Pointer {
+			t2 = reflect.TypeOf(param1).Elem().Kind()
+		}
+
+		v1 := reflect.ValueOf(param1)
+		v2 := reflect.ValueOf(param2)
+
+		logrus.Errorf("param 1: type: %v, value: %v. param 2: type: %v, value: %v", t1, v1, t2, v2)
 		newJob, err := sch.CreateCalendarDateReminder(r.Date, r.Time, f, ctx, r)
 		if err != nil {
 			return gocron.NewJob{}, err
