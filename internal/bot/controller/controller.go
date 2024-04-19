@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
@@ -31,6 +32,12 @@ type Controller struct {
 	noteCalendar map[int64]bool
 	// отражает, используется ли календарь напоминаний
 	reminderCalendar map[int64]bool
+}
+
+//lint:ignore U1000 Ignore unused function temporarily for debugging
+//go:generate mockgen -source ./controller.go -destination=../mocks/controller.go -package=mocks
+type teleCtx interface {
+	tele.Context
 }
 
 const (
@@ -144,7 +151,7 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 // 	return nil, errors.New("no scheduler found for this user")
 // }
 
-func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
+func (c *Controller) saveUser(ctx context.Context, tgID int64, loc *time.Location) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -152,11 +159,6 @@ func (c *Controller) saveUser(ctx context.Context, tgID int64) error {
 	c.noteCalendar[tgID] = false
 	c.noteSrv.SaveUser(tgID)
 	c.reminderSrv.SaveUser(tgID)
-
-	loc, err := c.userSrv.GetLocation(ctx, tgID)
-	if err != nil {
-		return err
-	}
 
 	return c.reminderSrv.CreateScheduler(ctx, tgID, loc, c.SendReminder)
 }

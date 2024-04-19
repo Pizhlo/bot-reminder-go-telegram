@@ -52,7 +52,7 @@ func TestSaveType_NotFound(t *testing.T) {
 	userID := int64(1)
 
 	err := n.SaveType(userID, model.DateType)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 
 	_, ok := n.reminderMap[userID]
 	assert.Equal(t, false, ok)
@@ -129,7 +129,7 @@ func TestSaveCreatedField_NotFound(t *testing.T) {
 	userID := int64(1)
 
 	err := n.SaveCreatedField(userID, time.Local)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 
 	_, ok := n.reminderMap[userID]
 	assert.Equal(t, false, ok)
@@ -309,7 +309,7 @@ func TestSaveDate_NotFound(t *testing.T) {
 	userID := int64(1)
 
 	err := n.SaveDate(userID, random.String(10))
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 
 	_, ok := n.reminderMap[userID]
 	assert.Equal(t, false, ok)
@@ -559,7 +559,7 @@ func TestGetFromMemory_NotFound(t *testing.T) {
 	n := New(nil)
 
 	_, err := n.GetFromMemory(int64(1))
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 }
 
 func TestSaveID(t *testing.T) {
@@ -589,7 +589,7 @@ func TestSaveID_NotFound(t *testing.T) {
 	n := New(nil)
 
 	err := n.SaveID(userID, reminderID)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 
 	_, ok := n.reminderMap[userID]
 	assert.Equal(t, false, ok)
@@ -620,7 +620,7 @@ func TestGetID_NotFound(t *testing.T) {
 	n := New(nil)
 
 	_, err := n.GetID(userID)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 }
 
 func TestProcessMinutes(t *testing.T) {
@@ -901,7 +901,7 @@ func TestSaveCalendarDate_NotFound(t *testing.T) {
 	userID := int64(1)
 
 	err := n.SaveCalendarDate(userID, "")
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 }
 
 func TestSaveCalendarDate_Valid_OnceYearType(t *testing.T) {

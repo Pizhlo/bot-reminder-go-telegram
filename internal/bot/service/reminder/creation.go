@@ -17,10 +17,12 @@ func (n *ReminderService) SaveName(userID int64, name string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	n.reminderMap[userID] = model.Reminder{
-		TgID: userID,
-		Name: name,
-	}
+	r := n.reminderMap[userID]
+
+	r.TgID = userID
+	r.Name = name
+
+	n.reminderMap[userID] = r
 }
 
 // SaveType сохраняет тип напоминания
@@ -30,7 +32,7 @@ func (n *ReminderService) SaveType(userID int64, reminderType model.ReminderType
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	r.Type = reminderType
@@ -47,7 +49,7 @@ func (n *ReminderService) SaveCreatedField(userID int64, tz *time.Location) erro
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	r.Created = time.Now().In(tz)
@@ -63,7 +65,7 @@ func (n *ReminderService) SaveTime(userID int64, timeMsg string) error {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	r.Time = timeMsg
@@ -80,7 +82,7 @@ func (n *ReminderService) SaveDate(userID int64, date string) error {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	r.Date = date
@@ -97,7 +99,7 @@ func (n *ReminderService) SaveCalendarDate(userID int64, dayOfMonth string) erro
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	month := n.viewsMap[userID].Month()
@@ -135,7 +137,7 @@ func (n *ReminderService) GetFromMemory(userID int64) (*model.Reminder, error) {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return nil, fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return nil, fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	rCopy := r
@@ -150,7 +152,7 @@ func (n *ReminderService) SaveID(userID int64, reminderID uuid.UUID) error {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	r.ID = reminderID
@@ -167,7 +169,7 @@ func (n *ReminderService) GetID(userID int64) (uuid.UUID, error) {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return uuid.UUID{}, fmt.Errorf("error while getting reminder by user ID: reminder not found")
+		return uuid.UUID{}, fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	return r.ID, nil

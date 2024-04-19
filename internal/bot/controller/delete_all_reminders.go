@@ -2,9 +2,7 @@ package controller
 
 import (
 	"context"
-	"errors"
 
-	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -24,15 +22,15 @@ func (c *Controller) ConfirmDeleteAllReminders(ctx context.Context, telectx tele
 	logrus.Debugf("Controller: handling /reminders_del command. Sending confirmation...\n")
 
 	// сначала проверяем, есть ли напоминания у пользователя
-	_, _, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
-	if err != nil {
-		if errors.Is(err, api_errors.ErrNotesNotFound) {
-			logrus.Errorf("Controller: cannot delete all user's reminders: user doesn't have any reminders yet. User ID: %d.\n", telectx.Chat().ID)
-			return telectx.EditOrSend(messages.UserDoesntHaveRemindersMessage, view.BackToMenuBtn())
-		}
-		logrus.Errorf("Controller: error while handling /reminders_del command: checking if user has reminders. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
-		return err
-	}
+	// _, _, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
+	// if err != nil {
+	// 	if errors.Is(err, api_errors.ErrNotesNotFound) {
+	// 		logrus.Errorf("Controller: cannot delete all user's reminders: user doesn't have any reminders yet. User ID: %d.\n", telectx.Chat().ID)
+	// 		return telectx.EditOrSend(messages.UserDoesntHaveRemindersMessage, view.BackToMenuBtn())
+	// 	}
+	// 	logrus.Errorf("Controller: error while handling /reminders_del command: checking if user has reminders. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
+	// 	return err
+	// }
 
 	selector.Inline(
 		selector.Row(BtnDeleteAllReminders, BtnNotDeleteAllReminders),

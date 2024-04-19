@@ -6,8 +6,8 @@ import (
 	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
@@ -89,7 +89,7 @@ func TestSaveSecondtDate_NotFound(t *testing.T) {
 	srv := New(nil)
 
 	err := srv.SaveSecondDate(userID, date)
-	assert.EqualError(t, err, "no data found for this user")
+	assert.EqualError(t, err, "Note service: no data found for this user")
 }
 
 func TestSaveSecondtDate_Positive(t *testing.T) {
@@ -117,7 +117,7 @@ func TestGetSearchNote_NotFound(t *testing.T) {
 	srv := New(nil)
 
 	_, err := srv.GetSearchNote(userID)
-	assert.EqualError(t, err, "no data found for this user")
+	assert.EqualError(t, err, "Note service: no data found for this user")
 }
 
 func TestGetSearchNote_Positive(t *testing.T) {
@@ -226,5 +226,5 @@ func TestSearchByTwoDates_NotFoundInMap(t *testing.T) {
 	srv.SaveUser(userID)
 
 	_, _, err := srv.SearchByTwoDates(context.Background(), userID)
-	assert.EqualError(t, err, "no data found for this user")
+	assert.EqualError(t, err, "Note service: no data found for this user")
 }

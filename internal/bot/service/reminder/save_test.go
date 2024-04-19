@@ -2,11 +2,11 @@ package reminder
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"testing"
 	"time"
 
-	mock_reminder "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder/mocks"
+	mock_reminder "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -65,7 +65,7 @@ func TestSave_NotFoundInMap(t *testing.T) {
 	n := New(nil)
 
 	err := n.Save(context.Background(), userID)
-	assert.EqualError(t, err, "error while getting reminder by user ID: reminder not found")
+	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 }
 
 func TestSave_DBError(t *testing.T) {
@@ -96,12 +96,12 @@ func TestSave_DBError(t *testing.T) {
 	err = n.SaveCreatedField(userID, time.Local)
 	assert.NoError(t, err)
 
-	sqlErr := sql.ErrNoRows
+	testErr := errors.New("test error")
 
-	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(uuid.New(), sqlErr)
+	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(uuid.New(), testErr)
 
 	err = n.Save(context.Background(), userID)
-	assert.EqualError(t, err, sqlErr.Error())
+	assert.EqualError(t, err, testErr.Error())
 }
 
 func TestSaveJobID(t *testing.T) {
@@ -161,11 +161,11 @@ func TestSaveJobID_DBError(t *testing.T) {
 	err = n.ParseTime(userID, reminder.Time)
 	require.NoError(t, err)
 
-	sqlErr := sql.ErrNoRows
+	testErr := errors.New("test error")
 
-	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(sqlErr)
+	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(testErr)
 
 	// сохраняем job ID
 	err = n.SaveJobID(context.Background(), uuid.New(), userID, uuid.New())
-	require.EqualError(t, err, sqlErr.Error())
+	require.EqualError(t, err, testErr.Error())
 }

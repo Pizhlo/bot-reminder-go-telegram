@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,10 +16,11 @@ import (
 type UserService struct {
 	//userCache      userEditor
 	userEditor     userEditor
-	timezoneCache  timezoneCache  // in-memory cache
-	timezoneEditor timezoneEditor // db
+	timezoneCache  *cache.TimezoneCache // in-memory cache
+	timezoneEditor timezoneEditor       // db
 }
 
+//go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type userEditor interface {
 	Get(ctx context.Context, userID int64) (*user.User, error)
 	Save(ctx context.Context, id int64, u *user.User) error
@@ -26,18 +29,14 @@ type userEditor interface {
 	GetState(ctx context.Context, id int64) (string, error)
 }
 
+//go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type timezoneEditor interface {
 	Get(ctx context.Context, userID int64) (*user.Timezone, error)
 	Save(ctx context.Context, id int64, tz *user.Timezone) error
 	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
 }
 
-type timezoneCache interface {
-	Get(ctx context.Context, userID int64) (*time.Location, error)
-	Save(ctx context.Context, id int64, tz *time.Location)
-}
-
-func New(ctx context.Context, userEditor userEditor, timezoneCache timezoneCache, timezoneEditor timezoneEditor) *UserService {
+func New(ctx context.Context, userEditor userEditor, timezoneCache *cache.TimezoneCache, timezoneEditor timezoneEditor) *UserService {
 	srv := &UserService{
 		userEditor:     userEditor,
 		timezoneCache:  timezoneCache,
@@ -52,19 +51,19 @@ func New(ctx context.Context, userEditor userEditor, timezoneCache timezoneCache
 func (s *UserService) loadAll(ctx context.Context) {
 	tzs, err := s.timezoneEditor.GetAll(ctx)
 	if err != nil {
-		logrus.Fatalf("unable to load all timezones from DB on start: %v\n", err)
+		logrus.Fatalf(wrap(fmt.Sprintf("unable to load all timezones from DB on start: %v\n", err)))
 	}
 
 	for _, tz := range tzs {
 		loc, err := time.LoadLocation(tz.Timezone.Name)
 		if err != nil {
-			logrus.Fatalf("unable to load user's location on start. Location: %s. Error: %v", tz.Timezone.Name, err)
+			logrus.Fatalf(wrap(fmt.Sprintf("unable to load user's location on start. Location: %s. Error: %v", tz.Timezone.Name, err)))
 		}
 
 		s.timezoneCache.Save(ctx, tz.TGID, loc)
 	}
 
-	logrus.Debugf("Successfully saved %d users' timezone(s) to cache\n", len(tzs))
+	logrus.Debugf(wrap(fmt.Sprintf("successfully saved %d users' timezone(s) to cache\n", len(tzs))))
 }
 
 func (s *UserService) GetAll(ctx context.Context) ([]*user.User, error) {
@@ -85,13 +84,13 @@ func (s *UserService) CheckUser(ctx context.Context, tgID int64) bool {
 func (s *UserService) checkInCache(ctx context.Context, tgID int64) bool {
 	u, err := s.timezoneCache.Get(ctx, tgID)
 	if err != nil {
-		logrus.Errorf("User service: Error while checking user in cache: %v\n", err)
+		logrus.Errorf(wrap(fmt.Sprintf("error while checking user in cache: %v\n", err)))
 	} else {
-		logrus.Debugf("User service: Found user in cache: %+v\n", u)
+		logrus.Debugf(wrap(fmt.Sprintf("found user in cache: %+v\n", u)))
 	}
 
 	if u == nil {
-		logrus.Debugf("User service: User not found in cache: %d\n", tgID)
+		logrus.Debugf(wrap(fmt.Sprintf("User not found in cache: %d\n", tgID)))
 	}
 
 	return u != nil
@@ -101,11 +100,11 @@ func (s *UserService) checkInRepo(ctx context.Context, tgID int64) bool {
 	u, err := s.userEditor.Get(ctx, tgID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			logrus.Errorf("User service: Error while checking user in DB: %v\n", err)
+			logrus.Errorf(wrap(fmt.Sprintf("error while checking user in DB: %v\n", err)))
 		}
-		logrus.Debugf("User service: User not found in DB: %d\n", tgID)
+		logrus.Debugf(wrap(fmt.Sprintf("user not found in DB: %d\n", tgID)))
 	} else {
-		logrus.Debugf("User service: Found user in DB: %+v\n", u)
+		logrus.Debugf(wrap(fmt.Sprintf("found user in DB: %+v\n", u)))
 	}
 
 	return u != nil
@@ -117,4 +116,8 @@ func (s *UserService) SaveState(ctx context.Context, tgID int64, state string) e
 
 func (s *UserService) GetState(ctx context.Context, tgID int64) (string, error) {
 	return s.userEditor.GetState(ctx, tgID)
+}
+
+func wrap(s string) string {
+	return fmt.Sprintf("User service: %s", s)
 }

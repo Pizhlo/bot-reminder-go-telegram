@@ -50,22 +50,22 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 		return err
 	}
 
-	// сохраняем пользователя в сервисах
-	err = c.saveUser(ctx, telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
-
 	location, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
 		return err
 	}
 
+	// сохраняем пользователя в сервисах
 	// запускаем таски пользователя с новым часовым поясом
-	err = c.reminderSrv.StartAllJobs(ctx, telectx.Chat().ID, location, c.SendReminder)
+	err = c.saveUser(ctx, telectx.Chat().ID, location)
 	if err != nil {
 		return err
 	}
+
+	// err = c.reminderSrv.StartAllJobs(ctx, telectx.Chat().ID, location, c.SendReminder)
+	// if err != nil {
+	// 	return err
+	// }
 
 	msg := fmt.Sprintf(messages.LocationMessage, u.Timezone.Name)
 	return telectx.EditOrSend(msg, &tele.SendOptions{

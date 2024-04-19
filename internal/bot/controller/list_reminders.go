@@ -13,13 +13,20 @@ import (
 
 // ListReminders показывает пользователю все его напоминания
 func (c *Controller) ListReminders(ctx context.Context, telectx tele.Context) error {
-	msg, kb, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
+	reminders, err := c.reminderSrv.GetAll(ctx, telectx.Chat().ID)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrRemindersNotFound) {
 			return telectx.EditOrSend(messages.NoRemindersMessage, view.CreateReminderAndBackToMenu())
 		}
 		return err
 	}
+
+	msg, err := c.reminderSrv.Message(telectx.Chat().ID, reminders)
+	if err != nil {
+		return err
+	}
+
+	kb := c.reminderSrv.Keyboard(telectx.Chat().ID)
 
 	return telectx.EditOrSend(msg, &tele.SendOptions{
 		ReplyMarkup: kb,
@@ -30,7 +37,8 @@ func (c *Controller) ListReminders(ctx context.Context, telectx tele.Context) er
 // NextPageReminders обрабатывает кнопку переключения на следующую страницу
 func (c *Controller) NextPageReminders(ctx context.Context, telectx tele.Context) error {
 	logrus.Debugf("Controller: handling next Reminders page command.\n")
-	page, kb := c.reminderSrv.NextPage(telectx.Chat().ID)
+	page := c.reminderSrv.NextPage(telectx.Chat().ID)
+	kb := c.reminderSrv.Keyboard(telectx.Chat().ID)
 
 	err := telectx.EditOrSend(page, &tele.SendOptions{
 		ReplyMarkup: kb,
@@ -41,12 +49,7 @@ func (c *Controller) NextPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		switch t := err.(type) {
-		case *tele.Error:
-			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
-				break
-			}
-		default:
+		if !errors.Is(err, tele.ErrMessageNotModified) {
 			return err
 		}
 	}
@@ -57,7 +60,8 @@ func (c *Controller) NextPageReminders(ctx context.Context, telectx tele.Context
 // NextPageReminders обрабатывает кнопку переключения на предыдущую страницу
 func (c *Controller) PrevPageReminders(ctx context.Context, telectx tele.Context) error {
 	logrus.Debugf("Controller: handling previous Reminders page command.\n")
-	page, kb := c.reminderSrv.PrevPage(telectx.Chat().ID)
+	page := c.reminderSrv.PrevPage(telectx.Chat().ID)
+	kb := c.reminderSrv.Keyboard(telectx.Chat().ID)
 
 	err := telectx.EditOrSend(page, &tele.SendOptions{
 		ReplyMarkup: kb,
@@ -68,12 +72,7 @@ func (c *Controller) PrevPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		switch t := err.(type) {
-		case *tele.Error:
-			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
-				break
-			}
-		default:
+		if !errors.Is(err, tele.ErrMessageNotModified) {
 			return err
 		}
 	}
@@ -84,7 +83,8 @@ func (c *Controller) PrevPageReminders(ctx context.Context, telectx tele.Context
 // NextPageReminders обрабатывает кнопку переключения на последнюю страницу
 func (c *Controller) LastPageReminders(ctx context.Context, telectx tele.Context) error {
 	logrus.Debugf("Controller: handling last Reminders page command.\n")
-	page, kb := c.reminderSrv.LastPage(telectx.Chat().ID)
+	page := c.reminderSrv.LastPage(telectx.Chat().ID)
+	kb := c.reminderSrv.Keyboard(telectx.Chat().ID)
 
 	err := telectx.EditOrSend(page, &tele.SendOptions{
 		ReplyMarkup: kb,
@@ -95,12 +95,7 @@ func (c *Controller) LastPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		switch t := err.(type) {
-		case *tele.Error:
-			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
-				break
-			}
-		default:
+		if !errors.Is(err, tele.ErrMessageNotModified) {
 			return err
 		}
 	}
@@ -111,7 +106,8 @@ func (c *Controller) LastPageReminders(ctx context.Context, telectx tele.Context
 // NextPageReminders обрабатывает кнопку переключения на первую страницу
 func (c *Controller) FirstPageReminders(ctx context.Context, telectx tele.Context) error {
 	logrus.Debugf("Controller: handling first Reminders page command.\n")
-	page, kb := c.reminderSrv.FirstPage(telectx.Chat().ID)
+	page := c.reminderSrv.FirstPage(telectx.Chat().ID)
+	kb := c.reminderSrv.Keyboard(telectx.Chat().ID)
 
 	err := telectx.EditOrSend(page, &tele.SendOptions{
 		ReplyMarkup: kb,
@@ -123,12 +119,7 @@ func (c *Controller) FirstPageReminders(ctx context.Context, telectx tele.Contex
 	// то же самое происходит и с последней страницей
 
 	if err != nil {
-		switch t := err.(type) {
-		case *tele.Error:
-			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
-				break
-			}
-		default:
+		if !errors.Is(err, tele.ErrMessageNotModified) {
 			return err
 		}
 	}

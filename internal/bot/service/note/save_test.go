@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
+	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"

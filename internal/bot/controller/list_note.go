@@ -19,7 +19,7 @@ func (c *Controller) ListNotes(ctx context.Context, telectx tele.Context) error 
 	text := telectx.Message().Text
 
 	// проверяем, не пришла ли команда удалить конкретную заметку
-	if strings.HasPrefix(text, "/del") {
+	if strings.HasPrefix(text, deleteNotePrefix) {
 		return c.DeleteNoteByID(ctx, telectx)
 	}
 
@@ -57,26 +57,11 @@ func (c *Controller) PrevPageNotes(ctx context.Context, telectx tele.Context) er
 	logrus.Debugf("Controller: handling previous notes page command.\n")
 	next, kb := c.noteSrv.PrevPage(telectx.Chat().ID)
 
-	err := telectx.Edit(next, &tele.SendOptions{
+	return telectx.Edit(next, &tele.SendOptions{
 		ReplyMarkup: kb,
 		ParseMode:   htmlParseMode,
 	})
 
-	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
-	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
-	// то же самое происходит и с последней страницей
-	if err != nil {
-		switch t := err.(type) {
-		case *tele.Error:
-			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
-				break
-			}
-		default:
-			return err
-		}
-	}
-
-	return nil
 }
 
 // NextPageNotes обрабатывает кнопку переключения на последнюю страницу

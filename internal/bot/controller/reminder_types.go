@@ -60,10 +60,10 @@ func (c *Controller) Tomorrow(ctx context.Context, telectx telebot.Context) erro
 	}
 
 	// если сообщение прислал пользователь - это новое название напоминания
-	if !telectx.Message().Sender.IsBot {
-		// сохраняем новое название напоминания, если пользователь прислал повторно
-		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
-	}
+	// if !telectx.Message().Sender.IsBot {
+	// 	// сохраняем новое название напоминания, если пользователь прислал повторно
+	// 	c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	// }
 
 	// сохраняем дату
 	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
@@ -96,10 +96,10 @@ func (c *Controller) EverydayReminder(ctx context.Context, telectx telebot.Conte
 	}
 
 	// если сообщение прислал пользователь - это новое название напоминания
-	if !telectx.Message().Sender.IsBot {
-		// сохраняем новое название напоминания, если пользователь прислал повторно
-		c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
-	}
+	// if !telectx.Message().Sender.IsBot {
+	// 	// сохраняем новое название напоминания, если пользователь прислал повторно
+	// 	c.reminderSrv.SaveName(telectx.Chat().ID, telectx.Message().Text)
+	// }
 
 	// сохраняем в качестве даты также строку "everyday"
 	err = c.reminderSrv.SaveDate(telectx.Chat().ID, string(model.EverydayType))
@@ -121,8 +121,6 @@ func (c *Controller) SeveralTimesADayReminder(ctx context.Context, telectx teleb
 		return err
 	}
 
-	var msg string
-
 	// если сообщение прислал пользователь - это новое название напоминания
 	if !telectx.Message().Sender.IsBot {
 		// сохраняем новое название напоминания, если пользователь прислал повторно
@@ -131,10 +129,10 @@ func (c *Controller) SeveralTimesADayReminder(ctx context.Context, telectx teleb
 
 	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
-		msg = messages.ChooseMinutesOrHoursWithoutNameMessage
+		return err
 	}
 
-	msg = fmt.Sprintf(messages.ChooseMinutesOrHoursMessage, r.Name, "несколько раз в день")
+	msg := fmt.Sprintf(messages.ChooseMinutesOrHoursMessage, r.Name, "несколько раз в день")
 
 	return telectx.EditOrSend(msg, &telebot.SendOptions{
 		ParseMode:   htmlParseMode,
@@ -180,7 +178,7 @@ func (c *Controller) EveryWeek(ctx context.Context, telectx telebot.Context) err
 
 	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
-		msg = messages.ChooseWeekDayMessage
+		return err
 	}
 
 	msg = fmt.Sprintf(messages.ChooseWeekDayMessage, r.Name, "раз в неделю")
@@ -263,7 +261,7 @@ func (c *Controller) Month(ctx context.Context, telectx telebot.Context) error {
 
 	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
-		msg = messages.MonthDayMessage
+		return err
 	}
 
 	msg = fmt.Sprintf(messages.MonthDayMessage, r.Name, "раз в месяц")
@@ -282,8 +280,6 @@ func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
 		return err
 	}
 
-	var msg string
-
 	// если сообщение прислал пользователь - это новое название напоминания
 	if !telectx.Message().Sender.IsBot {
 		// сохраняем новое название напоминания, если пользователь прислал повторно
@@ -292,10 +288,10 @@ func (c *Controller) Year(ctx context.Context, telectx telebot.Context) error {
 
 	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
 	if err != nil {
-		msg = messages.CalendarMessage
+		return err
 	}
 
-	msg = fmt.Sprintf(messages.CalendarMessage, r.Name, "раз в год")
+	msg := fmt.Sprintf(messages.CalendarMessage, r.Name, "раз в год")
 
 	return telectx.EditOrSend(msg, &telebot.SendOptions{
 		ParseMode:   htmlParseMode,

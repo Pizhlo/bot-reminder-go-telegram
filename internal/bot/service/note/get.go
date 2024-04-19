@@ -2,6 +2,7 @@ package note
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -12,7 +13,7 @@ import (
 func (s *NoteService) GetAll(ctx context.Context, userID int64) (string, *tele.ReplyMarkup, error) {
 	notes, err := s.noteEditor.GetAllByUserID(ctx, userID)
 	if err != nil {
-		logrus.Errorf("Note service: error while getting all notes by user ID %d: %v\n", userID, err)
+		logrus.Error(wrap(fmt.Sprintf("error while getting all notes by user ID %d: %v\n", userID, err)))
 		return "", nil, err
 	}
 

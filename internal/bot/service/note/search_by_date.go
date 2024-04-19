@@ -36,7 +36,7 @@ func (s *NoteService) SaveSecondDate(userID int64, date time.Time) error {
 		return nil
 	}
 
-	return errors.New("no data found for this user")
+	return errors.New(wrap("no data found for this user"))
 }
 
 // GetSearchNote возвращает информацию для поиска заметок по двум датам для определенного пользователя
@@ -45,7 +45,7 @@ func (s *NoteService) GetSearchNote(userID int64) (*model.SearchByTwoDates, erro
 		return &val, nil
 	}
 
-	return nil, errors.New("no data found for this user")
+	return nil, errors.New(wrap("no data found for this user"))
 }
 
 // ValidateSearchDate проверяет, не раньше ли вторая дата первой

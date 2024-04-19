@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 )
 
 type NoteRepo struct {
@@ -22,4 +23,10 @@ func New(dbURl string) (*NoteRepo, error) {
 		return nil, fmt.Errorf("cannot connect to a db: %w", err)
 	}
 	return &NoteRepo{db}, nil
+}
+
+func (db *NoteRepo) Close() {
+	if err := db.db.Close(); err != nil {
+		logrus.Errorf("error on closing note repo: %v", err)
+	}
 }

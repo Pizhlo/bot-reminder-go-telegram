@@ -1,7 +1,6 @@
 package random
 
 import (
-	"math/rand"
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -22,25 +21,17 @@ func Reminders(n int) []model.Reminder {
 
 // Reminder генерирует одно напоминание, заполненное рандомными данными
 func Reminder() model.Reminder {
-	reminderTypes := []model.ReminderType{model.SeveralTimesDayType, model.EverydayType, model.EveryWeekType}
-	weekDays := []string{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
-
-	randomType := reminderTypes[rand.Intn(len(reminderTypes))]
+	//weekDays := []string{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 
 	r := model.Reminder{
 		ID:      uuid.New(),
 		ViewID:  int64(Int(1, 10)),
 		TgID:    1,
 		Name:    String(10),
-		Date:    String(10),
-		Type:    randomType,
+		Date:    "10.10.2024",
+		Type:    model.DateType,
 		Time:    "10:10",
 		Created: time.Now(),
-	}
-
-	if r.Type == model.EveryWeekType {
-		randomWd := weekDays[rand.Intn(len(weekDays))]
-		r.Date = randomWd
 	}
 
 	return r

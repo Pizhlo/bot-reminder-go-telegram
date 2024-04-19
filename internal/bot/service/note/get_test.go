@@ -2,12 +2,12 @@ package note
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 
+	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note/mocks"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
@@ -114,7 +114,7 @@ func TestGetAll_DBError(t *testing.T) {
 		srv.SaveUser(tt.userID)
 
 		tt.notes = random.Notes(tt.notesNum)
-		tt.err = sql.ErrNoRows
+		tt.err = errors.New("test error")
 		tt.expectedText = view.Message(tt.notes)
 
 		noteEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.All()).Return(nil, tt.err)

@@ -2,6 +2,7 @@ package note
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
@@ -15,7 +16,7 @@ type NoteService struct {
 	searchMap  map[int64]model.SearchByTwoDates
 }
 
-//go:generate mockgen -source ./service.go -destination=./mocks/note_editor.go
+//go:generate mockgen -source ./service.go -destination=../../mocks/note_srv.go -package=mocks
 type noteEditor interface {
 	// Save сохраняет заметку в базе данных. Для сохранения требуется: ID пользователя, содержимое заметки, дата создания
 	Save(ctx context.Context, note model.Note) error
@@ -53,10 +54,10 @@ func New(noteEditor noteEditor) *NoteService {
 // SaveUser сохраняет пользователя в мапе view
 func (n *NoteService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		logrus.Debugf("Note service: user %d not found in the views map. Saving...\n", userID)
+		logrus.Debugf(wrap(fmt.Sprintf("user %d not found in the views map. Saving...\n", userID)))
 		n.viewsMap[userID] = view.NewNote()
 	} else {
-		logrus.Debugf("Note service: user %d already saved in the views map.\n", userID)
+		logrus.Debugf(wrap(fmt.Sprintf("user %d already saved in the views map.\n", userID)))
 	}
 
 }
@@ -65,4 +66,8 @@ func (n *NoteService) SaveUser(userID int64) {
 func (n *NoteService) SetupCalendar(userID int64) {
 	n.viewsMap[userID].SetCurMonth()
 	n.viewsMap[userID].SetCurYear()
+}
+
+func wrap(s string) string {
+	return fmt.Sprintf("Note service: %s", s)
 }
