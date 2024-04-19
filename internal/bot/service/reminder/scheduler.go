@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -30,21 +29,16 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 
 	logrus.Debugf(wrap(fmt.Sprintf("starting job for user %d. Reminder: %+v", r.TgID, r)))
 
-	logrus.Errorf("reminder: %+v", r)
-
 	switch r.Type {
 	case model.EverydayType:
-		logrus.Error("EverydayType")
 		return sch.CreateEverydayJob(r.Time, f, ctx, r)
 	case model.SeveralTimesDayType:
-		logrus.Error("SeveralTimesDayType")
 		if r.Date == "minutes" {
 			return sch.CreateMinutesReminder(r.Time, f, ctx, r)
 		}
 
 		return sch.CreateHoursReminder(r.Time, f, ctx, r)
 	case model.EveryWeekType:
-		logrus.Error("EveryWeekType")
 		wd, err := view.ParseWeekday(r.Date)
 		if err != nil {
 			return gocron.NewJob{}, fmt.Errorf("error while parsing week day %s: %w", r.Date, err)
@@ -52,38 +46,13 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 
 		return sch.CreateEveryWeekReminder(wd, r.Time, f, ctx, r)
 	case model.SeveralDaysType:
-		logrus.Error("SeveralDaysType")
 		return sch.CreateSeveralDaysReminder(r.Date, r.Time, f, ctx, r)
 	case model.OnceMonthType:
-		logrus.Error("OnceMonthType")
 		return sch.CreateMonthlyReminder(r.Date, r.Time, f, ctx, r)
 	case model.OnceYearType:
-		logrus.Error("OnceYearType")
 		return sch.CreateOnceInYearReminder(r.Date, r.Time, f, ctx, r)
 	case model.DateType:
-		logrus.Error("DateType")
 		// создаем отложенный вызов отправки напоминания
-		logrus.Errorf("creating func. params: %+v, %+v", ctx, r)
-
-		param1 := ctx
-		param2 := r
-
-		t1 := reflect.TypeOf(param1).Kind()
-
-		if t1 == reflect.Interface || t1 == reflect.Pointer {
-			t1 = reflect.TypeOf(param1).Elem().Kind()
-		}
-
-		t2 := reflect.TypeOf(param2).Kind()
-
-		if t2 == reflect.Interface || t2 == reflect.Pointer {
-			t2 = reflect.TypeOf(param1).Elem().Kind()
-		}
-
-		v1 := reflect.ValueOf(param1)
-		v2 := reflect.ValueOf(param2)
-
-		logrus.Errorf("param 1: type: %v, value: %v. param 2: type: %v, value: %v", t1, v1, t2, v2)
 		newJob, err := sch.CreateCalendarDateReminder(r.Date, r.Time, f, ctx, r)
 		if err != nil {
 			return gocron.NewJob{}, err
