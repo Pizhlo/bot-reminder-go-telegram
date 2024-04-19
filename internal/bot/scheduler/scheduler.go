@@ -82,6 +82,26 @@ func (s *Scheduler) DeleteJob(id uuid.UUID) error {
 
 func makeTask(task Task, params ...any) gocron.Task {
 	logrus.Errorf("making task. params: 1) %+v 2) %+v", params[0], params[1])
+
+	param1 := params[0]
+	param2 := params[1]
+
+	t1 := reflect.TypeOf(param1).Kind()
+
+	if t1 == reflect.Interface || t1 == reflect.Pointer {
+		t1 = reflect.TypeOf(param1).Elem().Kind()
+	}
+
+	t2 := reflect.TypeOf(param2).Kind()
+
+	if t2 == reflect.Interface || t2 == reflect.Pointer {
+		t2 = reflect.TypeOf(param1).Elem().Kind()
+	}
+
+	v1 := reflect.ValueOf(param1)
+	v2 := reflect.ValueOf(param2)
+
+	logrus.Errorf("param 1: type: %v, value: %v. param 2: type: %v, value: %v", t1, v1, t2, v2)
 	return gocron.NewTask(task, params...)
 }
 
@@ -305,26 +325,6 @@ func (s *Scheduler) CreateCalendarDateReminder(date, userTime string, task Task,
 	timeDate := time.Date(yearInt, time.Month(monthInt), dayInt, hourInt, minuteInt, 0, 0, s.loc)
 
 	oneTime := gocron.OneTimeJobStartDateTime(timeDate)
-
-	param1 := params[0]
-	param2 := params[1]
-
-	t1 := reflect.TypeOf(param1).Kind()
-
-	if t1 == reflect.Interface || t1 == reflect.Pointer {
-		t1 = reflect.TypeOf(param1).Elem().Kind()
-	}
-
-	t2 := reflect.TypeOf(param2).Kind()
-
-	if t2 == reflect.Interface || t2 == reflect.Pointer {
-		t2 = reflect.TypeOf(param1).Elem().Kind()
-	}
-
-	v1 := reflect.ValueOf(param1)
-	v2 := reflect.ValueOf(param2)
-
-	logrus.Errorf("param 1: type: %v, value: %v. param 2: type: %v, value: %v", t1, v1, t2, v2)
 
 	j, err := s.NewJob(gocron.OneTimeJob(oneTime), job)
 	if err != nil {
