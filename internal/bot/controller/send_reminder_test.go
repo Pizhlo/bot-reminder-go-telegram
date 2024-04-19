@@ -34,13 +34,19 @@ func TestSendReminder(t *testing.T) {
 
 	controller := New(nil, nil, bot, reminderSrv)
 
-	err = controller.SendReminder(context.Background(), &randomReminder)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err = controller.SendReminder(ctx, &randomReminder)
 	assert.True(t, err == tele.ErrNotFound)
 }
 
 func TestProcessDeleteReminder(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
@@ -60,7 +66,7 @@ func TestProcessDeleteReminder(t *testing.T) {
 		randomReminder.Job.ID = jobID
 	}).Return(nil)
 
-	err := controller.reminderSrv.CreateScheduler(context.Background(), chat.ID, time.Local, controller.SendReminder)
+	err := controller.reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
 	require.NoError(t, err)
 
 	telectx.EXPECT().Callback().Return(&tele.Callback{Unique: fmt.Sprintf("%d", randomReminder.ViewID)})
@@ -86,13 +92,16 @@ func TestProcessDeleteReminder(t *testing.T) {
 		assert.Equal(t, expectedSendOpts, sendOpts)
 	})
 
-	err = controller.ProcessDeleteReminder(context.Background(), telectx)
+	err = controller.ProcessDeleteReminder(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestProcessDeleteReminder_ReminderDeleted(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
@@ -112,7 +121,7 @@ func TestProcessDeleteReminder_ReminderDeleted(t *testing.T) {
 		randomReminder.Job.ID = jobID
 	}).Return(nil)
 
-	err := controller.reminderSrv.CreateScheduler(context.Background(), chat.ID, time.Local, controller.SendReminder)
+	err := controller.reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
 	require.NoError(t, err)
 
 	telectx.EXPECT().Callback().Return(&tele.Callback{Unique: fmt.Sprintf("%d", randomReminder.ViewID)})
@@ -134,6 +143,6 @@ func TestProcessDeleteReminder_ReminderDeleted(t *testing.T) {
 		assert.Equal(t, expectedSendOpts, sendOpts)
 	})
 
-	err = controller.ProcessDeleteReminder(context.Background(), telectx)
+	err = controller.ProcessDeleteReminder(ctx, telectx)
 	assert.NoError(t, err)
 }
