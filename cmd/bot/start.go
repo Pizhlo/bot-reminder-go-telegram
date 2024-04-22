@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -116,7 +117,7 @@ func Start(confName, path string) {
 		bot.Start()
 	}()
 
-	notifyCtx, notify := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	notifyCtx, notify := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	defer notify()
 
 	<-notifyCtx.Done()

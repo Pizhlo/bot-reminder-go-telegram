@@ -11,7 +11,7 @@ var (
 	// --------------- напоминания --------------
 
 	// inline кнопка для удаления сработавшего напоминания
-	//BtnDeleteReminder = tele.Btn{Text:"❌Удалить", Unique:"")
+	BtnDeleteReminder = tele.Btn{Text: "❌Удалить", Unique: "delete_worked_reminder"}
 
 	// inline кнопка создания напоминания
 	BtnCreateReminder = tele.Btn{Text: "📝Создать напоминание", Unique: "create_reminder"}
@@ -211,6 +211,19 @@ func WeekMenu() *tele.ReplyMarkup {
 		menu.Row(FridayBtn, SaturdayBtn),
 		menu.Row(SundayBtn),
 		menu.Row(BtnBackToMenu, BtnBackToReminderType),
+	)
+
+	return menu
+}
+
+// ReminderWorkMenu возвращает меню для сработавшего напоминания с кнопками: галочка, удалить, назад в меню
+func ReminderWorkMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnCheckReminder),
+		menu.Row(BtnDeleteReminder),
+		menu.Row(BtnBackToMenu),
 	)
 
 	return menu

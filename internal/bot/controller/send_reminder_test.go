@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"testing"
 	"time"
@@ -69,14 +68,6 @@ func TestProcessDeleteReminder(t *testing.T) {
 	err := controller.reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
 	require.NoError(t, err)
 
-	telectx.EXPECT().Callback().Return(&tele.Callback{Unique: fmt.Sprintf("%d", randomReminder.ViewID)})
-	telectx.EXPECT().Chat().Return(chat)
-
-	reminderEditor.EXPECT().GetByViewID(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64, viewID int) {
-		assert.Equal(t, chat.ID, userID)
-		assert.Equal(t, int(randomReminder.ViewID), viewID)
-	}).Return(randomReminder, nil)
-
 	reminderEditor.EXPECT().DeleteReminderByID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
 	}).Return(nil)
@@ -92,57 +83,6 @@ func TestProcessDeleteReminder(t *testing.T) {
 		assert.Equal(t, expectedSendOpts, sendOpts)
 	})
 
-	err = controller.ProcessDeleteReminder(ctx, telectx)
-	assert.NoError(t, err)
-}
-
-func TestProcessDeleteReminder_ReminderDeleted(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	telectx := mocks.NewMockteleCtx(ctrl)
-	reminderEditor := mocks.NewMockreminderEditor(ctrl)
-	reminderSrv := reminder.New(reminderEditor)
-
-	controller := New(nil, nil, nil, reminderSrv)
-
-	randomReminder := random.Reminder()
-	chat := &tele.Chat{ID: 1}
-
-	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{*randomReminder}, nil).Do(func(ctx interface{}, userID int64) {
-		assert.Equal(t, chat.ID, userID)
-	})
-
-	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
-		assert.Equal(t, randomReminder.ID, reminderID)
-		randomReminder.Job.ID = jobID
-	}).Return(nil)
-
-	err := controller.reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
-	require.NoError(t, err)
-
-	telectx.EXPECT().Callback().Return(&tele.Callback{Unique: fmt.Sprintf("%d", randomReminder.ViewID)})
-	telectx.EXPECT().Chat().Return(chat)
-
-	reminderEditor.EXPECT().GetByViewID(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64, viewID int) {
-		assert.Equal(t, chat.ID, userID)
-		assert.Equal(t, int(randomReminder.ViewID), viewID)
-	}).Return(nil, sql.ErrNoRows)
-
-	expectedText := fmt.Sprintf(messages.ReminderDeletedMessage, "")
-	expectedSendOpts := &tele.SendOptions{
-		ParseMode:   htmlParseMode,
-		ReplyMarkup: view.BackToRemindersAndMenu(),
-	}
-
-	telectx.EXPECT().Edit(gomock.Any(), gomock.Any()).Do(func(msg string, sendOpts *tele.SendOptions) {
-		assert.Equal(t, expectedText, msg)
-		assert.Equal(t, expectedSendOpts, sendOpts)
-	})
-
-	err = controller.ProcessDeleteReminder(ctx, telectx)
+	err = controller.ProcessDeleteReminder(ctx, telectx, randomReminder)
 	assert.NoError(t, err)
 }
