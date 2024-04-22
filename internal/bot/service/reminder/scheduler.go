@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -35,9 +36,20 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 	case model.SeveralTimesDayType:
 		if r.Date == "minutes" {
 			return sch.CreateMinutesReminder(r.Time, f, ctx, r)
+		} else if r.Date == "hours" {
+			return sch.CreateHoursReminder(r.Time, f, ctx, r)
+		} else if r.Date == "times_reminder" {
+			var userTimes []string
+			if strings.Contains(r.Time, ",") {
+				userTimes = strings.Split(r.Time, ",")
+			} else {
+				userTimes = strings.Split(r.Time, " ")
+			}
+			return sch.CreateTimesReminder(f, userTimes, ctx, r)
+		} else {
+			return gocron.NewJob{}, fmt.Errorf("unknown Date: %s", r.Date)
 		}
 
-		return sch.CreateHoursReminder(r.Time, f, ctx, r)
 	case model.EveryWeekType:
 		wd, err := view.ParseWeekday(r.Date)
 		if err != nil {

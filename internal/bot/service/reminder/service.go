@@ -44,7 +44,7 @@ type reminderEditor interface {
 	GetJobID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error)
 
 	// DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания
-	DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) error
+	DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error)
 
 	// GetReminderID возвращает айди напоминания в базе. Ищет по пользователю и view id
 	GetReminderID(ctx context.Context, userID int64, viewID int) (uuid.UUID, error)

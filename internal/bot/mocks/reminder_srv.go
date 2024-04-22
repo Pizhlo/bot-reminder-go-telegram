@@ -65,11 +65,12 @@ func (mr *MockreminderEditorMockRecorder) DeleteJobAndReminder(ctx, jobID interf
 }
 
 // DeleteReminderByID mocks base method.
-func (m *MockreminderEditor) DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) error {
+func (m *MockreminderEditor) DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteReminderByID", ctx, reminderID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteReminderByID indicates an expected call of DeleteReminderByID.

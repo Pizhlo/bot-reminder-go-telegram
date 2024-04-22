@@ -52,7 +52,7 @@ func (n *listReminder) Handle(ctx context.Context, telectx tele.Context) error {
 
 		return telectx.EditOrSend(fmt.Sprintf(messages.ReminderDeletedByIDMessage, reminderID), &tele.SendOptions{
 			ParseMode:   "html",
-			ReplyMarkup: view.BackToReminderMenuBtns(),
+			ReplyMarkup: view.RemindersAndMenuBtns(),
 		})
 	}
 

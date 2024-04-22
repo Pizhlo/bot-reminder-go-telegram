@@ -28,6 +28,16 @@ func (c *Controller) HoursDuration(ctx context.Context, telectx telebot.Context)
 	return c.saveReminder(ctx, telectx)
 }
 
+// HoursDuration принимает от пользователя список времен, когда присылать уведомления (10:30, 12:00, 17:00)
+func (c *Controller) Times(ctx context.Context, telectx telebot.Context) error {
+	err := c.reminderSrv.ProcessTimes(telectx.Chat().ID, telectx.Message().Text)
+	if err != nil {
+		return telectx.EditOrSend(messages.InvalidTimesMessage, view.BackToReminderMenuBtns())
+	}
+
+	return c.saveReminder(ctx, telectx)
+}
+
 // DaysDuration принимает от пользователя количество дней, в которые нужно присылать уведомления
 func (c *Controller) DaysDuration(ctx context.Context, telectx telebot.Context) error {
 	err := c.reminderSrv.ProcessDaysDuration(telectx.Chat().ID, telectx.Message().Text)

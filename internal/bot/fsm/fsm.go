@@ -23,6 +23,7 @@ const (
 	listReminderName                   stateName = "list_reminder"
 	locationStateName                  stateName = "location"
 	minutesStateName                   stateName = "minutes_duration"
+	timesReminderName                  stateName = "times_reminder"
 	monthStateName                     stateName = "month"
 	dateReminderName                   stateName = "date_reminder"
 	reminderNameState                  stateName = "reminder_name"
@@ -66,6 +67,8 @@ type FSM struct {
 	MinutesDuration state
 	// Состояние для обработки напоминаний раз в неск. часов
 	HoursDuration state
+	// Состояние для обработки напоминаний в указанные времена (10:30, 12:30, 15:00)
+	Times state
 	// Состояние для обработки напоминаний раз в неделю
 	EveryWeek state
 	// Состояние для обработки напоминаний раз в неск. дней
@@ -118,6 +121,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 	fsm.SeveralTimesDay = newSeveralTimesState(controller, fsm)
 	fsm.MinutesDuration = newMinutesDurationState(controller, fsm)
 	fsm.HoursDuration = newHoursDurationState(controller, fsm)
+	fsm.Times = newTimesReminderState(controller, fsm)
 	fsm.EveryWeek = newEveryWeekState(controller, fsm)
 	fsm.SeveralDays = newSeveralDaysState(controller, fsm)
 	fsm.DaysDuration = newDaysDurationState(controller, fsm)
@@ -179,6 +183,7 @@ func (s *FSM) SetFromString(stateStr string) error {
 	if err != nil {
 		logrus.Errorf("error while setting state on start: %v", err)
 		s.SetToDefault()
+		return nil
 	}
 
 	s.SetState(state)
@@ -210,6 +215,8 @@ func (s *FSM) parseString(state stateName) (state, error) {
 		return s.location, nil
 	case minutesStateName:
 		return s.MinutesDuration, nil
+	case timesReminderName:
+		return s.Times, nil
 	case monthStateName:
 		return s.Month, nil
 	case dateReminderName:
