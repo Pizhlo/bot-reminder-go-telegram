@@ -147,6 +147,32 @@ func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 	return menu
 }
 
+// Keyboard делает клавиатуру для навигации по страницам во время поиска
+func (v *NoteView) KeyboardForSearch() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	// если страниц 1, клавиатура не нужна
+	if v.total() == 1 {
+		menu.Inline(
+			menu.Row(BtnNotes),
+			menu.Row(BtnBackToMenu),
+		)
+		return menu
+	}
+
+	text := fmt.Sprintf("%d / %d", v.current(), v.total())
+
+	btn := menu.Data(text, "")
+
+	menu.Inline(
+		menu.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		menu.Row(BtnNotes),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
 // SetCurrentToFirst устанавливает текущий номер страницы на 1
 func (v *NoteView) SetCurrentToFirst() {
 	v.currentPage = 0
