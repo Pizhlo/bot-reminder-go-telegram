@@ -41,6 +41,7 @@ func BackToMenuAndCreateOneElse() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
+		menu.Row(BtnReminders),
 		menu.Row(BtnCreateOneElseReminder),
 		menu.Row(BtnBackToMenu),
 	)

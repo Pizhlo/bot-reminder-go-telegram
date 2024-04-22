@@ -15,7 +15,7 @@ import (
 )
 
 // inline кнопка для удаления сработавшего напоминания
-var DeleteBtn = telebot.Btn{Text: "❌Удалить"}
+//var DeleteBtn = telebot.Btn{Text: "❌Удалить"}
 
 // SendReminder отправляет пользователю напоминание в указанное время
 func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder) error {
@@ -29,19 +29,17 @@ func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder)
 	// передаем только айди напоминания, потому что айди пользователя сможем выяснить из контекста
 	unique := fmt.Sprintf("%d", reminder.ViewID)
 
-	// получаем кнопку для удаления сработавшего напоминания
-	DeleteBtn.Unique = unique
-	DeleteBtn.Data = unique
+	deleteBtn := telebot.Btn{Text: "❌Удалить", Unique: unique}
 
 	kb := &telebot.ReplyMarkup{}
 
 	kb.Inline(
 		kb.Row(view.BtnCheckReminder),
-		kb.Row(DeleteBtn),
+		kb.Row(deleteBtn),
 		kb.Row(view.BtnBackToMenu),
 	)
 
-	c.bot.Handle(&DeleteBtn, func(telectx telebot.Context) error {
+	c.bot.Handle(&deleteBtn, func(telectx telebot.Context) error {
 		return c.ProcessDeleteReminder(ctx, telectx)
 	})
 
@@ -79,6 +77,6 @@ func (c *Controller) ProcessDeleteReminder(ctx context.Context, telectx telebot.
 
 	return telectx.Edit(msg, &telebot.SendOptions{
 		ParseMode:   htmlParseMode,
-		ReplyMarkup: view.BackToMenuBtn(),
+		ReplyMarkup: view.BackToRemindersAndMenu(),
 	})
 }
