@@ -84,7 +84,7 @@ func TestProcessDeleteReminder(t *testing.T) {
 	expectedText := fmt.Sprintf(messages.ReminderDeletedMessage, randomReminder.Name)
 	expectedSendOpts := &tele.SendOptions{
 		ParseMode:   htmlParseMode,
-		ReplyMarkup: view.BackToMenuBtn(),
+		ReplyMarkup: view.BackToRemindersAndMenu(),
 	}
 
 	telectx.EXPECT().Edit(gomock.Any(), gomock.Any()).Do(func(msg string, sendOpts *tele.SendOptions) {
@@ -135,7 +135,7 @@ func TestProcessDeleteReminder_ReminderDeleted(t *testing.T) {
 	expectedText := fmt.Sprintf(messages.ReminderDeletedMessage, "")
 	expectedSendOpts := &tele.SendOptions{
 		ParseMode:   htmlParseMode,
-		ReplyMarkup: view.BackToMenuBtn(),
+		ReplyMarkup: view.BackToRemindersAndMenu(),
 	}
 
 	telectx.EXPECT().Edit(gomock.Any(), gomock.Any()).Do(func(msg string, sendOpts *tele.SendOptions) {

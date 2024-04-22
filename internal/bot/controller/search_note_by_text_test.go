@@ -46,7 +46,7 @@ func TestSearchNoteByText(t *testing.T) {
 
 	expectedTxt := noteView.Message([]model.Note{note})
 	expectedSendOpts := &tele.SendOptions{
-		ReplyMarkup: noteView.Keyboard(),
+		ReplyMarkup: noteView.KeyboardForSearch(),
 		ParseMode:   htmlParseMode,
 	}
 
