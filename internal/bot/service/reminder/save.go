@@ -10,27 +10,22 @@ import (
 )
 
 // Save проверяет заполненость полей сохраняет напоминание в БД
-func (s *ReminderService) Save(ctx context.Context, userID int64) error {
-	r, err := s.GetFromMemory(userID)
-	if err != nil {
-		return err
-	}
-
+func (s *ReminderService) Save(ctx context.Context, userID int64, r *model.Reminder) (uuid.UUID, error) {
 	// проверяем, заполнены ли все поля в напоминании
 	if err := s.checkFields(r); err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
 	id, err := s.reminderEditor.Save(ctx, r)
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
-	return s.SaveID(userID, id)
+	return id, s.SaveID(userID, id)
 }
 
 // SaveJobID сохраняет в базе ID задачи, связанной с напоминанием
-func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, userID int64, reminderID uuid.UUID) error {
+func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, reminderID uuid.UUID) error {
 	// r, err := s.GetFromMemory(userID)
 	// if err != nil {
 	// 	return err

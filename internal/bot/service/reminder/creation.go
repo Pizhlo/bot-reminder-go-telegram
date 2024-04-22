@@ -208,16 +208,11 @@ func (n *ReminderService) checkFields(r *model.Reminder) error {
 }
 
 // SaveAndStartReminder сохраняет напоминание в БД и создает таску в планировщике
-func (n *ReminderService) SaveAndStartReminder(ctx context.Context, userID int64, loc *time.Location, task gocron.Task) (gocron.NewJob, error) {
-	err := n.Save(ctx, userID)
-	if err != nil {
-		return gocron.NewJob{}, err
-	}
-
-	r, err := n.GetFromMemory(userID)
-	if err != nil {
-		return gocron.NewJob{}, err
-	}
+func (n *ReminderService) SaveAndStartReminder(ctx context.Context, userID int64, loc *time.Location, task gocron.Task, r *model.Reminder) (gocron.NewJob, error) {
+	// r, err := n.GetFromMemory(userID)
+	// if err != nil {
+	// 	return gocron.NewJob{}, err
+	// }
 
 	// создаем отложенный вызов
 	nextRun, err := n.CreateReminder(ctx, loc, task, r)
@@ -225,8 +220,18 @@ func (n *ReminderService) SaveAndStartReminder(ctx context.Context, userID int64
 		return gocron.NewJob{}, err
 	}
 
+	// сохраняем в БД
+	id, err := n.Save(ctx, userID, r)
+	if err != nil {
+		sch := n.schedulers[userID]
+		sch.DeleteJob(nextRun.JobID)
+		return gocron.NewJob{}, err
+	}
+
+	r.ID = id
+
 	// сохраняем задачу в базе
-	err = n.SaveJobID(ctx, nextRun.JobID, userID, r.ID)
+	err = n.SaveJobID(ctx, nextRun.JobID, r.ID)
 	if err != nil {
 		return gocron.NewJob{}, err
 	}

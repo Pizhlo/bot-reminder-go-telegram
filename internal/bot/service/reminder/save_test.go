@@ -45,27 +45,19 @@ func TestSave(t *testing.T) {
 	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(reminder.ID, nil)
 
 	// сохраняем напоминание
-	err = n.Save(context.Background(), userID)
+	id, err := n.Save(context.Background(), userID, reminder)
 	require.NoError(t, err)
 
 	// проверяем, что сохраненное напоминание совпадает с переданным
 	result, ok := n.reminderMap[userID]
 	assert.Equal(t, true, ok)
 
-	assert.Equal(t, reminder.ID, result.ID)
+	assert.Equal(t, id, result.ID)
 	assert.Equal(t, reminder.TgID, result.TgID)
 	assert.Equal(t, reminder.Name, result.Name)
 	assert.Equal(t, reminder.Created.Location(), result.Created.Location())
 	assert.Equal(t, reminder.Date, result.Date)
 	assert.Equal(t, reminder.Type, result.Type)
-}
-
-func TestSave_NotFoundInMap(t *testing.T) {
-	userID := int64(1)
-	n := New(nil)
-
-	err := n.Save(context.Background(), userID)
-	assert.EqualError(t, err, "Reminder service: error while getting reminder by user ID: reminder not found")
 }
 
 func TestSave_DBError(t *testing.T) {
@@ -100,7 +92,7 @@ func TestSave_DBError(t *testing.T) {
 
 	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(uuid.New(), testErr)
 
-	err = n.Save(context.Background(), userID)
+	_, err = n.Save(context.Background(), userID, reminder)
 	assert.EqualError(t, err, testErr.Error())
 }
 
@@ -132,7 +124,7 @@ func TestSaveJobID(t *testing.T) {
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 	// сохраняем job ID
-	err = n.SaveJobID(context.Background(), uuid.New(), userID, uuid.New())
+	err = n.SaveJobID(context.Background(), uuid.New(), uuid.New())
 	require.NoError(t, err)
 }
 
@@ -166,6 +158,6 @@ func TestSaveJobID_DBError(t *testing.T) {
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(testErr)
 
 	// сохраняем job ID
-	err = n.SaveJobID(context.Background(), uuid.New(), userID, uuid.New())
+	err = n.SaveJobID(context.Background(), uuid.New(), uuid.New())
 	require.EqualError(t, err, testErr.Error())
 }

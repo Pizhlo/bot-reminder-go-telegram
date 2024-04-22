@@ -50,7 +50,7 @@ func TestSaveReminder(t *testing.T) {
 
 	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{}, nil)
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
-		assert.Equal(t, randomReminder.ID, reminderID)
+		assert.Equal(t, randomReminder.ID, reminderID, "reminder IDs are not equal")
 	}).Times(2).Return(nil)
 
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -66,12 +66,20 @@ func TestSaveReminder(t *testing.T) {
 		verb = "будет срабатывать"
 	}
 
-	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(randomReminder.ID, nil)
+	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(randomReminder.ID, nil).Do(func(ctx interface{}, reminder *model.Reminder) {
+		assert.Equal(t, randomReminder.ID, reminder.ID)
+		assert.Equal(t, randomReminder.TgID, reminder.TgID)
+		assert.Equal(t, randomReminder.Name, reminder.Name)
+		assert.Equal(t, randomReminder.Type, reminder.Type)
+		assert.Equal(t, randomReminder.Date, reminder.Date)
+		assert.Equal(t, randomReminder.Time, reminder.Time)
+		assert.Equal(t, randomReminder.Created, reminder.Created)
+	})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	nextRun, err := reminderSrv.SaveAndStartReminder(ctx, chat.ID, loc, controller.SendReminder)
+	nextRun, err := reminderSrv.SaveAndStartReminder(ctx, chat.ID, loc, controller.SendReminder, randomReminder)
 	assert.NoError(t, err)
 
 	nextRunMsg, err := view.ProcessTypeAndDate(randomReminder.Type, randomReminder.Date, randomReminder.Time)

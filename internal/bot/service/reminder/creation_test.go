@@ -991,7 +991,7 @@ func TestCheckFields_EmptyTgID(t *testing.T) {
 	reminder := random.Reminder()
 	reminder.TgID = 0
 
-	err := n.checkFields(&reminder)
+	err := n.checkFields(reminder)
 	assert.EqualError(t, err, "field TgID is not filled")
 }
 
@@ -1001,7 +1001,7 @@ func TestCheckFields_EmptyName(t *testing.T) {
 	reminder := random.Reminder()
 	reminder.Name = ""
 
-	err := n.checkFields(&reminder)
+	err := n.checkFields(reminder)
 	assert.EqualError(t, err, "field Name is not filled")
 }
 
@@ -1011,7 +1011,7 @@ func TestCheckFields_EmptyType(t *testing.T) {
 	reminder := random.Reminder()
 	reminder.Type = ""
 
-	err := n.checkFields(&reminder)
+	err := n.checkFields(reminder)
 	assert.EqualError(t, err, "field Type is not filled")
 }
 
@@ -1021,7 +1021,7 @@ func TestCheckFields_EmptyDate(t *testing.T) {
 	reminder := random.Reminder()
 	reminder.Date = ""
 
-	err := n.checkFields(&reminder)
+	err := n.checkFields(reminder)
 	assert.EqualError(t, err, "field Date is not filled")
 }
 
@@ -1031,7 +1031,7 @@ func TestCheckFields_EmptyTime(t *testing.T) {
 	reminder := random.Reminder()
 	reminder.Time = ""
 
-	err := n.checkFields(&reminder)
+	err := n.checkFields(reminder)
 	assert.EqualError(t, err, "field Time is not filled")
 }
 
@@ -1041,6 +1041,6 @@ func TestCheckFields_EmptyCreated(t *testing.T) {
 	reminder := random.Reminder()
 	reminder.Created = time.Time{}
 
-	err := n.checkFields(&reminder)
+	err := n.checkFields(reminder)
 	assert.EqualError(t, err, "field Created is not filled")
 }
