@@ -13,17 +13,17 @@ func Reminders(n int) []model.Reminder {
 
 	for i := 0; i < n; i++ {
 		r := Reminder()
-		reminders = append(reminders, r)
+		reminders = append(reminders, *r)
 	}
 
 	return reminders
 }
 
 // Reminder генерирует одно напоминание, заполненное рандомными данными
-func Reminder() model.Reminder {
+func Reminder() *model.Reminder {
 	//weekDays := []string{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 
-	r := model.Reminder{
+	r := &model.Reminder{
 		ID:      uuid.New(),
 		ViewID:  int64(Int(1, 10)),
 		TgID:    1,

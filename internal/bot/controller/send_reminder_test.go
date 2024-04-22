@@ -37,7 +37,7 @@ func TestSendReminder(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = controller.SendReminder(ctx, &randomReminder)
+	err = controller.SendReminder(ctx, randomReminder)
 	assert.True(t, err == tele.ErrNotFound)
 }
 
@@ -57,7 +57,7 @@ func TestProcessDeleteReminder(t *testing.T) {
 	randomReminder := random.Reminder()
 	chat := &tele.Chat{ID: 1}
 
-	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{randomReminder}, nil).Do(func(ctx interface{}, userID int64) {
+	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{*randomReminder}, nil).Do(func(ctx interface{}, userID int64) {
 		assert.Equal(t, chat.ID, userID)
 	})
 
@@ -75,7 +75,7 @@ func TestProcessDeleteReminder(t *testing.T) {
 	reminderEditor.EXPECT().GetByViewID(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64, viewID int) {
 		assert.Equal(t, chat.ID, userID)
 		assert.Equal(t, int(randomReminder.ViewID), viewID)
-	}).Return(&randomReminder, nil)
+	}).Return(randomReminder, nil)
 
 	reminderEditor.EXPECT().DeleteReminderByID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
@@ -112,7 +112,7 @@ func TestProcessDeleteReminder_ReminderDeleted(t *testing.T) {
 	randomReminder := random.Reminder()
 	chat := &tele.Chat{ID: 1}
 
-	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{randomReminder}, nil).Do(func(ctx interface{}, userID int64) {
+	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{*randomReminder}, nil).Do(func(ctx interface{}, userID int64) {
 		assert.Equal(t, chat.ID, userID)
 	})
 

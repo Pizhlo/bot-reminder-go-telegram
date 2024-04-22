@@ -58,7 +58,6 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 			return gocron.NewJob{}, err
 		}
 
-		logrus.Errorf("creating deleting from db. params: %+v, %+v", ctx, r)
 		// создаем отложенный вызов удаления напоминания из БД
 		_, err = sch.CreateCalendarDateReminder(r.Date, r.Time, c.DeleteReminder, ctx, r)
 		if err != nil {
@@ -124,7 +123,7 @@ func (c *ReminderService) StartAllJobs(ctx context.Context, userID int64, loc *t
 			return err
 		}
 
-		err = c.SaveJobID(ctx, newJob.JobID, userID, r.ID)
+		err = c.SaveJobID(ctx, newJob.JobID, r.ID)
 		if err != nil {
 			return err
 		}

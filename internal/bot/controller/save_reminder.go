@@ -24,17 +24,17 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 		return err
 	}
 
-	nextRun, err := c.reminderSrv.SaveAndStartReminder(ctx, telectx.Chat().ID, loc, c.SendReminder)
+	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
+	nextRun, err := c.reminderSrv.SaveAndStartReminder(ctx, telectx.Chat().ID, loc, c.SendReminder, r)
 	if err != nil {
 		return err
 	}
 
 	layout := "02.01.2006 15:04:05"
-
-	r, err := c.reminderSrv.GetFromMemory(telectx.Chat().ID)
-	if err != nil {
-		return err
-	}
 
 	nextRunMsg, err := view.ProcessTypeAndDate(r.Type, r.Date, r.Time)
 	if err != nil {
