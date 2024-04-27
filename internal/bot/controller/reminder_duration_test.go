@@ -38,9 +38,12 @@ func TestMinutesDuration_Valid(t *testing.T) {
 	randomReminder.Type = model.SeveralTimesDayType
 	randomReminder.Date = "minutes"
 	randomReminder.Time = "50"
+
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
-	reminderSrv.SaveDate(chat.ID, randomReminder.Date)
-	reminderSrv.SaveType(chat.ID, randomReminder.Type)
+	err := reminderSrv.SaveDate(chat.ID, randomReminder.Date)
+	assert.NoError(t, err)
+	err = reminderSrv.SaveType(chat.ID, randomReminder.Type)
+	assert.NoError(t, err)
 
 	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return(nil, api_errors.ErrRemindersNotFound).Do(func(ctx interface{}, userID int64) {
 		assert.Equal(t, chat.ID, userID)
@@ -53,6 +56,10 @@ func TestMinutesDuration_Valid(t *testing.T) {
 		assert.Equal(t, randomReminder.Type, reminder.Type)
 		assert.Equal(t, randomReminder.Name, reminder.Name)
 	}).Return(randomReminder.ID, nil)
+
+	reminderEditor.EXPECT().DeleteMemory(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64) {
+		assert.Equal(t, chat.ID, userID)
+	}).Return(nil)
 
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
@@ -81,7 +88,7 @@ func TestMinutesDuration_Valid(t *testing.T) {
 
 	controller := New(userSrv, nil, nil, reminderSrv)
 
-	err := controller.MinutesDuration(ctx, telectx)
+	err = controller.MinutesDuration(ctx, telectx)
 	assert.NoError(t, err)
 }
 
@@ -155,6 +162,10 @@ func TestHoursDuration_Valid(t *testing.T) {
 		assert.Equal(t, randomReminder.Type, reminder.Type)
 		assert.Equal(t, randomReminder.Name, reminder.Name)
 	}).Return(randomReminder.ID, nil)
+
+	reminderEditor.EXPECT().DeleteMemory(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64) {
+		assert.Equal(t, chat.ID, userID)
+	}).Return(nil)
 
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
@@ -265,6 +276,10 @@ func TestTimes_Valid(t *testing.T) {
 		reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
 			assert.Equal(t, randomReminder.ID, reminderID)
 		})
+
+		reminderEditor.EXPECT().DeleteMemory(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64) {
+			assert.Equal(t, chat.ID, userID)
+		}).Return(nil)
 
 		telectx.EXPECT().Chat().Return(chat).Times(6)
 		telectx.EXPECT().Message().Return(&m)

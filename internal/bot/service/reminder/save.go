@@ -37,9 +37,11 @@ func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, remind
 }
 
 // Clear очищает память после успешного сохранения
-func (s *ReminderService) Clear(userID int64) {
+func (s *ReminderService) Clear(ctx context.Context, userID int64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.reminderMap[userID] = &model.Reminder{}
+
+	return s.reminderEditor.DeleteMemory(ctx, userID)
 }

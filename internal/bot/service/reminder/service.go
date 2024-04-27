@@ -2,6 +2,7 @@ package reminder
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -27,6 +28,16 @@ type ReminderService struct {
 type reminderEditor interface {
 	// Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
 	Save(ctx context.Context, reminder *model.Reminder) (uuid.UUID, error)
+
+	// SaveMemory сохраняет напоминание из кэша в базе данных. Напоминание может быть не полным, т.к. находится на стадии создания
+	// и в памяти хранится промежуточный результат
+	SaveMemory(ctx context.Context, reminder *model.Reminder) error
+
+	// GetMemory возвращает все сохраненные напоминания, находящиеся в стадии создания
+	GetMemory(ctx context.Context) ([]model.Reminder, error)
+
+	// DeleteMemory удаляет промежуточное сохранение напоминания. Необходимо, когда напоминание создано и сохранено в основной таблице
+	DeleteMemory(ctx context.Context, userID int64) error
 
 	// GetAllByUserID достает из базы все напоминания пользователя по ID, возвращает ErrRemindersNotFound
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error)
@@ -54,9 +65,6 @@ type reminderEditor interface {
 
 	// GetByViewID возвращает напоминание с переданным viewID. Если такого напоминания нет, возвращает ErrRemindersNotFound
 	GetByViewID(ctx context.Context, userID int64, viewID int) (*model.Reminder, error)
-
-	// // SearchByText производит поиск по напоминаний по тексту. Если таких напоминаний нет, возвращает ErrRemindersNotFound
-	// SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Reminder, error)
 }
 
 func New(reminderEditor reminderEditor) *ReminderService {
@@ -80,10 +88,40 @@ func (n *ReminderService) SaveUser(userID int64) {
 
 }
 
+// LoadMemory загружает из базы все недоделанные напоминания
+func (n *ReminderService) LoadMemory(ctx context.Context) error {
+	rList, err := n.reminderEditor.GetMemory(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range rList {
+		logrus.Debugf(wrap(fmt.Sprintf("saving user's reminder from db to cache: %+v", r)))
+		n.reminderMap[r.TgID] = &r
+	}
+
+	return nil
+}
+
 // SetupCalendar устанавливает месяц и год в календаре на текущие
 func (n *ReminderService) SetupCalendar(userID int64) {
 	n.viewsMap[userID].SetCurMonth()
 	n.viewsMap[userID].SetCurYear()
+}
+
+// SaveMemory сохраняет напоминания, хранящиеся в памяти, в БД
+func (n *ReminderService) SaveMemory(ctx context.Context) error {
+	var res error
+	for _, r := range n.reminderMap {
+		// проверяем, чтобы напоминание не было пустым
+		if r.TgID > 0 {
+			err := n.reminderEditor.SaveMemory(ctx, r)
+			res = errors.Join(err)
+		}
+
+	}
+
+	return res
 }
 
 func wrap(s string) string {

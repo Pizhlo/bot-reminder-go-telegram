@@ -54,10 +54,14 @@ func TestSaveReminder(t *testing.T) {
 	}).Times(2).Return(nil)
 
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
-	reminderSrv.SaveDate(chat.ID, randomReminder.Date)
-	reminderSrv.SaveTime(chat.ID, randomReminder.Time)
-	reminderSrv.SaveType(chat.ID, randomReminder.Type)
-	reminderSrv.SaveCreatedField(chat.ID, loc)
+	err := reminderSrv.SaveDate(chat.ID, randomReminder.Date)
+	assert.NoError(t, err)
+	err = reminderSrv.SaveTime(chat.ID, randomReminder.Time)
+	assert.NoError(t, err)
+	err = reminderSrv.SaveType(chat.ID, randomReminder.Type)
+	assert.NoError(t, err)
+	err = reminderSrv.SaveCreatedField(chat.ID, loc)
+	assert.NoError(t, err)
 
 	var verb string
 	if randomReminder.Type == model.DateType {
@@ -98,7 +102,16 @@ func TestSaveReminder(t *testing.T) {
 		assert.Equal(t, expectedOpts, sendOpts)
 	}).Return(nil)
 
-	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(randomReminder.ID, nil)
+	reminderEditor.EXPECT().Save(gomock.Any(), gomock.Any()).Return(randomReminder.ID, nil).Do(func(ctx interface{}, reminder *model.Reminder) {
+		assert.Equal(t, randomReminder.TgID, reminder.TgID)
+		assert.Equal(t, randomReminder.Date, reminder.Date)
+		assert.Equal(t, randomReminder.Time, reminder.Time)
+		assert.Equal(t, randomReminder.Type, reminder.Type)
+		assert.Equal(t, randomReminder.Name, reminder.Name)
+	})
+	reminderEditor.EXPECT().DeleteMemory(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64) {
+		assert.Equal(t, chat.ID, userID)
+	}).Return(nil)
 
 	err = controller.saveReminder(ctx, telectx)
 	assert.NoError(t, err)

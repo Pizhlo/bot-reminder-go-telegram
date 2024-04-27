@@ -95,6 +95,11 @@ func (c *Controller) HandleError(ctx tele.Context, err error, state string) {
 	}
 }
 
+// LoadMemoryReminders выгружает недоделанные напоминания из БД
+func (c *Controller) LoadMemoryReminders(ctx context.Context) error {
+	return c.reminderSrv.LoadMemory(ctx)
+}
+
 // SaveUsers сохраняет пользователей в сервисах
 func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 	errors := []error{}
@@ -170,4 +175,9 @@ func (c *Controller) SaveState(ctx context.Context, tgID int64, state string) er
 
 func (c *Controller) GetState(ctx context.Context, tgID int64) (string, error) {
 	return c.userSrv.GetState(ctx, tgID)
+}
+
+// SaveMemoryReminder сохраняет напоминания, хранящиеся в памяти, в БД
+func (c *Controller) SaveMemoryReminder(ctx context.Context) error {
+	return c.reminderSrv.SaveMemory(ctx)
 }

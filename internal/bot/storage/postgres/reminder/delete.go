@@ -57,3 +57,17 @@ func (db *ReminderRepo) DeleteJobAndReminder(ctx context.Context, jobID uuid.UUI
 
 	return tx.Commit()
 }
+
+func (db *ReminderRepo) DeleteMemory(ctx context.Context, userID int64) error {
+	tx, err := db.tx(ctx)
+	if err != nil {
+		return fmt.Errorf("error while creating transaction DeleteMemory: %w", err)
+	}
+
+	_, err = tx.ExecContext(ctx, `delete from reminders.memory_reminders where user_id = (select id from users.users where tg_id = $1)`, userID)
+	if err != nil {
+		return fmt.Errorf("error deleting all memory reminders: %w", err)
+	}
+
+	return tx.Commit()
+}

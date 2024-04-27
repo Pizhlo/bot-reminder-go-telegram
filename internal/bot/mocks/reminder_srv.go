@@ -64,6 +64,20 @@ func (mr *MockreminderEditorMockRecorder) DeleteJobAndReminder(ctx, jobID interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteJobAndReminder", reflect.TypeOf((*MockreminderEditor)(nil).DeleteJobAndReminder), ctx, jobID)
 }
 
+// DeleteMemory mocks base method.
+func (m *MockreminderEditor) DeleteMemory(ctx context.Context, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMemory", ctx, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMemory indicates an expected call of DeleteMemory.
+func (mr *MockreminderEditorMockRecorder) DeleteMemory(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemory", reflect.TypeOf((*MockreminderEditor)(nil).DeleteMemory), ctx, userID)
+}
+
 // DeleteReminderByID mocks base method.
 func (m *MockreminderEditor) DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
@@ -139,6 +153,21 @@ func (mr *MockreminderEditorMockRecorder) GetJobID(ctx, reminderID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobID", reflect.TypeOf((*MockreminderEditor)(nil).GetJobID), ctx, reminderID)
 }
 
+// GetMemory mocks base method.
+func (m *MockreminderEditor) GetMemory(ctx context.Context) ([]model.Reminder, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMemory", ctx)
+	ret0, _ := ret[0].([]model.Reminder)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMemory indicates an expected call of GetMemory.
+func (mr *MockreminderEditorMockRecorder) GetMemory(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMemory", reflect.TypeOf((*MockreminderEditor)(nil).GetMemory), ctx)
+}
+
 // GetReminderID mocks base method.
 func (m *MockreminderEditor) GetReminderID(ctx context.Context, userID int64, viewID int) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
@@ -181,4 +210,18 @@ func (m *MockreminderEditor) SaveJob(ctx context.Context, reminderID, jobID uuid
 func (mr *MockreminderEditorMockRecorder) SaveJob(ctx, reminderID, jobID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveJob", reflect.TypeOf((*MockreminderEditor)(nil).SaveJob), ctx, reminderID, jobID)
+}
+
+// SaveMemory mocks base method.
+func (m *MockreminderEditor) SaveMemory(ctx context.Context, reminder *model.Reminder) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveMemory", ctx, reminder)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveMemory indicates an expected call of SaveMemory.
+func (mr *MockreminderEditorMockRecorder) SaveMemory(ctx, reminder interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveMemory", reflect.TypeOf((*MockreminderEditor)(nil).SaveMemory), ctx, reminder)
 }

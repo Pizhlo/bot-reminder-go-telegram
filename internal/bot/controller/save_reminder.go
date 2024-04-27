@@ -49,7 +49,10 @@ func (c *Controller) saveReminder(ctx context.Context, telectx telebot.Context) 
 		verb = "будет срабатывать"
 	}
 
-	c.reminderSrv.Clear(telectx.Chat().ID)
+	err = c.reminderSrv.Clear(ctx, telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
 
 	msg := fmt.Sprintf(messages.SuccessCreationMessage, r.Name, verb, nextRunMsg, nextRun.NextRun.Format(layout))
 
