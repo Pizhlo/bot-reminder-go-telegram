@@ -343,6 +343,40 @@ func TestOnceInHours(t *testing.T) {
 	assert.Equal(t, hoursDate, r.Date)
 }
 
+func TestTimesReminder(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	reminderEditor := mocks.NewMockreminderEditor(ctrl)
+	reminderSrv := reminder.New(reminderEditor)
+	telectx := mocks.NewMockteleCtx(ctrl)
+
+	chat := &tele.Chat{ID: int64(1)}
+
+	telectx.EXPECT().Chat().Return(chat)
+
+	controller := New(nil, nil, nil, reminderSrv)
+
+	randomReminder := random.Reminder()
+	reminderSrv.SaveName(chat.ID, randomReminder.Name)
+
+	expectedTxt := messages.TimesReminderMessage
+	expectedKb := view.BackToReminderMenuBtns()
+
+	telectx.EXPECT().EditOrSend(gomock.Any(), gomock.Any()).Do(func(msg interface{}, kb *tele.ReplyMarkup) {
+		assert.Equal(t, expectedKb, kb)
+		assert.Equal(t, expectedTxt, msg)
+	}).Return(nil)
+
+	err := controller.TimesReminder(context.Background(), telectx)
+	assert.NoError(t, err)
+
+	r, err := reminderSrv.GetFromMemory(chat.ID)
+	assert.NoError(t, err)
+
+	assert.Equal(t, timesReminder, r.Date)
+}
+
 func TestEveryWeek(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
