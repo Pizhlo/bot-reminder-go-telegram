@@ -19,6 +19,10 @@ func (n *ReminderService) SaveName(userID int64, name string) {
 
 	r := n.reminderMap[userID]
 
+	if r == nil {
+		r = &model.Reminder{}
+	}
+
 	r.TgID = userID
 	r.Name = name
 
@@ -140,7 +144,7 @@ func (n *ReminderService) GetFromMemory(userID int64) (*model.Reminder, error) {
 		return nil, fmt.Errorf(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
-	rCopy := r
+	rCopy := *r
 
 	return &rCopy, nil
 }
