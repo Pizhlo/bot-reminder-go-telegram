@@ -121,3 +121,31 @@ func (db *ReminderRepo) GetReminderID(ctx context.Context, userID int64, viewID 
 
 	return id, nil
 }
+
+func (db *ReminderRepo) GetMemory(ctx context.Context) ([]model.Reminder, error) {
+	rows, err := db.db.QueryContext(ctx, `select 
+	reminders.memory_reminders.id, tg_id, text, created, date, time, name as type from reminders.memory_reminders 
+	left join reminders.types on reminders.types.id = reminders.memory_reminders.type_id 
+	join users.users on users.id = memory_reminders.user_id;`)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []model.Reminder
+	for rows.Next() {
+		var r model.Reminder
+
+		err := rows.Scan(&r.ID, &r.TgID, &r.Name, &r.Created, &r.Date, &r.Time, &r.TypeString)
+		if err != nil {
+			return nil, fmt.Errorf("error while scanning memory reminder: %v", err)
+		}
+
+		if r.TypeString.Valid {
+			r.Type = model.ReminderType(r.TypeString.String)
+		}
+
+		res = append(res, r)
+	}
+
+	return res, nil
+}

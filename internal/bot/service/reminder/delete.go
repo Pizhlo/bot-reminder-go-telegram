@@ -24,7 +24,6 @@ func (n *ReminderService) DeleteAll(ctx context.Context, userID int64) error {
 		// удаляем из БД
 		err = n.reminderEditor.DeleteJobAndReminder(ctx, id)
 		if err != nil {
-			logrus.Errorf(wrap(fmt.Sprintf("error while deleting job from DB while deleting all jobs: %v\n", err)))
 			resultErr = errors.Join(err)
 			continue
 		}
@@ -33,7 +32,6 @@ func (n *ReminderService) DeleteAll(ctx context.Context, userID int64) error {
 		err := n.DeleteJob(userID, id)
 		if err != nil {
 			resultErr = errors.Join(err)
-			logrus.Errorf(wrap(fmt.Sprintf("error while deleting all jobs from scheduler: deleting job: %v\n", err)))
 			continue
 		}
 	}

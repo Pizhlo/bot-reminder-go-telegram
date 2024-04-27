@@ -1,7 +1,6 @@
 package reminder
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestValidateDate_Valid(t *testing.T) {
@@ -67,66 +65,25 @@ func TestValidateDate_DatePassed(t *testing.T) {
 }
 
 func TestValidateTime_Valid(t *testing.T) {
-	userID := int64(1)
 
 	n := New(nil)
 
-	n.SaveName(userID, random.String(10))
+	l := time.FixedZone("Europe/Moscow", 0)
 
-	year, month, day := time.Now().Date()
+	userTime := time.Now().In(l).Add(24 * time.Hour)
 
-	var monthStr string
-	if month < 10 {
-		monthStr = fmt.Sprintf("0%d", month)
-	} else {
-		monthStr = fmt.Sprintf("%d", month)
-	}
-
-	var dayStr string
-	if day < 10 {
-		dayStr = fmt.Sprintf("0%d", day)
-	} else {
-		dayStr = fmt.Sprintf("%d", day)
-	}
-
-	date := fmt.Sprintf("%s.%s.%d", dayStr, monthStr, year)
-
-	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "23:59"))
-	require.NoError(t, err)
-
-	err = n.ValidateTime(time.Local, userDateWithTime)
+	err := n.ValidateTime(time.Local, userTime)
 	assert.NoError(t, err)
 }
 
 func TestValidateTime_Invalid(t *testing.T) {
-	userID := int64(1)
-
 	n := New(nil)
 
-	n.SaveName(userID, random.String(10))
+	l := time.FixedZone("Europe/Moscow", 0)
 
-	year, month, day := time.Now().Date()
+	userTime := time.Now().In(l).Add(-24 * time.Hour)
 
-	var monthStr string
-	if month < 10 {
-		monthStr = fmt.Sprintf("0%d", month)
-	} else {
-		monthStr = fmt.Sprintf("%d", month)
-	}
-
-	var dayStr string
-	if day < 10 {
-		dayStr = fmt.Sprintf("0%d", day)
-	} else {
-		dayStr = fmt.Sprintf("%d", day)
-	}
-
-	date := fmt.Sprintf("%s.%s.%d", dayStr, monthStr, year)
-
-	userDateWithTime, err := time.Parse("02.01.2006 15:04", fmt.Sprintf("%s %s", date, "00:00"))
-	require.NoError(t, err)
-
-	err = n.ValidateTime(time.Local, userDateWithTime)
+	err := n.ValidateTime(l, userTime)
 	assert.EqualError(t, err, api_errors.ErrTimeInPast.Error())
 }
 

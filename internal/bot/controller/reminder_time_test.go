@@ -70,8 +70,10 @@ func TestReminderTime(t *testing.T) {
 
 	reminderSrv.SaveUser(chat.ID)
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
-	reminderSrv.SaveType(chat.ID, randomReminder.Type)
-	reminderSrv.SaveDate(chat.ID, randomReminder.Date)
+	err := reminderSrv.SaveType(chat.ID, randomReminder.Type)
+	assert.NoError(t, err)
+	err = reminderSrv.SaveDate(chat.ID, randomReminder.Date)
+	assert.NoError(t, err)
 
 	telectx.EXPECT().Message().Return(&tele.Message{Text: randomReminder.Time}).Times(3)
 
@@ -84,10 +86,14 @@ func TestReminderTime(t *testing.T) {
 		assert.Equal(t, expectedOpts, sendOpts)
 	}).Return(nil)
 
+	reminderEditor.EXPECT().DeleteMemory(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64) {
+		assert.Equal(t, chat.ID, userID)
+	}).Return(nil)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err := controller.ReminderTime(ctx, telectx)
+	err = controller.ReminderTime(ctx, telectx)
 	assert.NoError(t, err)
 }
 
@@ -153,8 +159,10 @@ func TestReminderTime_TimeInPast(t *testing.T) {
 
 	reminderSrv.SaveUser(chat.ID)
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
-	reminderSrv.SaveType(chat.ID, randomReminder.Type)
-	reminderSrv.SaveDate(chat.ID, randomReminder.Date)
+	err := reminderSrv.SaveType(chat.ID, randomReminder.Type)
+	assert.NoError(t, err)
+	err = reminderSrv.SaveDate(chat.ID, randomReminder.Date)
+	assert.NoError(t, err)
 
 	// при создании user service
 	tzEditor.EXPECT().GetAll(gomock.Any()).Return([]*model_user.User{
@@ -174,8 +182,8 @@ func TestReminderTime_TimeInPast(t *testing.T) {
 
 	telectx.EXPECT().Chat().Return(chat).Times(3)
 
-	telectx.EXPECT().Message().Return(&tele.Message{Text: time.Now().Add(-time.Hour).Format("15:04")}).Times(2)
+	telectx.EXPECT().Message().Return(&tele.Message{Text: "00:00"}).Times(2)
 
-	err := controller.ReminderTime(context.Background(), telectx)
+	err = controller.ReminderTime(context.Background(), telectx)
 	assert.EqualError(t, err, api_errors.ErrTimeInPast.Error())
 }

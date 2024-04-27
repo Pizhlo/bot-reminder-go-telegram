@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,6 +31,7 @@ type Reminder struct {
 	ViewID           int64     // ID показываемый для пользователя
 	TgID             int64
 	Name, Date, Time string
+	TypeString       sql.NullString
 	Type             ReminderType
 	Created          time.Time
 	Job              Job

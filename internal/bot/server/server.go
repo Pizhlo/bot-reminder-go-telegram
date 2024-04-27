@@ -48,6 +48,11 @@ func (s *Server) loadUsers(ctx context.Context) {
 		}
 	}
 
+	err = s.controller.LoadMemoryReminders(ctx)
+	if err != nil {
+		logrus.Errorf("error while loading memory reminders: %v", err)
+	}
+
 }
 
 // setupState подготавливает бота к диалогу с пользователем.
@@ -83,5 +88,10 @@ func (s *Server) Shutdown(ctx context.Context) {
 		if err != nil {
 			logrus.Errorf("error while saving user's state on shutdown: %v", err)
 		}
+	}
+
+	err = s.controller.SaveMemoryReminder(ctx)
+	if err != nil {
+		logrus.Errorf("error while saving memory reminder on shutdown: %v", err)
 	}
 }
