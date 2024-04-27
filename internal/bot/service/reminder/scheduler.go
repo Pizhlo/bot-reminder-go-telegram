@@ -136,6 +136,7 @@ func (c *ReminderService) StartAllJobs(ctx context.Context, userID int64, loc *t
 		logrus.Errorf("starting all jobs: creating reminder for: %+v", r)
 		newJob, err := c.CreateReminder(ctx, loc, f, &r)
 		if err != nil {
+			logrus.Errorf("starting all jobs: error: %v", err)
 			return err
 		}
 
