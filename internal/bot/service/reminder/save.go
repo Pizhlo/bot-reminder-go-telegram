@@ -31,7 +31,7 @@ func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, remind
 	// 	return err
 	// }
 
-	logrus.Debugf(wrap(fmt.Sprintf("saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)))
+	logrus.Errorf(wrap(fmt.Sprintf("saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)))
 
 	return s.reminderEditor.SaveJob(ctx, reminderID, jobID)
 }

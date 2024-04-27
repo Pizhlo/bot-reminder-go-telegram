@@ -113,7 +113,7 @@ func (c *ReminderService) getScheduler(tgID int64) (*gocron.Scheduler, error) {
 // DeleteJob останавливает и удаляет таску в планировщике
 func (c *ReminderService) DeleteJob(tgID int64, jobID uuid.UUID) error {
 	if val, ok := c.schedulers[tgID]; ok {
-		logrus.Debugf(wrap(fmt.Sprintf("deleting job %v from scheduler", jobID)))
+		logrus.Errorf(wrap(fmt.Sprintf("deleting job %v from scheduler", jobID)))
 		return val.DeleteJob(jobID)
 	}
 
