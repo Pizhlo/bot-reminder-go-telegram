@@ -76,5 +76,6 @@ func (n *ReminderService) DeleteReminder(ctx context.Context, reminder *model.Re
 		return fmt.Errorf(wrap(fmt.Sprintf("error while deleting reminder: %v", err)))
 	}
 
+	logrus.Errorf("got job ID: %v", job)
 	return n.DeleteJob(reminder.TgID, job)
 }

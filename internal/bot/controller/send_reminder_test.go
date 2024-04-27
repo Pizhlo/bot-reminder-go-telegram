@@ -63,6 +63,7 @@ func TestProcessDeleteReminder(t *testing.T) {
 
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
+		t.Errorf("saving job id: %v", jobID)
 		randomReminder.Job.ID = jobID
 	}).Return(nil)
 
