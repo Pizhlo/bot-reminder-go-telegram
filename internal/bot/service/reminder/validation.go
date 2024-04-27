@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -116,6 +117,41 @@ func (n *ReminderService) ProcessHours(userID int64, hours string) error {
 	// сохраняем изменения
 
 	r.Time = hours
+
+	n.reminderMap[userID] = r
+
+	return nil
+}
+
+// ProcessTimes обрабатывает от пользователя список времен, когда присылать уведомления (10:30, 12:00, 17:00)
+func (n *ReminderService) ProcessTimes(userID int64, t string) error {
+	var times []string
+
+	if strings.Contains(t, ",") {
+		times = strings.Split(t, ",")
+	} else {
+		times = strings.Split(t, " ")
+	}
+
+	for _, tt := range times {
+		tt = strings.Trim(tt, " ")
+		_, err := time.Parse("15:04", tt)
+		if err != nil {
+			return api_errors.ErrInvalidTime
+		}
+	}
+
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return fmt.Errorf("error while getting reminder by user ID: reminder not found")
+	}
+
+	// сохраняем изменения
+
+	r.Time = t
 
 	n.reminderMap[userID] = r
 

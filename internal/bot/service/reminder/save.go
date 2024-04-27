@@ -41,5 +41,5 @@ func (s *ReminderService) Clear(userID int64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.reminderMap[userID] = model.Reminder{}
+	s.reminderMap[userID] = &model.Reminder{}
 }

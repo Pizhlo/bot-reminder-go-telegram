@@ -70,11 +70,11 @@ func (db *ReminderRepo) GetAllJobs(ctx context.Context, userID int64) ([]uuid.UU
 	ids := make([]uuid.UUID, 0)
 
 	rows, err := db.db.QueryContext(ctx, `select job_id from reminders.jobs 
-	where reminder_id = (select id from reminders.reminders 
+	where reminder_id in (select id from reminders.reminders 
 	where user_id = (select id from users.users where tg_id = $1))`, userID)
 
 	if err != nil {
-		return nil, fmt.Errorf("error while getting all reminders from DB by user ID %d while getting all jobs: %w", userID, err)
+		return nil, fmt.Errorf("error while getting all jobs from DB by user ID %d while getting all jobs: %w", userID, err)
 	}
 	defer rows.Close()
 

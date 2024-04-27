@@ -194,9 +194,13 @@ func ProcessTypeAndDate(reminderType model.ReminderType, date, time string) (str
 		if date == "minutes" {
 			minutesInt, _ := strconv.Atoi(time) // опускаем ошибку, потому что время уже было проавлидировано на предыдущих шагах
 			return fmt.Sprintf("один раз в %s", processMinutes(time, minutesInt)), nil
-		} else {
+		} else if date == "hours" {
 			hoursInt, _ := strconv.Atoi(time)
 			return fmt.Sprintf("один раз в %s", processHours(time, hoursInt)), nil
+		} else if date == "times_reminder" {
+			return fmt.Sprintf("каждый день в %s", time), nil
+		} else {
+			return "", fmt.Errorf("unknown Date: %s", date)
 		}
 	case model.EveryWeekType:
 		txt, err := processWeekDay(date, time)

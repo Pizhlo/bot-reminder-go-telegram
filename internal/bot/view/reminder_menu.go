@@ -162,6 +162,9 @@ var (
 
 	// тип напоминания: Раз в несколько часов
 	BtnHoursReminder = tele.Btn{Text: "Раз в несколько часов", Unique: "hours"}
+
+	// тип напоминания: По времени
+	BtnTimesReminder = tele.Btn{Text: "По времени", Unique: "times_reminder"}
 )
 
 // SeveralTimesBtns возвращает меню с двумя кнопками: раз в несколько минут, раз в несколько часов
@@ -169,7 +172,9 @@ func SeveralTimesBtns() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
-		menu.Row(BtnMinutesReminder, BtnHoursReminder),
+		menu.Row(BtnMinutesReminder),
+		menu.Row(BtnHoursReminder),
+		menu.Row(BtnTimesReminder),
 		menu.Row(BtnBackToMenu, BtnBackToReminderType),
 	)
 

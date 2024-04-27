@@ -17,7 +17,7 @@ type ReminderService struct {
 	reminderEditor reminderEditor
 	viewsMap       map[int64]*view.ReminderView
 	// для сохранения напоминаний во время создания
-	reminderMap map[int64]model.Reminder
+	reminderMap map[int64]*model.Reminder
 	mu          sync.Mutex
 
 	schedulers map[int64]*gocron.Scheduler
@@ -44,7 +44,7 @@ type reminderEditor interface {
 	GetJobID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error)
 
 	// DeleteReminderByID удаляет одно напоминание. Для удаления необходим ID напоминания
-	DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) error
+	DeleteReminderByID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error)
 
 	// GetReminderID возвращает айди напоминания в базе. Ищет по пользователю и view id
 	GetReminderID(ctx context.Context, userID int64, viewID int) (uuid.UUID, error)
@@ -63,7 +63,7 @@ func New(reminderEditor reminderEditor) *ReminderService {
 	return &ReminderService{
 		reminderEditor: reminderEditor,
 		viewsMap:       make(map[int64]*view.ReminderView),
-		reminderMap:    make(map[int64]model.Reminder),
+		reminderMap:    make(map[int64]*model.Reminder),
 		mu:             sync.Mutex{},
 		schedulers:     make(map[int64]*gocron.Scheduler),
 	}

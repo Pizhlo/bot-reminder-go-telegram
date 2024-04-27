@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	minutesDate = "minutes"
-	hoursDate   = "hours"
+	minutesDate   = "minutes"
+	hoursDate     = "hours"
+	timesReminder = "times_reminder"
 )
 
 // Today обрабатывает кнопку "сегодня"
@@ -158,6 +159,16 @@ func (c *Controller) OnceInHours(ctx context.Context, telectx telebot.Context) e
 	}
 
 	return telectx.EditOrSend(messages.HoursDurationMessage, view.BackToReminderMenuBtns())
+}
+
+// TimesReminder обрабатывает кнопку "в указанное время"
+func (c *Controller) TimesReminder(ctx context.Context, telectx telebot.Context) error {
+	err := c.reminderSrv.SaveDate(telectx.Chat().ID, timesReminder)
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(messages.TimesReminderMessage, view.BackToReminderMenuBtns())
 }
 
 // OnceInMinutes обрабатывает кнопку "раз в неделю"

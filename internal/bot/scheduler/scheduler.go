@@ -142,6 +142,45 @@ func (s *Scheduler) CreateHoursReminder(hours string, task Task, params ...any) 
 	return result, nil
 }
 
+// CreateTimesReminder создает напоминание, которое срабатывает в указанные времена (11:00, 14:30, 17:00)
+func (s *Scheduler) CreateTimesReminder(task Task, userTimes []string, params ...any) (NewJob, error) {
+	atTimes := []gocron.AtTime{}
+
+	for _, tt := range userTimes {
+		tt = strings.Trim(tt, " ")
+		userTime, err := time.Parse("15:04", tt)
+		if err != nil {
+			return NewJob{}, err
+		}
+
+		atTime := gocron.NewAtTime(uint(userTime.Hour()), uint(userTime.Minute()), 0)
+
+		atTimes = append(atTimes, atTime)
+	}
+
+	times := gocron.NewAtTimes(atTimes[0], atTimes...)
+
+	job := makeTask(task, params...)
+
+	j, err := s.NewJob(gocron.DailyJob(1, times), job)
+	if err != nil {
+		return NewJob{}, err
+	}
+
+	run, err := j.NextRun()
+	if err != nil {
+		return NewJob{}, fmt.Errorf("error while getting next run: %w", err)
+	}
+
+	result := NewJob{
+		JobID:   j.ID(),
+		NextRun: run,
+	}
+
+	return result, nil
+
+}
+
 // CreateEveryWeekReminder создает напоминание еженедельное напоминание
 func (s *Scheduler) CreateEveryWeekReminder(weekDay time.Weekday, userTime string, task Task, params ...any) (NewJob, error) {
 	logrus.Errorf("task: %+v, params: %+v, %+v", task, params[0], params[1])

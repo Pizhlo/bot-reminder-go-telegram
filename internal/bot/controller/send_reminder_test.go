@@ -37,7 +37,7 @@ func TestSendReminder(t *testing.T) {
 	defer cancel()
 
 	err = controller.SendReminder(ctx, randomReminder)
-	assert.True(t, err == tele.ErrNotFound)
+	assert.NoError(t, err)
 }
 
 func TestProcessDeleteReminder(t *testing.T) {
@@ -47,6 +47,8 @@ func TestProcessDeleteReminder(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	chat := &tele.Chat{ID: 1}
+
 	telectx := mocks.NewMockteleCtx(ctrl)
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -54,7 +56,6 @@ func TestProcessDeleteReminder(t *testing.T) {
 	controller := New(nil, nil, nil, reminderSrv)
 
 	randomReminder := random.Reminder()
-	chat := &tele.Chat{ID: 1}
 
 	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{*randomReminder}, nil).Do(func(ctx interface{}, userID int64) {
 		assert.Equal(t, chat.ID, userID)
@@ -65,12 +66,12 @@ func TestProcessDeleteReminder(t *testing.T) {
 		randomReminder.Job.ID = jobID
 	}).Return(nil)
 
-	err := controller.reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
+	err := reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
 	require.NoError(t, err)
 
 	reminderEditor.EXPECT().DeleteReminderByID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
-	}).Return(nil)
+	}).Return(randomReminder.Job.ID, nil)
 
 	expectedText := fmt.Sprintf(messages.ReminderDeletedMessage, randomReminder.Name)
 	expectedSendOpts := &tele.SendOptions{
