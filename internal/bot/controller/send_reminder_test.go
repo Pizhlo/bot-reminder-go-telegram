@@ -68,7 +68,7 @@ func TestProcessDeleteReminder(t *testing.T) {
 		randomReminder.Job.ID = jobID
 	}).Return(nil)
 
-	reminderSrv.CreateScheduler(context.Background(), chat.ID, time.Local, controller.SendReminder)
+	reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
 
 	reminderEditor.EXPECT().DeleteReminderByID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
