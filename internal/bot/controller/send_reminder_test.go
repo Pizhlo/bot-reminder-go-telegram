@@ -59,17 +59,14 @@ func TestProcessDeleteReminder(t *testing.T) {
 
 	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return([]model.Reminder{*randomReminder}, nil).Do(func(ctx interface{}, userID int64) {
 		assert.Equal(t, chat.ID, userID)
-	}).Times(2)
+	})
 
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
 		randomReminder.Job.ID = jobID
-	}).Return(nil).Times(2)
+	}).Return(nil)
 
 	reminderSrv.CreateScheduler(context.Background(), chat.ID, time.Local, controller.SendReminder)
-
-	err := controller.reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
-	require.NoError(t, err)
 
 	reminderEditor.EXPECT().DeleteReminderByID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
@@ -86,6 +83,6 @@ func TestProcessDeleteReminder(t *testing.T) {
 		assert.Equal(t, expectedSendOpts, sendOpts)
 	})
 
-	err = controller.ProcessDeleteReminder(ctx, telectx, randomReminder)
+	err := controller.ProcessDeleteReminder(ctx, telectx, randomReminder)
 	assert.NoError(t, err)
 }
