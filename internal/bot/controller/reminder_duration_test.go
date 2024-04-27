@@ -24,6 +24,9 @@ func TestMinutesDuration_Valid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
@@ -78,13 +81,16 @@ func TestMinutesDuration_Valid(t *testing.T) {
 
 	controller := New(userSrv, nil, nil, reminderSrv)
 
-	err := controller.MinutesDuration(context.Background(), telectx)
+	err := controller.MinutesDuration(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestMinutesDuration_Invalid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -112,13 +118,16 @@ func TestMinutesDuration_Invalid(t *testing.T) {
 
 	controller := New(nil, nil, nil, reminderSrv)
 
-	err := controller.MinutesDuration(context.Background(), telectx)
+	err := controller.MinutesDuration(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestHoursDuration_Valid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -174,13 +183,16 @@ func TestHoursDuration_Valid(t *testing.T) {
 
 	controller := New(userSrv, nil, nil, reminderSrv)
 
-	err := controller.HoursDuration(context.Background(), telectx)
+	err := controller.HoursDuration(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestHoursDuration_Invalid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -208,13 +220,16 @@ func TestHoursDuration_Invalid(t *testing.T) {
 
 	controller := New(nil, nil, nil, reminderSrv)
 
-	err := controller.HoursDuration(context.Background(), telectx)
+	err := controller.HoursDuration(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestTimes_Valid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -274,7 +289,7 @@ func TestTimes_Valid(t *testing.T) {
 
 		controller := New(userSrv, nil, nil, reminderSrv)
 
-		err := controller.Times(context.Background(), telectx)
+		err := controller.Times(ctx, telectx)
 		assert.NoError(t, err)
 	}
 
@@ -283,6 +298,9 @@ func TestTimes_Valid(t *testing.T) {
 func TestTimes_Invalid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -310,13 +328,16 @@ func TestTimes_Invalid(t *testing.T) {
 
 	controller := New(nil, nil, nil, reminderSrv)
 
-	err := controller.Times(context.Background(), telectx)
+	err := controller.Times(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestDaysDuration_Valid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -340,13 +361,16 @@ func TestDaysDuration_Valid(t *testing.T) {
 
 	controller := New(nil, nil, nil, reminderSrv)
 
-	err := controller.DaysDuration(context.Background(), telectx)
+	err := controller.DaysDuration(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestDaysDuration_NotInt(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -363,13 +387,16 @@ func TestDaysDuration_NotInt(t *testing.T) {
 
 	controller := New(nil, nil, nil, reminderSrv)
 
-	err := controller.DaysDuration(context.Background(), telectx)
+	err := controller.DaysDuration(ctx, telectx)
 	assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
 }
 
 func TestDaysDuration_OutOfRange(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -392,7 +419,7 @@ func TestDaysDuration_OutOfRange(t *testing.T) {
 	for _, m := range mesages {
 		telectx.EXPECT().Chat().Return(chat)
 		telectx.EXPECT().Message().Return(&m)
-		err := controller.DaysDuration(context.Background(), telectx)
+		err := controller.DaysDuration(ctx, telectx)
 		assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
 	}
 
@@ -401,6 +428,9 @@ func TestDaysDuration_OutOfRange(t *testing.T) {
 func TestDaysInMonthDurationn_Valid(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -424,13 +454,16 @@ func TestDaysInMonthDurationn_Valid(t *testing.T) {
 
 	controller := New(nil, nil, nil, reminderSrv)
 
-	err := controller.DaysInMonthDuration(context.Background(), telectx)
+	err := controller.DaysInMonthDuration(ctx, telectx)
 	assert.NoError(t, err)
 }
 
 func TestDaysInMonthDuration_NotInt(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -447,13 +480,16 @@ func TestDaysInMonthDuration_NotInt(t *testing.T) {
 
 	controller := New(nil, nil, nil, reminderSrv)
 
-	err := controller.DaysInMonthDuration(context.Background(), telectx)
+	err := controller.DaysInMonthDuration(ctx, telectx)
 	assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
 }
 
 func TestDaysInMonthDuration_OutOfRange(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
@@ -475,7 +511,7 @@ func TestDaysInMonthDuration_OutOfRange(t *testing.T) {
 	for _, m := range mesages {
 		telectx.EXPECT().Chat().Return(chat)
 		telectx.EXPECT().Message().Return(&m)
-		err := controller.DaysInMonthDuration(context.Background(), telectx)
+		err := controller.DaysInMonthDuration(ctx, telectx)
 		assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
 	}
 

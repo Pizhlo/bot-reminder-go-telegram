@@ -85,7 +85,6 @@ func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location
 // CreateScheduler создает планировщика для конкретного пользователя.
 // Запускает также все таски пользователя
 func (c *ReminderService) CreateScheduler(ctx context.Context, tgID int64, loc *time.Location, f gocron.Task) error {
-	logrus.Errorf("creating scheduler for user %d", tgID)
 	val, ok := c.schedulers[tgID]
 	if ok {
 		err := val.StopJobs()
@@ -123,7 +122,6 @@ func (c *ReminderService) DeleteJob(tgID int64, jobID uuid.UUID) error {
 
 // startAllJobs запускает все таски
 func (c *ReminderService) StartAllJobs(ctx context.Context, userID int64, loc *time.Location, f gocron.Task) error {
-	logrus.Errorf("starting all jobs for user %d", userID)
 	reminders, err := c.reminderEditor.GetAllByUserID(ctx, userID)
 	if err != nil {
 		if !errors.Is(err, api_errors.ErrRemindersNotFound) {
@@ -131,16 +129,12 @@ func (c *ReminderService) StartAllJobs(ctx context.Context, userID int64, loc *t
 		}
 	}
 
-	logrus.Errorf("starting all jobs: got reminders: %v", reminders)
 	for _, r := range reminders {
-		logrus.Errorf("starting all jobs: creating reminder for: %+v", r)
 		newJob, err := c.CreateReminder(ctx, loc, f, &r)
 		if err != nil {
-			logrus.Errorf("starting all jobs: error: %v", err)
 			return err
 		}
 
-		logrus.Errorf("starting all jobs: saving job id: %+v", newJob)
 		err = c.SaveJobID(ctx, newJob.JobID, r.ID)
 		if err != nil {
 			return err

@@ -14,7 +14,6 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tele "gopkg.in/telebot.v3"
@@ -64,11 +63,11 @@ func TestProcessDeleteReminder(t *testing.T) {
 
 	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
-		logrus.Errorf("saving job id: %v", jobID)
 		randomReminder.Job.ID = jobID
 	}).Return(nil)
 
-	reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
+	err := reminderSrv.CreateScheduler(ctx, chat.ID, time.Local, controller.SendReminder)
+	require.NoError(t, err)
 
 	reminderEditor.EXPECT().DeleteReminderByID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, reminderID uuid.UUID) {
 		assert.Equal(t, randomReminder.ID, reminderID)
@@ -85,6 +84,6 @@ func TestProcessDeleteReminder(t *testing.T) {
 		assert.Equal(t, expectedSendOpts, sendOpts)
 	})
 
-	err := controller.ProcessDeleteReminder(ctx, telectx, randomReminder)
+	err = controller.ProcessDeleteReminder(ctx, telectx, randomReminder)
 	assert.NoError(t, err)
 }
