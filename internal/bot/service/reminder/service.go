@@ -97,7 +97,8 @@ func (n *ReminderService) LoadMemory(ctx context.Context) error {
 
 	for _, r := range rList {
 		logrus.Debugf(wrap(fmt.Sprintf("saving user's reminder from db to cache: %+v", r)))
-		n.reminderMap[r.TgID] = &r
+		reminder := r
+		n.reminderMap[r.TgID] = &reminder
 	}
 
 	return nil

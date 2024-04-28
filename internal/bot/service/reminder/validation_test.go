@@ -124,3 +124,44 @@ func TestFixInt_After10(t *testing.T) {
 		assert.Equal(t, expected, actual)
 	}
 }
+
+func TestProcessTimes_Valid(t *testing.T) {
+	type test struct {
+		userTime string
+	}
+
+	tests := []test{
+		{
+			userTime: "19:03 20:04",
+		},
+		{
+			userTime: "19:03, 20:04",
+		},
+	}
+	n := New(nil)
+	userID := int64(1)
+	name := random.String(10)
+	n.SaveName(userID, name)
+
+	for _, tt := range tests {
+		err := n.ProcessTimes(userID, tt.userTime)
+		assert.NoError(t, err)
+
+		r, err := n.GetFromMemory(userID)
+		assert.NoError(t, err)
+
+		assert.Equal(t, name, r.Name)
+		assert.Equal(t, tt.userTime, r.Time)
+	}
+}
+
+func TestProcessTimes_Invalid(t *testing.T) {
+	n := New(nil)
+	userID := int64(1)
+	name := random.String(10)
+	n.SaveName(userID, name)
+
+	err := n.ProcessTimes(userID, random.String(6))
+	assert.EqualError(t, err, api_errors.ErrInvalidTime.Error())
+
+}
