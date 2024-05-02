@@ -98,7 +98,7 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		s.fsm[telectx.Chat().ID].SetToDefault()
 
-		err := s.controller.StartCmd(ctx, telectx)
+		err := s.controller.MenuCmd(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

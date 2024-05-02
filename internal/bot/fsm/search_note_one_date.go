@@ -25,7 +25,9 @@ func (n *searchNoteOneDate) Handle(ctx context.Context, telectx tele.Context) er
 		return n.controller.CreateNote(ctx, telectx)
 	}
 
-	return n.controller.SearchNoteByOnedate(ctx, telectx)
+	n.fsm.SetNext()
+
+	return n.controller.SearchNoteBySelectedDate(ctx, telectx)
 }
 
 func (n *searchNoteOneDate) Next() state {
