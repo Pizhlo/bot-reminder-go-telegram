@@ -64,13 +64,20 @@ func TestHelpCmd(t *testing.T) {
 
 	telectx := mock_controller.NewMockteleCtx(ctrl)
 
-	expectedTxt := messages.HelpMessage
-	expectedKb := view.MainMenu()
+	user := &telebot.User{FirstName: random.String(10)}
 
-	telectx.EXPECT().EditOrSend(gomock.Any(), gomock.Any()).Do(func(text string, kb *telebot.ReplyMarkup) {
+	expectedTxt := fmt.Sprintf(messages.HelpMessage, user.FirstName)
+	expectedOpts := &telebot.SendOptions{
+		ReplyMarkup: view.MainMenu(),
+		ParseMode:   htmlParseMode,
+	}
+
+	telectx.EXPECT().EditOrSend(gomock.Any(), gomock.Any()).Do(func(text string, kb *telebot.SendOptions) {
 		assert.Equal(t, expectedTxt, text)
-		assert.Equal(t, expectedKb, kb)
+		assert.Equal(t, expectedOpts, kb)
 	})
+
+	telectx.EXPECT().Sender().Return(user)
 
 	controller := New(nil, nil, nil, nil)
 
