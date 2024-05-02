@@ -3,14 +3,17 @@ package controller
 import (
 	"context"
 	"testing"
+	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	tele "gopkg.in/telebot.v3"
 )
@@ -19,29 +22,40 @@ func TestListReminders_Positive(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	reminderEditor := mocks.NewMockreminderEditor(ctrl)
-	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	db := mocks.NewMockreminderEditor(ctrl)
+	srv := reminder.New(db)
+	controller := New(nil, nil, nil, srv)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
 	telectx.EXPECT().Chat().Return(chat).Times(3)
 
-	reminderSrv.SaveUser(chat.ID)
+	srv.SaveUser(chat.ID)
 
 	reminders := random.Reminders(5)
 
-	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64) {
+	db.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64) {
 		assert.Equal(t, chat.ID, userID)
-	}).Return(reminders, nil)
+	}).Return(reminders, nil).Times(2)
 
-	reminderView := view.NewReminder()
+	db.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(len(reminders)).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
+		for i := 0; i < len(reminders); i++ {
+			if reminders[i].ID == reminderID {
+				reminders[i].Job.ID = jobID
+			}
+		}
+	})
 
-	expectedText, err := reminderView.Message(reminders)
+	err := srv.CreateScheduler(context.Background(), chat.ID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
+	assert.NoError(t, err)
+
+	view := view.NewReminder()
+
+	expectedText, err := view.Message(reminders)
 	assert.NoError(t, err)
 
 	expectedSendOptions := &tele.SendOptions{
-		ReplyMarkup: reminderView.Keyboard(),
+		ReplyMarkup: view.Keyboard(),
 		ParseMode:   htmlParseMode,
 	}
 

@@ -32,6 +32,10 @@ func Reminder() *model.Reminder {
 		Type:    model.DateType,
 		Time:    "10:10",
 		Created: time.Now(),
+		Job: model.Job{
+			ID:      uuid.Nil,
+			NextRun: time.Date(time.Now().Year(), time.October, 10, 10, 10, 0, 0, time.Local),
+		},
 	}
 
 	return r

@@ -99,7 +99,7 @@ func (db *ReminderRepo) GetAllJobs(ctx context.Context, userID int64) ([]uuid.UU
 func (db *ReminderRepo) GetJobID(ctx context.Context, reminderID uuid.UUID) (uuid.UUID, error) {
 	id := uuid.UUID{}
 
-	row := db.db.QueryRowContext(ctx, `select job_id from reminder_id = $1`, reminderID)
+	row := db.db.QueryRowContext(ctx, `select job_id from reminders.jobs where reminder_id = $1`, reminderID)
 
 	err := row.Scan(&id)
 	if err != nil {
@@ -112,7 +112,7 @@ func (db *ReminderRepo) GetJobID(ctx context.Context, reminderID uuid.UUID) (uui
 func (db *ReminderRepo) GetReminderID(ctx context.Context, userID int64, viewID int) (uuid.UUID, error) {
 	id := uuid.UUID{}
 
-	row := db.db.QueryRowContext(ctx, `select id from reminders.reminders_view where user_id = (select id from users.users where tg_id = $1) and reminder_numer = $2`, userID, viewID)
+	row := db.db.QueryRowContext(ctx, `select id from reminders.reminders_view where user_id = (select id from users.users where tg_id = $1) and reminder_number = $2`, userID, viewID)
 
 	err := row.Scan(&id)
 	if err != nil {
@@ -130,6 +130,8 @@ func (db *ReminderRepo) GetMemory(ctx context.Context) ([]model.Reminder, error)
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close()
 
 	var res []model.Reminder
 	for rows.Next() {
