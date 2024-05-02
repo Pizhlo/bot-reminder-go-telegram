@@ -28,5 +28,9 @@ func (c *Controller) MenuCmd(ctx context.Context, telectx tele.Context) error {
 
 // HelpCmd обрабатывает команду /help
 func (c *Controller) HelpCmd(ctx context.Context, telectx tele.Context) error {
-	return telectx.EditOrSend(messages.HelpMessage, view.MainMenu())
+	msg := fmt.Sprintf(messages.HelpMessage, telectx.Sender().FirstName)
+	return telectx.EditOrSend(msg, &tele.SendOptions{
+		ReplyMarkup: view.MainMenu(),
+		ParseMode:   htmlParseMode,
+	})
 }
