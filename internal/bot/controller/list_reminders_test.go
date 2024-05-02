@@ -22,6 +22,9 @@ func TestListReminders_Positive(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	db := mocks.NewMockreminderEditor(ctrl)
 	srv := reminder.New(db)
 	controller := New(nil, nil, nil, srv)
@@ -46,7 +49,7 @@ func TestListReminders_Positive(t *testing.T) {
 		}
 	})
 
-	err := srv.CreateScheduler(context.Background(), chat.ID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
+	err := srv.CreateScheduler(ctx, chat.ID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
 	assert.NoError(t, err)
 
 	view := view.NewReminder()
@@ -64,7 +67,7 @@ func TestListReminders_Positive(t *testing.T) {
 		assert.Equal(t, expectedSendOptions, sendOpts)
 	}).Return(nil)
 
-	err = controller.ListReminders(context.Background(), telectx)
+	err = controller.ListReminders(ctx, telectx)
 	assert.NoError(t, err)
 }
 

@@ -19,6 +19,9 @@ func TestGetAll(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	userID := int64(1)
 
 	reminderEditor := mock_reminder.NewMockreminderEditor(ctrl)
@@ -39,7 +42,7 @@ func TestGetAll(t *testing.T) {
 		}
 	})
 
-	err := n.CreateScheduler(context.Background(), userID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
+	err := n.CreateScheduler(ctx, userID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
 	assert.NoError(t, err)
 
 	// создаем view для генерации сообщения на основе данных из БД
