@@ -2,15 +2,49 @@ package reminder
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/go-co-op/gocron/v2"
+	"github.com/google/uuid"
 	tele "gopkg.in/telebot.v3"
 )
 
 // GetAll обрабатывает запрос всех напоминаний пользователя. Возвращает: первую страницу напоминаний (в виде целого сообщения),
 // клавиатуру и ошибку
 func (s *ReminderService) GetAll(ctx context.Context, userID int64) ([]model.Reminder, error) {
-	return s.reminderEditor.GetAllByUserID(ctx, userID)
+	reminders, err := s.reminderEditor.GetAllByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	sch, err := s.getScheduler(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	jobs := sch.Jobs()
+	jobsMap := map[uuid.UUID]gocron.Job{}
+
+	for _, j := range jobs {
+		jobsMap[j.ID()] = j
+	}
+
+	for i := 0; i < len(reminders); i++ {
+		j, ok := jobsMap[reminders[i].Job.ID]
+		if !ok {
+			return nil, errors.New("not found job in JobsMap by ID")
+		}
+
+		nextRun, err := j.NextRun()
+		if err != nil {
+			return nil, err
+		}
+
+		reminders[i].Job.NextRun = nextRun
+	}
+
+	return reminders, nil
 }
 
 func (s *ReminderService) Message(userID int64, reminders []model.Reminder) (string, error) {

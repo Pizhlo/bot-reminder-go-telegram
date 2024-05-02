@@ -4,17 +4,23 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	mock_reminder "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetAll(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	userID := int64(1)
 
@@ -25,12 +31,24 @@ func TestGetAll(t *testing.T) {
 	// ожидаемые напоминания, которые возвращает база
 	expectedResult := random.Reminders(5)
 
+	// один раз - при создании планировщика, еще раз - при вызове n.GetAll()
+	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return(expectedResult, nil).Times(2)
+
+	reminderEditor.EXPECT().SaveJob(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(len(expectedResult)).Do(func(ctx interface{}, reminderID uuid.UUID, jobID uuid.UUID) {
+		for i := 0; i < len(expectedResult); i++ {
+			if expectedResult[i].ID == reminderID {
+				expectedResult[i].Job.ID = jobID
+			}
+		}
+	})
+
+	err := n.CreateScheduler(ctx, userID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
+	assert.NoError(t, err)
+
 	// создаем view для генерации сообщения на основе данных из БД
 	view := view.NewReminder()
 	// подготавливаем сообщение - сохраняем во view
 	view.Message(expectedResult)
-
-	reminderEditor.EXPECT().GetAllByUserID(gomock.Any(), gomock.Any()).Return(expectedResult, nil)
 
 	reminders, err := n.GetAll(context.Background(), userID)
 	assert.NoError(t, err)

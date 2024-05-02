@@ -38,5 +38,6 @@ type Reminder struct {
 }
 
 type Job struct {
-	ID uuid.UUID
+	ID      uuid.UUID
+	NextRun time.Time
 }
