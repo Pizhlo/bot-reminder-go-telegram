@@ -78,10 +78,12 @@ jobs:
     steps:
       - name: Run command on remote server
         uses: JimCronqvist/action-ssh@master
+        env:
+          USER: ${{secrets.SERVER_USER}}
         with:
-            host: ${{secrets.SERVER_IP}}
-            user: ${{secrets.SERVER_USER}}
-            private_key: ${{secrets.SSH_PRIVATE_KEY}}
+        # Unexpected input(s) 'host', 'user', 'private_key', valid inputs are ['entryPoint', 'args', 'command', 'hosts', 'privateKey', 'debug']
+            hosts: ${{secrets.SERVER_IP}}
+            privateKey: ${{secrets.SSH_PRIVATE_KEY}}
             command: |
               echo '--- START WORK ON REMOTE SERVER ---';
               cd ${{ secrets.PROJECT_FOLDER }};
