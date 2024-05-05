@@ -18,6 +18,10 @@ import (
 func (s *Server) setupBot(ctx context.Context) {
 	s.bot.Use(logger.Logging(ctx), middleware.AutoRespond())
 
+	s.bot.Handle("/test", func(ctx tele.Context) error {
+		return ctx.Send("все получилось")
+	})
+
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)

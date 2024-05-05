@@ -79,7 +79,10 @@ jobs:
     steps:
       - name: Connect and run script
         uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
+     script:
+      - ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /dockers/bot-reminder
+        docker compose down &&
+        docker rm image ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}
+        docker rm bot &&
+        docker-compose up -d
+        "
