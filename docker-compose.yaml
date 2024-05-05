@@ -1,10 +1,45 @@
 services:
   postgres:
     image: postgres:latest
+    container_name: postgres
     restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - .env
     ports:
       - "${POSTGRES_PORT}:5432"
+    networks:
+      - bot-reminder
+  bot:
+    image: bot:latest
+    container_name: bot
+    build:
+      context: .
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      TOKEN: ${TOKEN}
+      TIMEOUT: ${TIMEOUT}
+      MAX_MSG_SIZE: ${MAX_MSG_SIZE}
+      CHANNEL_ID: ${CHANNEL_ID}
+      LOG_LEVEL: ${LOG_LEVEL}
+    env_file:
+      - .env
+    networks:
+      - bot-reminder
+    depends_on:
+      - postgres
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: ["/app/migrate.sh", "up"]
+networks:
+  bot-reminder:
+    name: bot-reminder
