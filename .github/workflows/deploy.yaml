@@ -88,11 +88,11 @@ jobs:
                 echo '--- LIST OF FILES ---';
                 ls -al;
                 echo '--- DOCKER OPERATIONS ---';
-                docker-compose down;
+                docker compose down;
                 echo '--- LIST OF DOCKER CONTAINERS AFTER STOPING DOCKER CONTAINERS ---';
                 docker ps;
-                docker rm image ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}
-                docker-compose up -d;
+                docker image rm ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}
+                docker compose up -d;
                 echo '--- LIST OF DOCKER CONTAINERS AFTER STARTING DOCKER CONTAINERS ---';
                 docker ps;
     # run: |
