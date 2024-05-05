@@ -77,14 +77,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run command on remote server
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          USER: ${{secrets.SERVER_USER}}
+        uses: D3rHase/ssh-command-action@v0.2.2
         with:
-            host: ${{secrets.SERVER_IP}}
-            username: ${{secrets.SERVER_USER}}
-            key: ${{secrets.SSH_PRIVATE_KEY}}
-            script: |
+        host: ${{secrets.SERVER_IP}}
+        user: ${{secrets.SERVER_USER}}
+        private_key: ${{secrets.SSH_PRIVATE_KEY}}
+        command: |
               echo '--- START WORK ON REMOTE SERVER ---';
               cd ${{ secrets.PROJECT_FOLDER }};
               echo '--- LIST OF FILES ---';
