@@ -71,7 +71,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
   
-  
   server_update:
     needs: push_to_docker_hub
     name: Update server buy ssh
