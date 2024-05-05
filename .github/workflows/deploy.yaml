@@ -73,7 +73,7 @@ jobs:
   
   
   server_update:
-    needs: push_to_registry
+    needs: push_to_docker_hub
     name: Update server buy ssh
     runs-on: ubuntu-latest
     steps:
