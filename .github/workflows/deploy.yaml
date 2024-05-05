@@ -5,6 +5,9 @@ on:
     branches: ["main"]
 
   deploy:
+    needs:
+    - build
+    - test
     runs-on: ubuntu-latest
       if: github.ref == 'refs/heads/main'
     steps:

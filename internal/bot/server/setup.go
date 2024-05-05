@@ -90,23 +90,6 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
-	// назад в меню
-	s.bot.Handle(&view.BtnBackToMenu, func(telectx tele.Context) error {
-		logrus.Debugf("Menu btn")
-		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
-		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-
-		s.fsm[telectx.Chat().ID].SetToDefault()
-
-		err := s.controller.MenuCmd(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		return nil
-	})
-
 	// кнопка чтобы скрыть клавиатуру у сработавшего напоминания
 	s.bot.Handle(&view.BtnCheckReminder, func(ctx tele.Context) error {
 		// отправляем сообщение без клавиатуры
@@ -123,6 +106,23 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	restricted := s.bot.Group()
 	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx), middleware.AutoRespond())
+
+	// назад в меню
+	restricted.Handle(&view.BtnBackToMenu, func(telectx tele.Context) error {
+		logrus.Debugf("Menu btn")
+		// s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].Start)
+		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+
+		s.fsm[telectx.Chat().ID].SetToDefault()
+
+		err := s.controller.MenuCmd(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
 
 	// /start command
 	restricted.Handle(commands.StartCommand, func(telectx tele.Context) error {
