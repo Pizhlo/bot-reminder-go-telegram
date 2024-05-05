@@ -78,10 +78,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Connect and run script
-        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
+          server_user: ${{ secrets.SERVER_USER }}
+          username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
+          repo: ${{ secrets.DOCKER_REPO_NAME }}
           script_stop: true
-          script: deploy.sh
+          script: 
+            - ssh bot@$server_user:host
+            - cd dockers/bot-reminder
+            - docker stop bot
+            - docker rm image username/repo
+            - docker compose up -d
