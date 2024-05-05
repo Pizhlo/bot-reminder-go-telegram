@@ -79,22 +79,22 @@ jobs:
       - name: Run command on remote server
         uses: D3rHase/ssh-command-action@v0.2.2
         with:
-        host: ${{secrets.SERVER_IP}}
-        user: ${{secrets.SERVER_USER}}
-        private_key: ${{secrets.SSH_PRIVATE_KEY}}
-        command: |
-              echo '--- START WORK ON REMOTE SERVER ---';
-              cd ${{ secrets.PROJECT_FOLDER }};
-              echo '--- LIST OF FILES ---';
-              ls -al;
-              echo '--- DOCKER OPERATIONS ---';
-              docker-compose down;
-              echo '--- LIST OF DOCKER CONTAINERS AFTER STOPING DOCKER CONTAINERS ---';
-              docker ps;
-              docker rm image ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}
-              docker-compose up -d;
-              echo '--- LIST OF DOCKER CONTAINERS AFTER STARTING DOCKER CONTAINERS ---';
-              docker ps;
+          host: ${{secrets.SERVER_IP}}
+          user: ${{secrets.SERVER_USER}}
+          private_key: ${{secrets.SSH_PRIVATE_KEY}}
+          command: |
+                echo '--- START WORK ON REMOTE SERVER ---';
+                cd ${{ secrets.PROJECT_FOLDER }};
+                echo '--- LIST OF FILES ---';
+                ls -al;
+                echo '--- DOCKER OPERATIONS ---';
+                docker-compose down;
+                echo '--- LIST OF DOCKER CONTAINERS AFTER STOPING DOCKER CONTAINERS ---';
+                docker ps;
+                docker rm image ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}
+                docker-compose up -d;
+                echo '--- LIST OF DOCKER CONTAINERS AFTER STARTING DOCKER CONTAINERS ---';
+                docker ps;
     # run: |
     #   ssh bot@$${{ secrets.SERVER_IP }}: ${{ secrets.SERVER_IP }}
     #   cd dockers/bot-reminder
