@@ -113,6 +113,11 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 			errors = append(errors, err)
 		}
 
+		if loc == nil {
+			logrus.Error("Controller: cannot create scheduler for user: timezone is empty")
+			continue
+		}
+
 		err = c.reminderSrv.CreateScheduler(ctx, u.TGID, loc, c.SendReminder)
 		if err != nil {
 			errors = append(errors, err)

@@ -23,4 +23,10 @@ bot:
 mocks:
 	go generate ./...
 
-.PHONY: db dropdb test bot mocks
+image:
+	docker build -f Dockerfile -t pizhlo/bot-reminder-telegram:latest .
+
+push:
+	docker push pizhlo/bot-reminder-telegram:latest
+
+.PHONY: db dropdb test bot mocks image push

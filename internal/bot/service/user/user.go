@@ -60,6 +60,13 @@ func (s *UserService) loadAll(ctx context.Context) {
 			logrus.Fatalf(wrap(fmt.Sprintf("unable to load user's location on start. Location: %s. Error: %v", tz.Timezone.Name, err)))
 		}
 
+		logrus.Debugf(wrap(fmt.Sprintf("saving timezone: name: %s", loc.String())))
+
+		if loc == nil {
+			logrus.Error(wrap("cannot save user's timezone: timezone is empty"))
+			continue
+		}
+
 		s.timezoneCache.Save(ctx, tz.TGID, loc)
 	}
 

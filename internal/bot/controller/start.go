@@ -28,9 +28,18 @@ func (c *Controller) MenuCmd(ctx context.Context, telectx tele.Context) error {
 
 // HelpCmd обрабатывает команду /help
 func (c *Controller) HelpCmd(ctx context.Context, telectx tele.Context) error {
+	sendOpts := &tele.SendOptions{}
+	if c.userSrv.CheckUser(ctx, telectx.Chat().ID) {
+		sendOpts = &tele.SendOptions{
+			ReplyMarkup: view.MainMenu(),
+			ParseMode:   htmlParseMode,
+		}
+	} else {
+		sendOpts = &tele.SendOptions{
+			ParseMode: htmlParseMode,
+		}
+	}
+
 	msg := fmt.Sprintf(messages.HelpMessage, telectx.Sender().FirstName)
-	return telectx.EditOrSend(msg, &tele.SendOptions{
-		ReplyMarkup: view.MainMenu(),
-		ParseMode:   htmlParseMode,
-	})
+	return telectx.EditOrSend(msg, sendOpts)
 }

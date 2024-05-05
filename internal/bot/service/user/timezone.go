@@ -8,6 +8,8 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/ringsaturn/tzf"
+
+	_ "time/tzdata"
 )
 
 func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, location model.UserTimezone) (*user.User, error) {
@@ -25,12 +27,17 @@ func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, 
 		},
 	}
 
+	loc, err := time.LoadLocation(u.Timezone.Name)
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.SaveUser(ctx, userID, u)
 	if err != nil {
 		return nil, fmt.Errorf(wrap(fmt.Sprintf("error saving new user: %v", err)))
 	}
 
-	err = s.SaveTimezone(ctx, userID, &u.Timezone)
+	err = s.SaveTimezone(ctx, userID, &u.Timezone, loc)
 	if err != nil {
 		return nil, fmt.Errorf(wrap(fmt.Sprintf("error saving timezone: %v", err)))
 	}
@@ -42,12 +49,7 @@ func (s *UserService) GetLocation(ctx context.Context, userID int64) (*time.Loca
 	return s.timezoneCache.Get(ctx, userID)
 }
 
-func (s *UserService) SaveTimezone(ctx context.Context, userID int64, tz *user.Timezone) error {
-	loc, err := time.LoadLocation(tz.Name)
-	if err != nil {
-		return err
-	}
-
+func (s *UserService) SaveTimezone(ctx context.Context, userID int64, tz *user.Timezone, loc *time.Location) error {
 	s.timezoneCache.Save(ctx, userID, loc)
 
 	return s.timezoneEditor.Save(ctx, userID, tz)
