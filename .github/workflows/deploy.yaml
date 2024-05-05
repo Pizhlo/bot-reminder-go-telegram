@@ -82,9 +82,9 @@ jobs:
           USER: ${{secrets.SERVER_USER}}
         with:
             host: ${{secrets.SERVER_IP}}
-            user: ${{secrets.SERVER_USER}}
+            username: ${{secrets.SERVER_USER}}
             key: ${{secrets.SSH_PRIVATE_KEY}}
-            command: |
+            script: |
               echo '--- START WORK ON REMOTE SERVER ---';
               cd ${{ secrets.PROJECT_FOLDER }};
               echo '--- LIST OF FILES ---';
