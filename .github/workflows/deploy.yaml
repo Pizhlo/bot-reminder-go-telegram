@@ -73,11 +73,11 @@ jobs:
   
   server_update:
     needs: push_to_docker_hub
-    name: Update server buy ssh
+    name: Update server by ssh
     runs-on: ubuntu-latest
     steps:
       - name: Run command on remote server
-        uses: D3rHase/ssh-command-action@latest
+        uses: D3rHase/ssh-command-action@2.316.1
         with:
             host: ${{secrets.SERVER_IP}}
             user: ${{secrets.SERVER_USER}}
