@@ -39,6 +39,21 @@ func (s *Server) setupBot(ctx context.Context) {
 		return nil
 	})
 
+	s.bot.Handle(commands.HelpCommand, func(telectx tele.Context) error {
+		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+		// 	s.RegisterUserInFSM(telectx.Chat().ID)
+		// }
+
+		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.controller.HelpCmd(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// часовой пояс
 	s.bot.Handle(&view.BtnTimezone, func(telectx tele.Context) error {
 		logrus.Debugf("Timezone btn")
@@ -148,21 +163,6 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.MenuCmd(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		return nil
-	})
-
-	restricted.Handle(commands.HelpCommand, func(telectx tele.Context) error {
-		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-		// 	s.RegisterUserInFSM(telectx.Chat().ID)
-		// }
-
-		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		err := s.controller.HelpCmd(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
