@@ -85,9 +85,9 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           repo: ${{ secrets.DOCKER_REPO_NAME }}
           script_stop: true
-          script: 
-            - ssh bot@$server_user:host
-            - cd dockers/bot-reminder
-            - docker stop bot
-            - docker rm image username/repo
-            - docker compose up -d
+          run: |
+            ssh bot@$server_user:host
+            cd dockers/bot-reminder
+            docker stop bot
+            docker rm image username/repo
+            docker compose up -d
