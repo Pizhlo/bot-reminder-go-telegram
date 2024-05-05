@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run command on remote server
-        uses: JimCronqvist/action-ssh@master
+        uses: appleboy/ssh-action@v1.0.3
         env:
           USER: ${{secrets.SERVER_USER}}
         with:
