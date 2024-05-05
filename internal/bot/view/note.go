@@ -2,146 +2,246 @@ package view
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
-	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 const (
-	dateFormat       = "02.01.2006 15:04:05"
-	noteCountPerPage = 5
-	maxMessageLen    = 4096
+	createdFieldFormat = "02.01.2006 15:04:05"
+	noteCountPerPage   = 5
+	maxMessageLen      = 4096
 )
+
+type NoteView struct {
+	pages       []string
+	currentPage int
+	calendar    *Calendar
+}
+
+func NewNote() *NoteView {
+	return &NoteView{pages: make([]string, 0), currentPage: 0, calendar: new()}
+}
 
 var (
-	selector = &tele.ReplyMarkup{}
-
 	// inline кнопка для переключения на предыдущую страницу (заметки)
-	BtnPrevPgNotes = selector.Data("<", "prev")
+	BtnPrevPgNotes = tele.Btn{Text: "<", Unique: "prev_pg_notes"}
 	// inline кнопка для переключения на следующую страницу (заметки)
-	BtnNextPgNotes = selector.Data(">", "next")
+	BtnNextPgNotes = tele.Btn{Text: ">", Unique: "next_pg_notes"}
 
 	// inline кнопка для переключения на первую страницу (заметки)
-	BtnFirstPgNotes = selector.Data("<<", "start")
+	BtnFirstPgNotes = tele.Btn{Text: "<<", Unique: "start_pg_notes"}
 	// inline кнопка для переключения на последнюю страницу (заметки)
-	BtnLastPgNotes = selector.Data(">>", "end")
+	BtnLastPgNotes = tele.Btn{Text: ">>", Unique: "end_pg_notes"}
 )
-
-type View struct {
-	messages    []string
-	currentPage int
-	logger      *logrus.Logger
-}
-
-func New() *View {
-	return &View{messages: make([]string, 0), currentPage: 0, logger: logger.New()}
-}
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
-func (v *View) Message(notes []model.Note) string {
-	if len(notes) == 0 {
-		return messages.NotesNotFoundMessage
-	}
-
+func (v *NoteView) Message(notes []model.Note) string {
 	var res = ""
-	v.messages = make([]string, 0)
+
+	v.pages = make([]string, 0)
 
 	for i, note := range notes {
-		res += fmt.Sprintf("%d. Создано: %s. Удалить: /del%d\n\n%s\n\n", i+1, note.Created.Format(dateFormat), note.ID, note.Text)
+		res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /dn%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ViewID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
-			v.messages = append(v.messages, res)
+			v.pages = append(v.pages, res)
 			res = ""
 		}
 	}
 
-	if len(v.messages) < 5 && res != "" {
-		v.messages = append(v.messages, res)
+	if len(v.pages) < 5 && res != "" {
+		v.pages = append(v.pages, res)
 	}
 
-	return v.messages[0]
+	v.currentPage = 0
+
+	return v.pages[0]
 }
 
 // Next возвращает следующую страницу сообщений
-func (v *View) Next() string {
-	v.logger.Debugf("View: getting next page. Current: %d\n", v.currentPage)
+func (v *NoteView) Next() string {
+	logrus.Debugf("noteView: getting next page. Current: %d\n", v.currentPage)
 
-	if v.currentPage == v.Total()-1 {
-		v.logger.Debugf("View: current page is the last. Setting current page to 0.\n")
+	if v.currentPage == v.total()-1 {
+		logrus.Debugf("noteView: current page is the last. Setting current page to 0.\n")
 		v.currentPage = 0
 	} else {
 		v.currentPage++
-		v.logger.Debugf("View: incrementing current page. New value: %d\n", v.currentPage)
+		logrus.Debugf("noteView: incrementing current page. New value: %d\n", v.currentPage)
 	}
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // Previous возвращает предыдущую страницу сообщений
-func (v *View) Previous() string {
-	v.logger.Debugf("View: getting previous page. Current: %d\n", v.currentPage)
+func (v *NoteView) Previous() string {
+	logrus.Debugf("noteView: getting previous page. Current: %d\n", v.currentPage)
 
 	if v.currentPage == 0 {
-		v.logger.Debugf("View: previous page is the last. Setting current page to maximum: %d.\n", v.Total())
-		v.currentPage = v.Total() - 1
+		logrus.Debugf("noteView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
+		v.currentPage = v.total() - 1
 	} else {
 		v.currentPage--
-		v.logger.Debugf("View: decrementing current page. New value: %d\n", v.currentPage)
+		logrus.Debugf("noteView: decrementing current page. New value: %d\n", v.currentPage)
 	}
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // Last возвращает последнюю страницу сообщений
-func (v *View) Last() string {
-	v.logger.Debugf("View: getting the last page. Current: %d\n", v.currentPage)
+func (v *NoteView) Last() string {
+	logrus.Debugf("noteView: getting the last page. Current: %d\n", v.currentPage)
 
-	v.currentPage = v.Total() - 1
+	v.currentPage = v.total() - 1
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // First возвращает первую страницу сообщений
-func (v *View) First() string {
-	v.logger.Debugf("View: getting the first page. Current: %d\n", v.currentPage)
+func (v *NoteView) First() string {
+	logrus.Debugf("noteView: getting the first page. Current: %d\n", v.currentPage)
 
 	v.currentPage = 0
 
-	return v.messages[v.currentPage]
+	return v.pages[v.currentPage]
 }
 
 // current возвращает номер текущей страницы
-func (v *View) current() int {
+func (v *NoteView) current() int {
 	return v.currentPage + 1
 }
 
-// Total возвращает общее количество страниц
-func (v *View) Total() int {
-	return len(v.messages)
+// total возвращает общее количество страниц
+func (v *NoteView) total() int {
+	return len(v.pages)
 }
 
 // Keyboard делает клавиатуру для навигации по страницам
-func (v *View) Keyboard() *tele.ReplyMarkup {
+func (v *NoteView) Keyboard() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
 	// если страниц 1, клавиатура не нужна
-	if v.Total() == 1 {
-		return &tele.ReplyMarkup{}
+	if v.total() == 1 {
+		menu.Inline(
+			menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
+			menu.Row(BtnDeleteAllNotes),
+			menu.Row(BtnBackToMenu),
+		)
+		return menu
 	}
 
-	text := fmt.Sprintf("%d / %d", v.current(), v.Total())
+	text := fmt.Sprintf("%d / %d", v.current(), v.total())
 
-	btn := selector.Data(text, "")
+	btn := menu.Data(text, "")
 
-	selector.Inline(
-		selector.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+	menu.Inline(
+		menu.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
+		menu.Row(BtnDeleteAllNotes),
+		menu.Row(BtnBackToMenu),
 	)
 
-	return selector
+	return menu
+}
+
+// Keyboard делает клавиатуру для навигации по страницам во время поиска
+func (v *NoteView) KeyboardForSearch() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	// если страниц 1, клавиатура не нужна
+	if v.total() == 1 {
+		menu.Inline(
+			menu.Row(BtnNotes),
+			menu.Row(BtnBackToMenu),
+		)
+		return menu
+	}
+
+	text := fmt.Sprintf("%d / %d", v.current(), v.total())
+
+	btn := menu.Data(text, "")
+
+	menu.Inline(
+		menu.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
+		menu.Row(BtnNotes),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
 }
 
 // SetCurrentToFirst устанавливает текущий номер страницы на 1
-func (v *View) SetCurrentToFirst() {
+func (v *NoteView) SetCurrentToFirst() {
 	v.currentPage = 0
+}
+
+// Clear используется когда удаляются все заметки: очищает список заметок, устанавливает текущую страницу в 0
+func (v *NoteView) Clear() {
+	v.currentPage = 0
+	v.pages = make([]string, 0)
+}
+
+// Calendar возвращает календарь с текущим месяцем и годом
+func (v *NoteView) Calendar() *tele.ReplyMarkup {
+	calendar := v.calendar.currentCalendar()
+
+	calendarWithBtns := v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+
+	return calendarWithBtns
+}
+
+// PrevMonth возвращает календарь с предыдущим месяцем
+func (v *NoteView) PrevMonth() *tele.ReplyMarkup {
+	calendar := v.calendar.prevMonth()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// NextMonth возвращает календарь со следующим месяцем
+func (v *NoteView) NextMonth() *tele.ReplyMarkup {
+	calendar := v.calendar.nextMonth()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// PrevYear возвращает календарь с предыдущим годом
+func (v *NoteView) PrevYear() *tele.ReplyMarkup {
+	calendar := v.calendar.prevYear()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// NextYear возвращает календарь с следующим годом
+func (v *NoteView) NextYear() *tele.ReplyMarkup {
+	calendar := v.calendar.nextYear()
+	calendar = v.calendar.addButns(calendar, BtnBackToMenu, BtnBackToDateType)
+	return calendar
+}
+
+// GetDaysBtns возвращает слайс кнопок с числами месяца
+func (v *NoteView) GetDaysBtns() []tele.Btn {
+	return v.calendar.getDaysBtns()
+}
+
+// SetCurMonth устаналивает месяц в текущий
+func (v *NoteView) SetCurMonth() {
+	v.calendar.setCurMonth()
+}
+
+// SetCurYear устаналивает год в текущий
+func (v *NoteView) SetCurYear() {
+	v.calendar.setCurYear()
+}
+
+// SetCurMonth возвращает текущий месяц
+func (v *NoteView) CurMonth() time.Month {
+	return v.calendar.month()
+}
+
+// SetCurYear возвращает текущий год
+func (v *NoteView) CurYear() int {
+	return v.calendar.year()
 }

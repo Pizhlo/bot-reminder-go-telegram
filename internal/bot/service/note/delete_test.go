@@ -2,68 +2,80 @@ package note
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"testing"
 
-	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note/mocks"
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+
+	mock_note "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/mocks"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestDeleteAll_Positive(t *testing.T) {
-	type test struct {
-		userID int64
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	tests := []test{
-		{
-			userID: 1,
-		},
-	}
+	noteEditor := mock_note.NewMocknoteEditor(ctrl)
+	srv := New(noteEditor)
 
-	for _, tt := range tests {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	srv.SaveUser(1)
 
-		noteEditor := mock_note.NewMocknoteEditor(ctrl)
-		srv := New(noteEditor)
+	noteEditor.EXPECT().DeleteAllByUserID(gomock.Any(), gomock.All()).Return(nil)
 
-		srv.SaveUser(tt.userID)
+	err := srv.DeleteAll(context.Background(), 1)
 
-		noteEditor.EXPECT().DeleteAllByUserID(gomock.Any(), gomock.All()).Return(nil)
-
-		err := srv.DeleteAll(context.Background(), 1)
-		require.NoError(t, err)
-	}
+	assert.NoError(t, err)
 }
 
-func TestDeleteAll_DbErr(t *testing.T) {
-	type test struct {
-		userID int64
-		err    error
-	}
+func TestDeleteAll_DBError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	tests := []test{
-		{
-			userID: 1,
-		},
-	}
+	noteEditor := mock_note.NewMocknoteEditor(ctrl)
+	srv := New(noteEditor)
 
-	for _, tt := range tests {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	srv.SaveUser(1)
 
-		noteEditor := mock_note.NewMocknoteEditor(ctrl)
-		srv := New(noteEditor)
+	testErr := errors.New("test error")
 
-		srv.SaveUser(tt.userID)
+	noteEditor.EXPECT().DeleteAllByUserID(gomock.Any(), gomock.All()).Return(testErr)
 
-		tt.err = sql.ErrNoRows
+	err := srv.DeleteAll(context.Background(), 1)
 
-		noteEditor.EXPECT().DeleteAllByUserID(gomock.Any(), gomock.All()).Return(tt.err)
+	assert.Equal(t, err, testErr)
+}
 
-		err := srv.DeleteAll(context.Background(), 1)
-		assert.EqualError(t, err, tt.err.Error())
-	}
+func TestDeleteByID_Positive(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	noteEditor := mock_note.NewMocknoteEditor(ctrl)
+	srv := New(noteEditor)
+
+	srv.SaveUser(1)
+
+	noteEditor.EXPECT().GetByViewID(gomock.Any(), gomock.All(), gomock.Any()).Return(&model.Note{}, nil)
+	noteEditor.EXPECT().DeleteNoteByViewID(gomock.Any(), gomock.All(), gomock.Any()).Return(nil)
+
+	err := srv.DeleteByID(context.Background(), 1, 1)
+
+	assert.NoError(t, err)
+}
+
+func TestDeleteByID_NotesNotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	noteEditor := mock_note.NewMocknoteEditor(ctrl)
+	srv := New(noteEditor)
+
+	srv.SaveUser(1)
+
+	noteEditor.EXPECT().GetByViewID(gomock.Any(), gomock.All(), gomock.Any()).Return(nil, api_errors.ErrNotesNotFound)
+
+	err := srv.DeleteByID(context.Background(), 1, 1)
+
+	assert.EqualError(t, err, api_errors.ErrNotesNotFound.Error())
 }

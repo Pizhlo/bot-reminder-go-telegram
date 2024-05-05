@@ -5,41 +5,41 @@ import (
 	"fmt"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
-// Start обрабатывает команду старт: проверяет, зарегистрирован ли пользователь,
-// и в зависимости от этого либо запрашивает геолокацию, либо отправляет приветственное сообщение
-func (c *Controller) Start(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Controller: handling /start. Checking user...\n")
+// StartCmd отправляет приветственное сообщение и меню на команду /start
+func (c *Controller) StartCmd(ctx context.Context, telectx tele.Context) error {
+	logrus.Debugf("Controller: handling /start (or menu btn)\n")
 
-	if !c.CheckUser(ctx, telectx.Chat().ID) {
-		c.logger.Debugf("Controller: user is unknown. Sending location request...\n")
-		return c.Location(ctx, telectx)
-	}
-
-	c.logger.Debugf("Controller: user is known. Sending start message...\n")
+	kb := view.MainMenu()
 
 	text := fmt.Sprintf(messages.StartMessage, telectx.Chat().FirstName)
 
-	return telectx.Send(text, tele.RemoveKeyboard, &tele.SendOptions{
-		ParseMode: htmlParseMode,
-	})
+	return telectx.EditOrSend(text, kb)
 }
 
-// Location запрашивает геолокацию у пользователя
-func (c *Controller) Location(ctx context.Context, telectx tele.Context) error {
-	locMenu := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
+// MenuCmd обрабатывает команду /menu
+func (c *Controller) MenuCmd(ctx context.Context, telectx tele.Context) error {
+	return telectx.EditOrSend(messages.MenuMessage, view.MainMenu())
+}
 
-	locBtn := locMenu.Location("Отправить геолокацию")
-	rejectBtn := locMenu.Text("Отказаться")
+// HelpCmd обрабатывает команду /help
+func (c *Controller) HelpCmd(ctx context.Context, telectx tele.Context) error {
+	sendOpts := &tele.SendOptions{}
+	if c.userSrv.CheckUser(ctx, telectx.Chat().ID) {
+		sendOpts = &tele.SendOptions{
+			ReplyMarkup: view.MainMenu(),
+			ParseMode:   htmlParseMode,
+		}
+	} else {
+		sendOpts = &tele.SendOptions{
+			ParseMode: htmlParseMode,
+		}
+	}
 
-	locMenu.Reply(
-		locMenu.Row(locBtn),
-		locMenu.Row(rejectBtn),
-	)
-
-	txt := fmt.Sprintf(messages.StartMessageLocation, telectx.Chat().FirstName)
-
-	return telectx.Send(txt, locMenu)
+	msg := fmt.Sprintf(messages.HelpMessage, telectx.Sender().FirstName)
+	return telectx.EditOrSend(msg, sendOpts)
 }

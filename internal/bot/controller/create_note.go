@@ -7,33 +7,20 @@ import (
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
 // CreateNote создает новую заметку пользователя
 func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error {
-	c.logger.Debugf("Controller: saving note. Sender: %d\n", telectx.Chat().ID)
+	logrus.Debugf("Controller: saving note. Sender: %d\n", telectx.Chat().ID)
 
-	c.logger.Debugf("Controller: getting user's timezone. User ID: %d\n", telectx.Chat().ID)
+	logrus.Debugf("Controller: getting user's timezone. User ID: %d\n", telectx.Chat().ID)
 
-	tz, err := c.userSrv.GetTimezone(ctx, telectx.Chat().ID)
+	loc, err := c.userSrv.GetLocation(ctx, telectx.Chat().ID)
 	if err != nil {
-		c.logger.Errorf("Controller: error while getting user timezone. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
-
-		c.HandleError(telectx, err)
-
-		return fmt.Errorf("error while getting user timezone. User ID: %d. Error: %v", telectx.Chat().ID, err)
-	}
-
-	c.logger.Debug("Controller: successfully got user's timezone")
-
-	loc, err := time.LoadLocation(tz.Name)
-	if err != nil {
-		c.logger.Errorf("Controller: error while loading location. Location: %s. Error: %v\n", tz.Name, err)
-
-		c.HandleError(telectx, err)
-
-		return fmt.Errorf("error while loading location. Location: %s. Error: %v", tz.Name, err)
+		return fmt.Errorf("error while loading user's location: %w", err)
 	}
 
 	note := model.Note{
@@ -44,14 +31,10 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 
 	err = c.noteSrv.Save(ctx, note)
 	if err != nil {
-		c.logger.Errorf("Controller: error while saving note. User ID: %d. Error: %v\n", telectx.Chat().ID, err)
-
-		c.HandleError(telectx, err)
-
 		return fmt.Errorf("error while saving note. User ID: %d. Error: %v", telectx.Chat().ID, err)
 	}
 
-	return telectx.Send(messages.SuccessfullyCreatedNoteMessage, &tele.SendOptions{
-		ParseMode: htmlParseMode,
-	})
+	kb := view.NotesAndMenuBtns()
+
+	return telectx.EditOrSend(messages.SuccessfullyCreatedNoteMessage, kb)
 }
