@@ -1,27 +1,54 @@
-name: deploy
+name: Publish to server
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "master" ]
 
 jobs:
-  deploy:
-    needs:
-    - vettest
-    - test
+  push_to_docker_hub:
+    name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    needs:
+      - test
+      - audit
     steps:
-      - name: Run command on remote server
-        uses: D3rHase/ssh-command-action@v0.2.2
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
-          host: ${{secrets.SSH_HOST}}
-          user: ${{secrets.SSH_USER}}
-          private_key: ${{secrets.SSH_PRIVATE_KEY}}
-          command: |
-            cd ${{ secrets.PROJECT_FOLDER }};
-            git checkout main;
-            git pull;
-            docker-compose --file docker-compose.prod.yml down;
-            docker-compose --file docker-compose.prod.yml up -d;
-            docker system prune --all --force;
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}
+          tags: latest
+          labels: latest
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+  
+  
+  server_update:
+    needs: push_to_docker_hub
+    name: Update server buy ssh
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect and run script
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script_stop: true
+          script: bash deploy.sh
