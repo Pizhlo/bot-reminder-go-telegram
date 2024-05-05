@@ -6,10 +6,10 @@ on:
 
   deploy:
     needs:
-    - build
+    - vettest
     - test
     runs-on: ubuntu-latest
-      if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Run command on remote server
         uses: D3rHase/ssh-command-action@v0.2.2
