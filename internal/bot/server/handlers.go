@@ -18,6 +18,21 @@ import (
 func (s *Server) setupHandlers(ctx context.Context) {
 	s.bot.Use(logger.Logging(ctx), middleware.AutoRespond())
 
+	s.bot.Handle(commands.HelpCommand, func(telectx tele.Context) error {
+		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+		// 	s.RegisterUserInFSM(telectx.Chat().ID)
+		// }
+
+		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.controller.HelpCmd(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		// err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
@@ -161,21 +176,6 @@ func (s *Server) setupHandlers(ctx context.Context) {
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.MenuCmd(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		return nil
-	})
-
-	restricted.Handle(commands.HelpCommand, func(telectx tele.Context) error {
-		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-		// 	s.RegisterUserInFSM(telectx.Chat().ID)
-		// }
-
-		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		err := s.controller.HelpCmd(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
