@@ -13,6 +13,8 @@ var (
 	// inline кнопка просмотра напоминаний
 	BtnReminders = tele.Btn{Text: "⏰Напоминания", Unique: "reminders"}
 
+	BtnBugReport = tele.Btn{Text: "⚠️Сообщить о баге", Unique: "bag_report"}
+
 	// inline кнопка для возвращения в меню
 	BtnBackToMenu = tele.Btn{Text: "⬅️Меню", Unique: "menu"}
 
@@ -50,13 +52,14 @@ func BackToMenuAndCreateOneElse() *tele.ReplyMarkup {
 }
 
 // MainMenu возвращает главное меню.
-// Кнопки: Профиль, Настройки, Заметки, Напоминания
+// Кнопки: Профиль, Настройки, Заметки, Напоминания, Сообщить о баге
 func MainMenu() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
 		menu.Row(BtnNotes, BtnReminders),
 		menu.Row(BtnTimezone),
+		menu.Row(BtnBugReport),
 	)
 
 	return menu

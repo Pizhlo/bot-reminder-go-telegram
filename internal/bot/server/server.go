@@ -25,7 +25,7 @@ func New(bot *tele.Bot, controller *controller.Controller) *Server {
 
 func (s *Server) Start(ctx context.Context) {
 	s.loadUsers(ctx)
-	s.setupBot(ctx)
+	s.setupHandlers(ctx)
 
 	logrus.Info("server started")
 }

@@ -27,7 +27,7 @@ func TestListReminders_Positive(t *testing.T) {
 
 	db := mocks.NewMockreminderEditor(ctrl)
 	srv := reminder.New(db)
-	controller := New(nil, nil, nil, srv)
+	controller := New(nil, nil, nil, srv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -77,7 +77,7 @@ func TestListReminders_NotFound(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -107,7 +107,7 @@ func TestNextPageReminders(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -149,7 +149,7 @@ func TestNextPageReminders_MessageNotEdited(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -191,7 +191,7 @@ func TestPrevPageReminders(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -233,7 +233,7 @@ func TestPrevPageReminders_MessageNotModified(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -275,7 +275,7 @@ func TestLastPageReminders(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -317,7 +317,7 @@ func TestLastPageReminders_MessageNotModified(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -359,7 +359,7 @@ func TestFirstPageReminders(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -401,7 +401,7 @@ func TestFirstPageReminders_MessageNotModified(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}

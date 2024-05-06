@@ -22,7 +22,7 @@ func TestConfirmDeleteAllReminders(t *testing.T) {
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	expectedText := messages.ConfirmDeleteRemindersMessage
 	expectedKb := &tele.ReplyMarkup{OneTimeKeyboard: true}
@@ -47,7 +47,7 @@ func TestDeleteAllReminders(t *testing.T) {
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{
 		ID: int64(1),

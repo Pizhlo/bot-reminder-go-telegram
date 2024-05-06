@@ -27,7 +27,7 @@ func TestSearchNoteByOnedate(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -59,7 +59,7 @@ func TestSearchNoteBySelectedDate(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -105,7 +105,7 @@ func TestSearchNoteBySelectedDate_InvalidCallback(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	controller := New(nil, nil, nil, nil)
+	controller := New(nil, nil, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
@@ -130,7 +130,7 @@ func TestSearchNoteBySelectedDate_NoNotesFound(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}

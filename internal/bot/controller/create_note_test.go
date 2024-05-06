@@ -60,7 +60,7 @@ func TestCreateNote(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	}).Return(nil)
 
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	err := controller.CreateNote(context.Background(), telectx)
 	assert.NoError(t, err)

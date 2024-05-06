@@ -28,7 +28,7 @@ func TestSearchNoteByTwoDates(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -60,7 +60,7 @@ func TestSearchNoteByTwoDatesFirstDate(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -102,7 +102,7 @@ func TestSearchNoteByTwoDatesFirstDate_InvalidCallback(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	controller := New(nil, nil, nil, nil)
+	controller := New(nil, nil, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
@@ -127,7 +127,7 @@ func TestSearchNoteByTwoDatesFirstDate_FirstDayAfterToday(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -159,7 +159,7 @@ func TestSearchNoteByTwoDatesSecondDate(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -214,7 +214,7 @@ func TestSearchNoteByTwoDatesSecondDate_InvalidCallback(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	controller := New(nil, nil, nil, nil)
+	controller := New(nil, nil, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
@@ -239,7 +239,7 @@ func TestSearchNoteByTwoDatesSecondDate_NoNotesFound(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -299,7 +299,7 @@ func TestSearchNoteByTwoDatesSecondDate_ErrSecondDateBeforeFirst(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -333,7 +333,7 @@ func TestSearchNoteByTwoDatesSecondDate_ErrSecondDateFuture(t *testing.T) {
 	userSrv := user.New(context.Background(), nil, tzCache, tzEditor)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(userSrv, noteSrv, nil, nil)
+	controller := New(userSrv, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -361,7 +361,7 @@ func TestSecondDateBeforeFirst(t *testing.T) {
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -396,7 +396,7 @@ func TestSecondDateInFuture(t *testing.T) {
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -431,7 +431,7 @@ func TestFirstDateInFuture(t *testing.T) {
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
