@@ -20,21 +20,21 @@ func (s *Server) setupBot(ctx context.Context) {
 
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
-		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
+		// err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		// if err != nil {
+		// 	s.HandleError(telectx, err)
+		// 	return err
+		// }
 
 		//s.RegisterUserInFSM(telectx.Chat().ID)
 
 		logrus.Debugf("location")
 
-		// err := s.controller.AcceptTimezone(ctx, telectx)
-		// if err != nil {
-		// 	s.HandleError(telectx, err)
-		// 	return err
-		// }
+		err := s.controller.AcceptTimezone(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
 
 		return nil
 	})
