@@ -55,7 +55,7 @@ func TestTimezone(t *testing.T) {
 
 	userSrv := user.New(context.Background(), userEditor, tz, tzEditor)
 
-	controller := New(userSrv, nil, nil, nil)
+	controller := New(userSrv, nil, nil, nil, 0)
 
 	err := controller.Timezone(context.Background(), telectx)
 	assert.NoError(t, err)
@@ -78,7 +78,7 @@ func TestRequestLocation(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, nil)
+	controller := New(nil, nil, nil, nil, 0)
 
 	err := controller.RequestLocation(context.Background(), telectx)
 	assert.NoError(t, err)
@@ -154,7 +154,7 @@ func TestAcceptTimezone(t *testing.T) {
 		assert.Equal(t, expectedOpts, sendOpts)
 	})
 
-	controller := New(userSrv, noteSrv, nil, reminderSrv)
+	controller := New(userSrv, noteSrv, nil, reminderSrv, 0)
 
 	err := controller.AcceptTimezone(context.Background(), telectx)
 	assert.NoError(t, err)

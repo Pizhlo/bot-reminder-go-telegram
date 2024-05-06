@@ -86,7 +86,7 @@ func TestMinutesDuration_Valid(t *testing.T) {
 
 	telectx.EXPECT().EditOrSend(gomock.Any(), gomock.Any()).Return(nil)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	err = controller.MinutesDuration(ctx, telectx)
 	assert.NoError(t, err)
@@ -123,7 +123,7 @@ func TestMinutesDuration_Invalid(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	err := controller.MinutesDuration(ctx, telectx)
 	assert.NoError(t, err)
@@ -192,7 +192,7 @@ func TestHoursDuration_Valid(t *testing.T) {
 
 	telectx.EXPECT().EditOrSend(gomock.Any(), gomock.Any()).Return(nil)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	err := controller.HoursDuration(ctx, telectx)
 	assert.NoError(t, err)
@@ -229,7 +229,7 @@ func TestHoursDuration_Invalid(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	err := controller.HoursDuration(ctx, telectx)
 	assert.NoError(t, err)
@@ -302,7 +302,7 @@ func TestTimes_Valid(t *testing.T) {
 
 		telectx.EXPECT().EditOrSend(gomock.Any(), gomock.Any()).Return(nil)
 
-		controller := New(userSrv, nil, nil, reminderSrv)
+		controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 		err := controller.Times(ctx, telectx)
 		assert.NoError(t, err)
@@ -341,7 +341,7 @@ func TestTimes_Invalid(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	err := controller.Times(ctx, telectx)
 	assert.NoError(t, err)
@@ -374,7 +374,7 @@ func TestDaysDuration_Valid(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	err := controller.DaysDuration(ctx, telectx)
 	assert.NoError(t, err)
@@ -400,7 +400,7 @@ func TestDaysDuration_NotInt(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat)
 	telectx.EXPECT().Message().Return(message)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	err := controller.DaysDuration(ctx, telectx)
 	assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
@@ -429,7 +429,7 @@ func TestDaysDuration_OutOfRange(t *testing.T) {
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	for _, m := range mesages {
 		telectx.EXPECT().Chat().Return(chat)
@@ -467,7 +467,7 @@ func TestDaysInMonthDurationn_Valid(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	err := controller.DaysInMonthDuration(ctx, telectx)
 	assert.NoError(t, err)
@@ -493,7 +493,7 @@ func TestDaysInMonthDuration_NotInt(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat)
 	telectx.EXPECT().Message().Return(message)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	err := controller.DaysInMonthDuration(ctx, telectx)
 	assert.EqualError(t, err, api_errors.ErrInvalidDays.Error())
@@ -521,7 +521,7 @@ func TestDaysInMonthDuration_OutOfRange(t *testing.T) {
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	for _, m := range mesages {
 		telectx.EXPECT().Chat().Return(chat)

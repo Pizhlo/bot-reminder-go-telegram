@@ -22,7 +22,7 @@ func TestDeleteNoteByID_Positive(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -65,7 +65,7 @@ func TestDeleteNoteByID_NotFoundSuffix(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
@@ -85,7 +85,7 @@ func TestDeleteNoteByID_IdNotInt(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
@@ -108,7 +108,7 @@ func TestDeleteNoteByID_ErrNotesNotFound(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}

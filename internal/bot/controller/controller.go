@@ -32,6 +32,7 @@ type Controller struct {
 	noteCalendar map[int64]bool
 	// отражает, используется ли календарь напоминаний
 	reminderCalendar map[int64]bool
+	channelID        int64
 }
 
 //lint:ignore U1000 Ignore unused function temporarily for debugging
@@ -45,7 +46,12 @@ const (
 	markdownParseMode = "markdown"
 )
 
-func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, reminderSrv *reminder.ReminderService) *Controller {
+func New(userSrv *user.UserService,
+	noteSrv *note.NoteService,
+	bot *tele.Bot,
+	reminderSrv *reminder.ReminderService,
+	channelID int64) *Controller {
+
 	return &Controller{
 		userSrv:          userSrv,
 		noteSrv:          noteSrv,
@@ -54,7 +60,9 @@ func New(userSrv *user.UserService, noteSrv *note.NoteService, bot *tele.Bot, re
 		schedulers:       make(map[int64]*gocron.Scheduler),
 		noteCalendar:     make(map[int64]bool),
 		reminderCalendar: make(map[int64]bool),
-		mu:               sync.Mutex{}}
+		mu:               sync.Mutex{},
+		channelID:        channelID,
+	}
 }
 
 // CheckUser проверяет, известен ли пользователь боту

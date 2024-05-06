@@ -21,7 +21,7 @@ func TestListNotes_ErrNotesNotFound(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -52,7 +52,7 @@ func TestListNotes_Positive(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -92,7 +92,7 @@ func TestNextPageNotes(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -133,7 +133,7 @@ func TestPrevPageNotes(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -174,7 +174,7 @@ func TestLastPageNotes(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -215,7 +215,7 @@ func TestFirstPageNotes(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}

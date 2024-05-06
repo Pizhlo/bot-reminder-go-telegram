@@ -21,7 +21,7 @@ func TestReminderName(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -52,7 +52,7 @@ func TestReminderName_BotMessage(t *testing.T) {
 
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}

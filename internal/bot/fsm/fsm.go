@@ -37,6 +37,8 @@ const (
 	severalTimesDayState               stateName = "several_times_a_day"
 	weekDayState                       stateName = "every_week"
 	yearReminderState                  stateName = "every_year"
+
+	bugReportState stateName = "bug_report"
 )
 
 // Менеджер для управления состояниями бота
@@ -84,9 +86,11 @@ type FSM struct {
 	Date state
 	// Состояние для поиска заметок по одной дате
 	SearchNoteOneDate state
-	//Состояние для поиска заметок по двум датам
+	// Состояние для поиска заметок по двум датам
 	SearchNoteTwoDates state
-	mu                 sync.RWMutex
+	// Состояние для баг репорта
+	BugReportState state
+	mu             sync.RWMutex
 }
 
 // Интерфейс для управления состояниями бота
@@ -128,6 +132,8 @@ func NewFSM(controller *controller.Controller) *FSM {
 	fsm.Month = newMonthState(controller, fsm)
 	fsm.Year = newYearState(controller, fsm)
 	fsm.Date = newDateReminderState(controller, fsm)
+
+	fsm.BugReportState = newBugReportState(controller, fsm)
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	fsm.current = fsm.defaultState

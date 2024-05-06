@@ -15,41 +15,22 @@ import (
 	"gopkg.in/telebot.v3/middleware"
 )
 
-func (s *Server) setupBot(ctx context.Context) {
+func (s *Server) setupHandlers(ctx context.Context) {
 	s.bot.Use(logger.Logging(ctx), middleware.AutoRespond())
-
-	s.bot.Handle("/test", func(ctx tele.Context) error {
-		return ctx.Send("все получилось")
-	})
 
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
-		err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		//s.RegisterUserInFSM(telectx.Chat().ID)
-
-		logrus.Debugf("location")
-
-		// err := s.controller.AcceptTimezone(ctx, telectx)
+		// err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		// if err != nil {
 		// 	s.HandleError(telectx, err)
 		// 	return err
 		// }
 
-		return nil
-	})
+		//s.RegisterUserInFSM(telectx.Chat().ID)
 
-	s.bot.Handle(commands.HelpCommand, func(telectx tele.Context) error {
-		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-		// 	s.RegisterUserInFSM(telectx.Chat().ID)
-		// }
+		logrus.Debugf("location")
 
-		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		err := s.controller.HelpCmd(ctx, telectx)
+		err := s.controller.AcceptTimezone(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -101,6 +82,19 @@ func (s *Server) setupBot(ctx context.Context) {
 		logrus.Debugf("Reminders btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListReminder)
 		err := s.controller.ListReminders(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// сообщить о баге
+	s.bot.Handle(&view.BtnBugReport, func(telectx tele.Context) error {
+		logrus.Debugf("Bug report btn")
+		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].BugReportState)
+		err := telectx.EditOrSend(messages.BugReportUserMessage)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -167,6 +161,21 @@ func (s *Server) setupBot(ctx context.Context) {
 
 		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.MenuCmd(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	restricted.Handle(commands.HelpCommand, func(telectx tele.Context) error {
+		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+		// 	s.RegisterUserInFSM(telectx.Chat().ID)
+		// }
+
+		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.controller.HelpCmd(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

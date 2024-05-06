@@ -38,7 +38,7 @@ func TestSaveReminder(t *testing.T) {
 
 	randomReminder := random.Reminder()
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	loc := time.FixedZone("Europe/Moscow", 1)
 
