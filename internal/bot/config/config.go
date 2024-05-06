@@ -138,5 +138,12 @@ func loadEnvVariables() (*Config, error) {
 
 	conf.LogLvl = logLvl
 
+	borUrl := os.Getenv("BOT_URL")
+	if len(borUrl) == 0 {
+		return nil, errors.New("BOT_URL is not set")
+	}
+
+	conf.BotURL = borUrl
+
 	return conf, nil
 }
