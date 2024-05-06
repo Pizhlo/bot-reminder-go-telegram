@@ -42,8 +42,6 @@ jobs:
   push_to_docker_hub:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-    rules: 
-      - if: '$CI_COMMIT_BRANCH == "main"'
     needs:
       - test
       - audit
@@ -77,8 +75,6 @@ jobs:
     needs: push_to_docker_hub
     name: Update server by ssh
     runs-on: ubuntu-latest
-    rules: 
-      - if: '$CI_COMMIT_BRANCH == "main"'
     steps:
       - name: Run command on remote server
         uses: D3rHase/ssh-command-action@v0.2.2
