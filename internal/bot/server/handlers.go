@@ -18,6 +18,21 @@ import (
 func (s *Server) setupHandlers(ctx context.Context) {
 	s.bot.Use(logger.Logging(ctx), middleware.AutoRespond())
 
+	s.bot.Handle(commands.HelpCommand, func(telectx tele.Context) error {
+		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
+		// 	s.RegisterUserInFSM(telectx.Chat().ID)
+		// }
+
+		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
+		err := s.controller.HelpCmd(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// геолокация
 	s.bot.Handle(tele.OnLocation, func(telectx tele.Context) error {
 		// err := s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
@@ -39,8 +54,13 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// restricted: only known users
+
+	restricted := s.bot.Group()
+	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx), middleware.AutoRespond())
+
 	// часовой пояс
-	s.bot.Handle(&view.BtnTimezone, func(telectx tele.Context) error {
+	restricted.Handle(&view.BtnTimezone, func(telectx tele.Context) error {
 		logrus.Debugf("Timezone btn")
 		err := s.controller.Timezone(ctx, telectx)
 		if err != nil {
@@ -52,7 +72,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// изменить часовой пояс
-	s.bot.Handle(&view.BtnEditTimezone, func(telectx tele.Context) error {
+	restricted.Handle(&view.BtnEditTimezone, func(telectx tele.Context) error {
 		logrus.Debugf("Edit timezone btn")
 		err := s.controller.RequestLocation(ctx, telectx)
 		if err != nil {
@@ -64,7 +84,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// меню заметок
-	s.bot.Handle(&view.BtnNotes, func(telectx tele.Context) error {
+	restricted.Handle(&view.BtnNotes, func(telectx tele.Context) error {
 		logrus.Debugf("Notes btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListNote)
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
@@ -78,7 +98,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// меню напоминаний
-	s.bot.Handle(&view.BtnReminders, func(telectx tele.Context) error {
+	restricted.Handle(&view.BtnReminders, func(telectx tele.Context) error {
 		logrus.Debugf("Reminders btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListReminder)
 		err := s.controller.ListReminders(ctx, telectx)
@@ -91,10 +111,10 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// сообщить о баге
-	s.bot.Handle(&view.BtnBugReport, func(telectx tele.Context) error {
+	restricted.Handle(&view.BtnBugReport, func(telectx tele.Context) error {
 		logrus.Debugf("Bug report btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].BugReportState)
-		err := telectx.EditOrSend(messages.BugReportUserMessage)
+		err := telectx.EditOrSend(messages.BugReportUserMessage, view.BackToMenuBtn())
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -104,7 +124,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// кнопка чтобы скрыть клавиатуру у сработавшего напоминания
-	s.bot.Handle(&view.BtnCheckReminder, func(ctx tele.Context) error {
+	restricted.Handle(&view.BtnCheckReminder, func(ctx tele.Context) error {
 		// отправляем сообщение без клавиатуры
 		err := ctx.Edit(ctx.Message().Text)
 		if err != nil {
@@ -114,11 +134,6 @@ func (s *Server) setupHandlers(ctx context.Context) {
 
 		return nil
 	})
-
-	// restricted: only known users
-
-	restricted := s.bot.Group()
-	restricted.Use(s.CheckUser(ctx), logger.Logging(ctx), middleware.AutoRespond())
 
 	// назад в меню
 	restricted.Handle(&view.BtnBackToMenu, func(telectx tele.Context) error {
@@ -169,21 +184,6 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
-	restricted.Handle(commands.HelpCommand, func(telectx tele.Context) error {
-		// if _, ok := s.fsm[telectx.Chat().ID]; !ok {
-		// 	s.RegisterUserInFSM(telectx.Chat().ID)
-		// }
-
-		//return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
-		err := s.controller.HelpCmd(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		return nil
-	})
-
 	restricted.Handle(tele.OnText, func(telectx tele.Context) error {
 		logrus.Debugf("on text")
 		//return s.controller.CreateNote(ctx, telectx)
@@ -199,7 +199,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	// notes
 
 	// следующая страница заметок
-	s.bot.Handle(&view.BtnNextPgNotes, func(c tele.Context) error {
+	restricted.Handle(&view.BtnNextPgNotes, func(c tele.Context) error {
 		err := s.controller.NextPageNotes(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -210,7 +210,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// предыдущая страница заметок
-	s.bot.Handle(&view.BtnPrevPgNotes, func(c tele.Context) error {
+	restricted.Handle(&view.BtnPrevPgNotes, func(c tele.Context) error {
 		err := s.controller.PrevPageNotes(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -221,7 +221,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// последняя страница заметок
-	s.bot.Handle(&view.BtnLastPgNotes, func(c tele.Context) error {
+	restricted.Handle(&view.BtnLastPgNotes, func(c tele.Context) error {
 		err := s.controller.LastPageNotes(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -232,7 +232,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// первая страница заметок
-	s.bot.Handle(&view.BtnFirstPgNotes, func(c tele.Context) error {
+	restricted.Handle(&view.BtnFirstPgNotes, func(c tele.Context) error {
 		err := s.controller.FirstPageNotes(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -243,7 +243,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// поиск заметок по тексту
-	s.bot.Handle(&view.BtnSearchNotesByText, func(c tele.Context) error {
+	restricted.Handle(&view.BtnSearchNotesByText, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteByText)
 
 		err := c.EditOrSend(messages.SearchNotesByTextMessage, view.BackToMenuAndNotesBtn())
@@ -256,7 +256,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// поиск заметок по дате
-	s.bot.Handle(&view.BtnSearchNotesByDate, func(c tele.Context) error {
+	restricted.Handle(&view.BtnSearchNotesByDate, func(c tele.Context) error {
 		err := c.EditOrSend(messages.SearchNotesByDateChooseMessage, &tele.SendOptions{
 			ReplyMarkup: view.SearchByDateBtn(),
 			ParseMode:   "html",
@@ -270,7 +270,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// поиск заметок по одной дате
-	s.bot.Handle(&view.BtnSearchByOneDate, func(c tele.Context) error {
+	restricted.Handle(&view.BtnSearchByOneDate, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteOneDate)
 
 		s.controller.SetupNoteCalendar(ctx, c)
@@ -285,7 +285,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				s.fsm[c.Chat().ID].SetNext()
 				err := s.fsm[c.Chat().ID].Handle(ctx, c)
 				if err != nil {
@@ -303,7 +303,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// поиск заметок по двум датам
-	s.bot.Handle(&view.BtnSearchByTwoDate, func(c tele.Context) error {
+	restricted.Handle(&view.BtnSearchByTwoDate, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SearchNoteTwoDates)
 
 		s.controller.SetupNoteCalendar(ctx, c)
@@ -320,7 +320,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				s.fsm[c.Chat().ID].SetNext()
 				err := s.fsm[c.Chat().ID].Handle(ctx, c)
 				if err != nil {
@@ -348,7 +348,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// удалить все заметки - спросить а точно ли
-	s.bot.Handle(&view.BtnDeleteAllNotes, func(c tele.Context) error {
+	restricted.Handle(&view.BtnDeleteAllNotes, func(c tele.Context) error {
 		err := s.controller.ConfirmDeleteAllNotes(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -359,7 +359,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// согласие удалить все заметки
-	s.bot.Handle(&controller.BtnDeleteAllNotes, func(c tele.Context) error {
+	restricted.Handle(&controller.BtnDeleteAllNotes, func(c tele.Context) error {
 		err := s.controller.DeleteAllNotes(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -370,7 +370,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// отказ удалить все заметки
-	s.bot.Handle(&controller.BtnNotDeleteAllNotes, func(c tele.Context) error {
+	restricted.Handle(&controller.BtnNotDeleteAllNotes, func(c tele.Context) error {
 		err := c.Edit(messages.NotDeleteMessage, view.BackToMenuBtn())
 		if err != nil {
 			s.HandleError(c, err)
@@ -385,7 +385,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	// навигация по страницам
 
 	// предыдущая страница
-	s.bot.Handle(&view.BtnPrevPgReminders, func(c tele.Context) error {
+	restricted.Handle(&view.BtnPrevPgReminders, func(c tele.Context) error {
 		err := s.controller.PrevPageReminders(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -396,7 +396,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// следующая страница
-	s.bot.Handle(&view.BtnNextPgReminders, func(c tele.Context) error {
+	restricted.Handle(&view.BtnNextPgReminders, func(c tele.Context) error {
 		err := s.controller.NextPageReminders(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -407,7 +407,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// первая страница
-	s.bot.Handle(&view.BtnFirstPgReminders, func(c tele.Context) error {
+	restricted.Handle(&view.BtnFirstPgReminders, func(c tele.Context) error {
 		err := s.controller.FirstPageReminders(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -418,7 +418,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// последняя страница
-	s.bot.Handle(&view.BtnLastPgReminders, func(c tele.Context) error {
+	restricted.Handle(&view.BtnLastPgReminders, func(c tele.Context) error {
 		err := s.controller.LastPageReminders(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -429,7 +429,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// назад к выбору
-	s.bot.Handle(&view.BtnBackToReminderType, func(c tele.Context) error {
+	restricted.Handle(&view.BtnBackToReminderType, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
 		err := s.controller.ReminderName(ctx, c)
 		if err != nil {
@@ -441,7 +441,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// удалить все напоминания
-	s.bot.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {
+	restricted.Handle(&view.BtnDeleteAllReminders, func(c tele.Context) error {
 		err := s.controller.ConfirmDeleteAllReminders(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -452,7 +452,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// удалить все напоминания - подтверждение
-	s.bot.Handle(&controller.BtnDeleteAllReminders, func(c tele.Context) error {
+	restricted.Handle(&controller.BtnDeleteAllReminders, func(c tele.Context) error {
 		err := s.controller.DeleteAllReminders(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -463,7 +463,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// название напоминания
-	s.bot.Handle(&view.BtnCreateReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnCreateReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderName)
 
 		err := c.EditOrSend(messages.ReminderNameMessage, view.BackToMenuBtn())
@@ -478,7 +478,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	// reminder types
 
 	// today
-	s.bot.Handle(&view.BtnToday, func(c tele.Context) error {
+	restricted.Handle(&view.BtnToday, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		err := s.controller.Today(ctx, c)
@@ -491,7 +491,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// tomorrow
-	s.bot.Handle(&view.BtnTomorrow, func(c tele.Context) error {
+	restricted.Handle(&view.BtnTomorrow, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		err := s.controller.Tomorrow(ctx, c)
@@ -504,7 +504,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// everyday
-	s.bot.Handle(&view.BtnEveryDayReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnEveryDayReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		err := s.controller.EverydayReminder(ctx, c)
@@ -517,7 +517,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// several times a day (once in N minutes, once in N hours)
-	s.bot.Handle(&view.BtnSeveralTimesDayReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnSeveralTimesDayReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].SeveralTimesDay)
 
 		err := s.controller.SeveralTimesADayReminder(ctx, c)
@@ -530,7 +530,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// once in N minutes
-	s.bot.Handle(&view.BtnMinutesReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnMinutesReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].MinutesDuration)
 
 		err := s.controller.OnceInMinutes(ctx, c)
@@ -543,7 +543,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// once in N hours
-	s.bot.Handle(&view.BtnHoursReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnHoursReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].HoursDuration)
 
 		err := s.controller.OnceInHours(ctx, c)
@@ -556,7 +556,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// times reminder
-	s.bot.Handle(&view.BtnTimesReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnTimesReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Times)
 
 		err := s.controller.TimesReminder(ctx, c)
@@ -569,7 +569,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// every week
-	s.bot.Handle(&view.BtnEveryWeekReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnEveryWeekReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].EveryWeek)
 
 		// err := s.controller.EveryWeek(ctx, c)
@@ -584,7 +584,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// once in several days (e.g. once in 10 days)
-	s.bot.Handle(&view.BtnSeveralDaysReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnSeveralDaysReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].DaysDuration)
 
 		err := s.controller.SeveralDays(ctx, c)
@@ -597,7 +597,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// once in month
-	s.bot.Handle(&view.BtnOnceMonthReminder, func(c tele.Context) error {
+	restricted.Handle(&view.BtnOnceMonthReminder, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Month)
 
 		err := s.controller.Month(ctx, c)
@@ -610,7 +610,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// every year
-	s.bot.Handle(&view.BtnOnceYear, func(c tele.Context) error {
+	restricted.Handle(&view.BtnOnceYear, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Year)
 
 		s.controller.SetupReminderCalendar(ctx, c)
@@ -626,7 +626,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				// s.fsm[c.Chat().ID].SetNext()
 				// err := s.fsm[c.Chat().ID].Handle(ctx, c)
 				// if err != nil {
@@ -645,7 +645,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// date
-	s.bot.Handle(&view.BtnOnce, func(c tele.Context) error {
+	restricted.Handle(&view.BtnOnce, func(c tele.Context) error {
 		s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].Date)
 
 		s.controller.SetupReminderCalendar(ctx, c)
@@ -660,7 +660,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				return s.fsm[c.Chat().ID].Handle(ctx, c)
 			})
 		}
@@ -671,7 +671,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	// calendar
 
 	// prev month
-	s.bot.Handle(&view.BtnPrevMonth, func(c tele.Context) error {
+	restricted.Handle(&view.BtnPrevMonth, func(c tele.Context) error {
 		err := s.controller.PrevMonth(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -681,7 +681,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				err := s.fsm[c.Chat().ID].Handle(ctx, c)
 				if err != nil {
 					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
@@ -709,7 +709,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// next month
-	s.bot.Handle(&view.BtnNextMonth, func(c tele.Context) error {
+	restricted.Handle(&view.BtnNextMonth, func(c tele.Context) error {
 		err := s.controller.NextMonth(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -719,7 +719,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				err := s.fsm[c.Chat().ID].Handle(ctx, c)
 				if err != nil {
 					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
@@ -746,7 +746,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// prev year
-	s.bot.Handle(&view.BtnPrevYear, func(c tele.Context) error {
+	restricted.Handle(&view.BtnPrevYear, func(c tele.Context) error {
 		err := s.controller.PrevYear(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -756,7 +756,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				err := s.fsm[c.Chat().ID].Handle(ctx, c)
 				if err != nil {
 					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
@@ -783,7 +783,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// next year
-	s.bot.Handle(&view.BtnNextYear, func(c tele.Context) error {
+	restricted.Handle(&view.BtnNextYear, func(c tele.Context) error {
 		err := s.controller.NextYear(ctx, c)
 		if err != nil {
 			s.HandleError(c, err)
@@ -793,7 +793,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		btns := s.controller.DaysBtns(ctx, c)
 
 		for _, btn := range btns {
-			s.bot.Handle(&btn, func(c tele.Context) error {
+			restricted.Handle(&btn, func(c tele.Context) error {
 				err := s.fsm[c.Chat().ID].Handle(ctx, c)
 				if err != nil {
 					if errors.Is(err, api_errors.ErrSecondDateBeforeFirst) {
@@ -822,7 +822,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	// week days
 
 	// Monday
-	s.bot.Handle(&view.MondayBtn, func(c tele.Context) error {
+	restricted.Handle(&view.MondayBtn, func(c tele.Context) error {
 		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		// err := s.controller.WeekDay(ctx, c)
@@ -837,7 +837,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// Tuesday
-	s.bot.Handle(&view.TuesdayBtn, func(c tele.Context) error {
+	restricted.Handle(&view.TuesdayBtn, func(c tele.Context) error {
 		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		// err := s.controller.WeekDay(ctx, c)
@@ -850,7 +850,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// Wednesday
-	s.bot.Handle(&view.WednesdayBtn, func(c tele.Context) error {
+	restricted.Handle(&view.WednesdayBtn, func(c tele.Context) error {
 		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		// err := s.controller.WeekDay(ctx, c)
@@ -863,7 +863,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// Thursday
-	s.bot.Handle(&view.ThursdayBtn, func(c tele.Context) error {
+	restricted.Handle(&view.ThursdayBtn, func(c tele.Context) error {
 		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		// err := s.controller.WeekDay(ctx, c)
@@ -876,7 +876,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// Friday
-	s.bot.Handle(&view.FridayBtn, func(c tele.Context) error {
+	restricted.Handle(&view.FridayBtn, func(c tele.Context) error {
 		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		// err := s.controller.WeekDay(ctx, c)
@@ -889,7 +889,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// Saturday
-	s.bot.Handle(&view.SaturdayBtn, func(c tele.Context) error {
+	restricted.Handle(&view.SaturdayBtn, func(c tele.Context) error {
 		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		// err := s.controller.WeekDay(ctx, c)
@@ -902,7 +902,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// Sunday
-	s.bot.Handle(&view.SundayBtn, func(c tele.Context) error {
+	restricted.Handle(&view.SundayBtn, func(c tele.Context) error {
 		// s.fsm[c.Chat().ID].SetState(s.fsm[c.Chat().ID].ReminderTime)
 
 		// err := s.controller.WeekDay(ctx, c)
