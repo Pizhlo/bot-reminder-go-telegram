@@ -62,7 +62,7 @@ func TestReminderTime(t *testing.T) {
 
 	userSrv := user.New(context.Background(), userEditor, tz, tzEditor)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
@@ -126,7 +126,7 @@ func TestReminderTime_InvalidTime(t *testing.T) {
 
 	userSrv := user.New(context.Background(), userEditor, tz, tzEditor)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
@@ -176,7 +176,7 @@ func TestReminderTime_TimeInPast(t *testing.T) {
 
 	userSrv := user.New(context.Background(), userEditor, tz, tzEditor)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 

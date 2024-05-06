@@ -48,7 +48,7 @@ func TestToday(t *testing.T) {
 
 	userSrv := user.New(context.Background(), userEditor, tz, tzEditor)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -109,7 +109,7 @@ func TestTomorrow(t *testing.T) {
 
 	userSrv := user.New(context.Background(), userEditor, tz, tzEditor)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -170,7 +170,7 @@ func TestEverydayReminder(t *testing.T) {
 
 	userSrv := user.New(context.Background(), userEditor, tz, tzEditor)
 
-	controller := New(userSrv, nil, nil, reminderSrv)
+	controller := New(userSrv, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -209,7 +209,7 @@ func TestSeveralTimesADayReminder(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat).Times(2)
 	telectx.EXPECT().Message().Return(&tele.Message{Sender: &tele.User{IsBot: true}})
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -249,7 +249,7 @@ func TestSeveralTimesADayReminder_NewName(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat).Times(3)
 	telectx.EXPECT().Message().Return(&tele.Message{Sender: &tele.User{IsBot: false}, Text: newName}).Times(2)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -287,7 +287,7 @@ func TestOnceInMinutes(t *testing.T) {
 
 	telectx.EXPECT().Chat().Return(chat)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -321,7 +321,7 @@ func TestOnceInHours(t *testing.T) {
 
 	telectx.EXPECT().Chat().Return(chat)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -355,7 +355,7 @@ func TestTimesReminder(t *testing.T) {
 
 	telectx.EXPECT().Chat().Return(chat)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -390,7 +390,7 @@ func TestEveryWeek(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat).Times(2)
 	telectx.EXPECT().Message().Return(&tele.Message{Sender: &tele.User{IsBot: true}})
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -430,7 +430,7 @@ func TestEveryWeek_NewName(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat).Times(3)
 	telectx.EXPECT().Message().Return(&tele.Message{Sender: &tele.User{IsBot: false}, Text: newName}).Times(2)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 	reminderSrv.SaveName(chat.ID, randomReminder.Name)
@@ -464,7 +464,7 @@ func TestWeekDay(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -513,7 +513,7 @@ func TestWeekDay_NewName(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -553,7 +553,7 @@ func TestSeveralDays(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -591,7 +591,7 @@ func TestSeveralDays_NewName(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -632,7 +632,7 @@ func TestMonth(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -670,7 +670,7 @@ func TestMonth_NewName(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -711,7 +711,7 @@ func TestYear(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -754,7 +754,7 @@ func TestYear_NewName(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -800,7 +800,7 @@ func TestDate(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 
@@ -843,7 +843,7 @@ func TestDate_NewName(t *testing.T) {
 	reminderSrv := reminder.New(reminderEditor)
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	chat := &tele.Chat{ID: int64(1)}
 

@@ -22,7 +22,7 @@ func TestSearchNoteByText(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}
@@ -65,7 +65,7 @@ func TestSearchNoteByText_NoNotesFound(t *testing.T) {
 
 	noteEditor := mocks.NewMocknoteEditor(ctrl)
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 	chat := &tele.Chat{ID: int64(1)}

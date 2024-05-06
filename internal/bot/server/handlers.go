@@ -15,7 +15,7 @@ import (
 	"gopkg.in/telebot.v3/middleware"
 )
 
-func (s *Server) setupBot(ctx context.Context) {
+func (s *Server) setupHandlers(ctx context.Context) {
 	s.bot.Use(logger.Logging(ctx), middleware.AutoRespond())
 
 	// геолокация
@@ -82,6 +82,19 @@ func (s *Server) setupBot(ctx context.Context) {
 		logrus.Debugf("Reminders btn")
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListReminder)
 		err := s.controller.ListReminders(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// сообщить о баге
+	s.bot.Handle(&view.BtnBugReport, func(telectx tele.Context) error {
+		logrus.Debugf("Bug report btn")
+		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].BugReportState)
+		err := telectx.EditOrSend(messages.BugReportUserMessage)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

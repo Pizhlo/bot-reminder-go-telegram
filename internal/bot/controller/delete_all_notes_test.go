@@ -29,7 +29,7 @@ func TestDeleteAllNotes(t *testing.T) {
 	}).Return(nil)
 
 	noteSrv := note.New(noteEditor)
-	controller := New(nil, noteSrv, nil, nil)
+	controller := New(nil, noteSrv, nil, nil, 0)
 
 	noteSrv.SaveUser(chat.ID)
 
@@ -51,7 +51,7 @@ func TestConfirmDeleteAllNotes(t *testing.T) {
 
 	telectx := mocks.NewMockteleCtx(ctrl)
 
-	controller := New(nil, nil, nil, nil)
+	controller := New(nil, nil, nil, nil, 0)
 
 	expectedText := messages.ConfirmDeleteNotesMessage
 	expectedKb := &tele.ReplyMarkup{OneTimeKeyboard: true}

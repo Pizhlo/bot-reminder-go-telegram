@@ -31,7 +31,7 @@ func TestSendReminder(t *testing.T) {
 	bot, err := tele.NewBot(tele.Settings{Offline: true})
 	require.NoError(t, err)
 
-	controller := New(nil, nil, bot, reminderSrv)
+	controller := New(nil, nil, bot, reminderSrv, 0)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -53,7 +53,7 @@ func TestProcessDeleteReminder(t *testing.T) {
 	reminderEditor := mocks.NewMockreminderEditor(ctrl)
 	reminderSrv := reminder.New(reminderEditor)
 
-	controller := New(nil, nil, nil, reminderSrv)
+	controller := New(nil, nil, nil, reminderSrv, 0)
 
 	randomReminder := random.Reminder()
 

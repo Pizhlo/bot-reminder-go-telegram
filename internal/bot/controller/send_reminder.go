@@ -36,7 +36,7 @@ func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder)
 	if err != nil {
 		logrus.Errorf("error while sending reminder to user: %v", err)
 		msg := fmt.Sprintf(messages.ErrorSendingReminderMessage, err)
-		c.bot.Send(&telebot.Chat{ID: -1001890622926}, msg, &telebot.SendOptions{
+		c.bot.Send(&telebot.Chat{ID: c.channelID}, msg, &telebot.SendOptions{
 			ParseMode: htmlParseMode,
 		})
 	}

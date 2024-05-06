@@ -37,7 +37,7 @@ func TestStartCmd(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, nil)
+	controller := New(nil, nil, nil, nil, 0)
 
 	err := controller.StartCmd(context.Background(), telectx)
 	assert.NoError(t, err)
@@ -57,7 +57,7 @@ func TestMenuCmd(t *testing.T) {
 		assert.Equal(t, expectedKb, kb)
 	})
 
-	controller := New(nil, nil, nil, nil)
+	controller := New(nil, nil, nil, nil, 0)
 
 	err := controller.MenuCmd(context.Background(), telectx)
 	assert.NoError(t, err)
@@ -103,7 +103,7 @@ func TestHelpCmd_KnownUser(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat)
 	telectx.EXPECT().Sender().Return(user)
 
-	controller := New(userSrv, nil, nil, nil)
+	controller := New(userSrv, nil, nil, nil, 0)
 
 	err = controller.HelpCmd(context.Background(), telectx)
 	assert.NoError(t, err)
@@ -143,7 +143,7 @@ func TestHelpCmd_UnknownUser(t *testing.T) {
 	telectx.EXPECT().Chat().Return(chat)
 	telectx.EXPECT().Sender().Return(user)
 
-	controller := New(userSrv, nil, nil, nil)
+	controller := New(userSrv, nil, nil, nil, 0)
 
 	err := controller.HelpCmd(context.Background(), telectx)
 	assert.NoError(t, err)

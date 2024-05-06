@@ -99,7 +99,7 @@ func Start(confName, path string) {
 	noteSrv := note_srv.New(noteRepo)
 	reminderSrv := reminder.New(reminderRepo)
 
-	controller := controller.New(userSrv, noteSrv, bot, reminderSrv)
+	controller := controller.New(userSrv, noteSrv, bot, reminderSrv, conf.ChannelID)
 
 	// server
 	server := server.New(bot, controller)
