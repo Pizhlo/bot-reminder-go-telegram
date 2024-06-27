@@ -18,6 +18,9 @@ const FirstDateInFutureMessage = "Первая дата еще не наступ
 const SearchByTwoDatesFirstDateMessage = "Выбери первую дату:"
 const SearchByTwoDatesSecondDateMessage = "Выбери вторую дату:"
 
+// EDIT
+const AskNewNoteTextMessage = "Напиши новый текст заметки"
+
 // DELETE
 const ConfirmDeleteNotesMessage = "Ой-ой... Ты точно хочешь удалить ВСЕ заметки?😥"
 const AllNotesDeletedMessage = "Все заметки успешно удалены!👌"

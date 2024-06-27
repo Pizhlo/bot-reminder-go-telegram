@@ -1,2 +1,2 @@
  ALTER TABLE notes.notes
-DROP last_edit Address;
+DROP last_edit;
