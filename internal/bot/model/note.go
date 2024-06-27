@@ -1,17 +1,19 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Note struct {
-	ID      uuid.UUID // id in DB
-	ViewID  int
-	TgID    int64
-	Text    string
-	Created time.Time
+	ID          uuid.UUID // id in DB
+	ViewID      int
+	TgID        int64
+	Text        string
+	Created     time.Time
+	LastEditSql sql.NullTime
 	// HasPhoto bool
 }
 
@@ -34,4 +36,12 @@ type SearchByTwoDates struct {
 	TgID                  int64
 	UserID                int
 	FirstDate, SecondDate time.Time
+}
+
+// для редактирования заметки
+type EditNote struct {
+	TgID    int64
+	ViewID  int64
+	Text    string
+	Timetag time.Time
 }

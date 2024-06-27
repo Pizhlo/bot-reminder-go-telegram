@@ -151,3 +151,17 @@ func (mr *MocknoteEditorMockRecorder) SearchByTwoDates(ctx, searchNote interface
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByTwoDates", reflect.TypeOf((*MocknoteEditor)(nil).SearchByTwoDates), ctx, searchNote)
 }
+
+// UpdateNote mocks base method.
+func (m *MocknoteEditor) UpdateNote(ctx context.Context, note model.EditNote) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNote", ctx, note)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateNote indicates an expected call of UpdateNote.
+func (mr *MocknoteEditorMockRecorder) UpdateNote(ctx, note interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MocknoteEditor)(nil).UpdateNote), ctx, note)
+}

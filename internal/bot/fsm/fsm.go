@@ -18,6 +18,7 @@ const (
 	startStateName                     stateName = "start"
 	listNoteName                       stateName = "list_note"
 	createNoteName                     stateName = "create_note"
+	editNoteName                       stateName = "edit_note"
 	daysDurationName                   stateName = "days_duration"
 	hoursStateName                     stateName = "hours"
 	listReminderName                   stateName = "list_reminder"
@@ -49,6 +50,8 @@ type FSM struct {
 	ListReminder state
 	// Состояние создания заметки
 	createNote state
+	// Состояние для редактирования заметки
+	editNote state
 	// Дефолтное состояние бота, в котором он воспринимает любой текст как заметку
 	defaultState state
 	// Состояние для обработки команды старт (кнопки меню) от пользователя
@@ -114,6 +117,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 	// note
 	fsm.createNote = newCreateNoteState(controller, fsm)
 	fsm.ListNote = newListNoteState(fsm, controller)
+	// fsm.editNote = newEditNoteState(controller, fsm)
 	fsm.SearchNoteByText = newSearchNoteByTextState(controller, fsm)
 	fsm.SearchNoteOneDate = newSearchNoteOneDateState(controller, fsm)
 	fsm.SearchNoteTwoDates = newSearchNoteTwoDateState(controller, fsm)
@@ -211,6 +215,8 @@ func (s *FSM) parseString(state stateName) (state, error) {
 		return s.ListNote, nil
 	case createNoteName:
 		return s.createNote, nil
+	case editNoteName:
+		return s.editNote, nil
 	case daysDurationName:
 		return s.DaysDuration, nil
 	case hoursStateName:
