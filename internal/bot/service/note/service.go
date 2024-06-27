@@ -41,6 +41,9 @@ type noteEditor interface {
 
 	// SearchByTwoDates производит поиск по заметок по двум датам. Если таких заметок нет, возвращает ErrNotesNotFound
 	SearchByTwoDates(ctx context.Context, searchNote *model.SearchByTwoDates) ([]model.Note, error)
+
+	// UpdateNote обновляет заметку на переданную
+	UpdateNote(ctx context.Context, note model.EditNote) error
 }
 
 func New(noteEditor noteEditor) *NoteService {
