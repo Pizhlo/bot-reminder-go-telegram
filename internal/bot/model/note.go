@@ -1,17 +1,20 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Note struct {
-	ID      uuid.UUID // id in DB
-	ViewID  int
-	TgID    int64
-	Text    string
-	Created time.Time
+	ID          uuid.UUID // id in DB
+	ViewID      int
+	TgID        int64
+	Text        string
+	Created     time.Time
+	LastEditSql sql.NullTime
+	LastEdit    time.Time
 	// HasPhoto bool
 }
 

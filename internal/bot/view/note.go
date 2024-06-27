@@ -44,8 +44,21 @@ func (v *NoteView) Message(notes []model.Note) string {
 
 	v.pages = make([]string, 0)
 
+	messageWithEditTimetag := "<b>%d. Создано: %s. Удалить: /dn%d. Изменено: %s. Изменить: /editn%d</b>\n\n%s\n\n"
+	defaultMessage := "<b>%d. Создано: %s. Удалить: /dn%d. Изменить: /editn%d</b>\n\n%s\n\n"
+
 	for i, note := range notes {
-		res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /dn%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ViewID, note.Text)
+
+		// если заполнено поле последнее изменение - заполняем
+		if note.LastEditSql.Valid {
+			res += fmt.Sprintf(messageWithEditTimetag, i+1, note.Created.Format(createdFieldFormat),
+				note.ViewID, note.LastEdit.Format(createdFieldFormat), note.ViewID, note.Text)
+		} else {
+			res += fmt.Sprintf(defaultMessage, i+1, note.Created.Format(createdFieldFormat),
+				note.ViewID, note.ViewID, note.Text)
+		}
+
+		//res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /dn%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ViewID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
 			v.pages = append(v.pages, res)
 			res = ""
