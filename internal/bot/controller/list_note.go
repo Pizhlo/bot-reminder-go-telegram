@@ -78,14 +78,7 @@ func (c *Controller) LastPageNotes(ctx context.Context, telectx tele.Context) er
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		switch t := err.(type) {
-		case *tele.Error:
-			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
-				break
-			}
-		default:
-			return err
-		}
+		return checkError(err)
 	}
 
 	return nil
@@ -106,14 +99,7 @@ func (c *Controller) FirstPageNotes(ctx context.Context, telectx tele.Context) e
 	// то же самое происходит и с последней страницей
 
 	if err != nil {
-		switch t := err.(type) {
-		case *tele.Error:
-			if t.Description == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message (400)" {
-				break
-			}
-		default:
-			return err
-		}
+		return checkError(err)
 	}
 
 	return nil
