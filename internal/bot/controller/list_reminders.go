@@ -50,7 +50,7 @@ func (c *Controller) NextPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		return handleError(err)
+		return checkError(err)
 	}
 
 	return nil
@@ -71,7 +71,7 @@ func (c *Controller) PrevPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		return handleError(err)
+		return checkError(err)
 	}
 
 	return nil
@@ -92,7 +92,7 @@ func (c *Controller) LastPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		return handleError(err)
+		return checkError(err)
 	}
 
 	return nil
@@ -114,16 +114,16 @@ func (c *Controller) FirstPageReminders(ctx context.Context, telectx tele.Contex
 	// то же самое происходит и с последней страницей
 
 	if err != nil {
-		return handleError(err)
+		return checkError(err)
 	}
 
 	return nil
 }
 
-func handleError(err error) error {
+func checkError(err error) error {
 	switch t := err.(type) {
 	case *tele.Error:
-		if strings.Contains(t.Description, "message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message") {
+		if strings.Contains(t.Description, "message is not modified") {
 			return nil
 		}
 	default:

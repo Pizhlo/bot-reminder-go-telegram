@@ -93,7 +93,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		if err != nil {
 			switch t := err.(type) {
 			case *tele.Error:
-				if strings.Contains(t.Description, "message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message") {
+				if strings.Contains(t.Description, "message is not modified") {
 					return nil
 				}
 			default:
@@ -113,7 +113,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		if err != nil {
 			switch t := err.(type) {
 			case *tele.Error:
-				if strings.Contains(t.Description, "message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message") {
+				if strings.Contains(t.Description, "message is not modified") {
 					return nil
 				}
 			default:

@@ -78,7 +78,7 @@ func (c *Controller) LastPageNotes(ctx context.Context, telectx tele.Context) er
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		return handleError(err)
+		return checkError(err)
 	}
 
 	return nil
@@ -99,7 +99,7 @@ func (c *Controller) FirstPageNotes(ctx context.Context, telectx tele.Context) e
 	// то же самое происходит и с последней страницей
 
 	if err != nil {
-		return handleError(err)
+		return checkError(err)
 	}
 
 	return nil
