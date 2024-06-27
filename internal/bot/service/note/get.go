@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -18,20 +17,7 @@ func (s *NoteService) GetAll(ctx context.Context, userID int64) (string, *tele.R
 		return "", nil, err
 	}
 
-	notes = fixEditTimetag(notes)
-
 	return s.viewsMap[userID].Message(notes), s.viewsMap[userID].Keyboard(), nil
-}
-
-// fixEditTimetag проверяет на валидность таймтеги редактирования. Если есть валидные - заполняет поле LastEdit
-func fixEditTimetag(notes []model.Note) []model.Note {
-	for _, note := range notes {
-		if note.LastEditSql.Valid {
-			note.LastEdit = note.LastEditSql.Time
-		}
-	}
-
-	return notes
 }
 
 // NextPage обрабатывает кнопку переключения на следующую страницу

@@ -14,7 +14,6 @@ type Note struct {
 	Text        string
 	Created     time.Time
 	LastEditSql sql.NullTime
-	LastEdit    time.Time
 	// HasPhoto bool
 }
 
@@ -41,7 +40,8 @@ type SearchByTwoDates struct {
 
 // для редактирования заметки
 type EditNote struct {
-	TgID   int64
-	ViewID int64
-	Text   string
+	TgID    int64
+	ViewID  int64
+	Text    string
+	Timetag time.Time
 }
