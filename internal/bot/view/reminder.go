@@ -28,6 +28,9 @@ var (
 	// inline кнопка для переключения на следующую страницу (напоминания)
 	BtnNextPgReminders = tele.Btn{Text: ">", Unique: "next_pg_reminders"}
 
+	// inline кнопка для обновления напоминаний
+	BtnRefreshReminders = tele.Btn{Text: "🔁", Unique: "reminders"}
+
 	// inline кнопка для переключения на первую страницу (напоминания)
 	BtnFirstPgReminders = tele.Btn{Text: "<<", Unique: "start_pg_reminders"}
 	// inline кнопка для переключения на последнюю страницу (напоминания)
@@ -134,6 +137,7 @@ func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 		menu.Inline(
 			menu.Row(BtnCreateReminder),
 			menu.Row(BtnDeleteAllReminders),
+			menu.Row(BtnRefreshReminders),
 			menu.Row(BtnBackToMenu),
 		)
 		return menu
@@ -147,6 +151,7 @@ func (v *ReminderView) Keyboard() *tele.ReplyMarkup {
 		menu.Row(BtnFirstPgReminders, BtnPrevPgReminders, btn, BtnNextPgReminders, BtnLastPgReminders),
 		menu.Row(BtnCreateReminder),
 		menu.Row(BtnDeleteAllReminders),
+		menu.Row(BtnRefreshReminders),
 		menu.Row(BtnBackToMenu),
 	)
 

@@ -31,6 +31,9 @@ var (
 	// inline кнопка для переключения на следующую страницу (заметки)
 	BtnNextPgNotes = tele.Btn{Text: ">", Unique: "next_pg_notes"}
 
+	// inline кнопка для обновления заметок
+	BtnRefreshNotes = tele.Btn{Text: "🔁", Unique: "notes"}
+
 	// inline кнопка для переключения на первую страницу (заметки)
 	BtnFirstPgNotes = tele.Btn{Text: "<<", Unique: "start_pg_notes"}
 	// inline кнопка для переключения на последнюю страницу (заметки)
@@ -140,6 +143,7 @@ func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 	if v.total() == 1 {
 		menu.Inline(
 			menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
+			menu.Row(BtnRefreshNotes),
 			menu.Row(BtnDeleteAllNotes),
 			menu.Row(BtnBackToMenu),
 		)
@@ -153,6 +157,7 @@ func (v *NoteView) Keyboard() *tele.ReplyMarkup {
 	menu.Inline(
 		menu.Row(BtnFirstPgNotes, BtnPrevPgNotes, btn, BtnNextPgNotes, BtnLastPgNotes),
 		menu.Row(BtnSearchNotesByText, BtnSearchNotesByDate),
+		menu.Row(BtnRefreshNotes),
 		menu.Row(BtnDeleteAllNotes),
 		menu.Row(BtnBackToMenu),
 	)
