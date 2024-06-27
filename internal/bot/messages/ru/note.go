@@ -20,6 +20,7 @@ const SearchByTwoDatesSecondDateMessage = "Выбери вторую дату:"
 
 // EDIT
 const AskNewNoteTextMessage = "Напиши новый текст заметки"
+const EditNoteSuccessMessage = "Заметка под номером %d успешно обновлена!🥳"
 
 // DELETE
 const ConfirmDeleteNotesMessage = "Ой-ой... Ты точно хочешь удалить ВСЕ заметки?😥"

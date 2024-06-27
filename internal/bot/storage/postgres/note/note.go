@@ -1,6 +1,7 @@
 package note
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -29,4 +30,11 @@ func (db *NoteRepo) Close() {
 	if err := db.db.Close(); err != nil {
 		logrus.Errorf("error on closing note repo: %v", err)
 	}
+}
+
+func (db *NoteRepo) tx(ctx context.Context) (*sql.Tx, error) {
+	return db.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+		ReadOnly:  false,
+	})
 }

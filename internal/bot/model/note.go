@@ -38,3 +38,10 @@ type SearchByTwoDates struct {
 	UserID                int
 	FirstDate, SecondDate time.Time
 }
+
+// для редактирования заметки
+type EditNote struct {
+	TgID   int64
+	ViewID int64
+	Text   string
+}

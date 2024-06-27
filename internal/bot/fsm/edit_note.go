@@ -24,6 +24,8 @@ func newEditNoteState(controller *controller.Controller, FSM *FSM, noteNumber in
 func (n *editNoteState) Handle(ctx context.Context, telectx tele.Context) error {
 	logrus.Debugf("Handling request. State: %s. Message: %s\n", n.Name(), telectx.Message().Text)
 
+	n.fsm.SetToDefault()
+
 	return n.controller.UpdateNote(ctx, telectx, n.noteNumber)
 }
 
