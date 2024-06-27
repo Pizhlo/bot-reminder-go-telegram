@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
@@ -90,8 +91,15 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		// return s.fsm[telectx.Chat().ID].Handle(ctx, telectx)
 		err := s.controller.ListNotes(ctx, telectx)
 		if err != nil {
-			s.HandleError(telectx, err)
-			return err
+			switch t := err.(type) {
+			case *tele.Error:
+				if strings.Contains(t.Description, "message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message") {
+					return nil
+				}
+			default:
+				s.HandleError(telectx, err)
+				return err
+			}
 		}
 
 		return nil
@@ -103,8 +111,15 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		s.fsm[telectx.Chat().ID].SetState(s.fsm[telectx.Chat().ID].ListReminder)
 		err := s.controller.ListReminders(ctx, telectx)
 		if err != nil {
-			s.HandleError(telectx, err)
-			return err
+			switch t := err.(type) {
+			case *tele.Error:
+				if strings.Contains(t.Description, "message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message") {
+					return nil
+				}
+			default:
+				s.HandleError(telectx, err)
+				return err
+			}
 		}
 
 		return nil

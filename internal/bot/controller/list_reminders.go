@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"strings"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
@@ -49,9 +50,7 @@ func (c *Controller) NextPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		if !errors.Is(err, tele.ErrMessageNotModified) {
-			return err
-		}
+		return handleError(err)
 	}
 
 	return nil
@@ -72,9 +71,7 @@ func (c *Controller) PrevPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		if !errors.Is(err, tele.ErrMessageNotModified) {
-			return err
-		}
+		return handleError(err)
 	}
 
 	return nil
@@ -95,9 +92,7 @@ func (c *Controller) LastPageReminders(ctx context.Context, telectx tele.Context
 	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
 	// то же самое происходит и с последней страницей
 	if err != nil {
-		if !errors.Is(err, tele.ErrMessageNotModified) {
-			return err
-		}
+		return handleError(err)
 	}
 
 	return nil
@@ -119,10 +114,21 @@ func (c *Controller) FirstPageReminders(ctx context.Context, telectx tele.Contex
 	// то же самое происходит и с последней страницей
 
 	if err != nil {
-		if !errors.Is(err, tele.ErrMessageNotModified) {
-			return err
-		}
+		return handleError(err)
 	}
 
 	return nil
+}
+
+func handleError(err error) error {
+	switch t := err.(type) {
+	case *tele.Error:
+		if strings.Contains(t.Description, "message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message") {
+			return nil
+		}
+	default:
+		return err
+	}
+
+	return err
 }
