@@ -17,6 +17,23 @@ var (
 	BtnPrevYear = tele.Btn{Text: "<<", Unique: "prev_year"}
 	// inline кнопка для переключения на следующий год
 	BtnNextYear = tele.Btn{Text: ">>", Unique: "next_year"}
+
+	// inline кнопка с названием месяца. при нажатии открывается список всех месяцев
+	BtnMonth = tele.Btn{Unique: "month"}
+
+	// months buttons
+	BtnJanuary   = tele.Btn{Text: "Январь", Unique: "january"}
+	BtnFebruary  = tele.Btn{Text: "Февраль", Unique: "february"}
+	BtnMarch     = tele.Btn{Text: "Март", Unique: "march"}
+	BtnApril     = tele.Btn{Text: "Апрель", Unique: "april"}
+	BtnMay       = tele.Btn{Text: "Май", Unique: "may"}
+	BtnJune      = tele.Btn{Text: "Июнь", Unique: "june"}
+	BtnJuly      = tele.Btn{Text: "Июль", Unique: "july"}
+	BtnAugust    = tele.Btn{Text: "Август", Unique: "august"}
+	BtnSeptember = tele.Btn{Text: "Сентябрь", Unique: "september"}
+	BtnOctober   = tele.Btn{Text: "Октябрь", Unique: "october"}
+	BtnNovember  = tele.Btn{Text: "Ноябрь", Unique: "november"}
+	BtnDecember  = tele.Btn{Text: "Декабрь", Unique: "december"}
 )
 
 // Calendar предоставляет календарь пользователю для выбора даты
@@ -279,10 +296,8 @@ func (c *Calendar) monthTitle() tele.Btn {
 
 	monthTitle := monthsTranslation[c.curMonth.String()]
 
-	return tele.Btn{
-		Text:   monthTitle,
-		Unique: monthTitle,
-	}
+	BtnMonth.Text = monthTitle
+	return BtnMonth
 }
 
 // yearTitle возвращает кнопку с надписью текущего года
@@ -303,4 +318,18 @@ func (c *Calendar) addButns(dst *tele.ReplyMarkup, btns ...tele.Btn) *tele.Reply
 	dst.InlineKeyboard = append(dst.InlineKeyboard, inlineBtns)
 
 	return dst
+}
+
+// ListMonthsKb возвращает клавиатуру с названиями месяцев
+func ListMonthsKb() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnJanuary, BtnFebruary, BtnMarch),
+		menu.Row(BtnApril, BtnMay, BtnJune),
+		menu.Row(BtnJuly, BtnAugust, BtnSeptember),
+		menu.Row(BtnOctober, BtnNovember, BtnDecember),
+	)
+
+	return menu
 }

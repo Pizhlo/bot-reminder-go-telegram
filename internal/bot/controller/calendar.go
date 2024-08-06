@@ -97,3 +97,8 @@ func (c *Controller) SetupReminderCalendar(ctx context.Context, telectx tele.Con
 func (c *Controller) SetupNoteCalendar(ctx context.Context, telectx tele.Context) {
 	c.noteSrv.SetupCalendar(telectx.Chat().ID)
 }
+
+// ListMonths обрабатывает нажатие на кнопку с названием месяца, открывая список всех месяцев
+func (c *Controller) ListMonths(ctx context.Context, telectx tele.Context) error {
+	return telectx.Edit("text", view.ListMonthsKb())
+}
