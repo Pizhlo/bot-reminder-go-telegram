@@ -138,7 +138,7 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 	}
 
 	if len(errors) > 0 {
-		logrus.Fatalf("error while saving users on start: errors: %v", errors)
+		logrus.Warnf("error while saving users on start: errors: %v", errors)
 	}
 }
 
