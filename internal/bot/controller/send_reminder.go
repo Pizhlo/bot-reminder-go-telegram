@@ -13,7 +13,7 @@ import (
 
 // SendReminder отправляет пользователю напоминание в указанное время
 func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder) error {
-	logrus.Debugf("Sending reminder to: %d\n", reminder.TgID)
+	logrus.Debugf("Sending reminder to: %d. Reminder: %+v\n", reminder.TgID, reminder)
 
 	msg, err := view.ReminderMessage(reminder)
 	if err != nil {

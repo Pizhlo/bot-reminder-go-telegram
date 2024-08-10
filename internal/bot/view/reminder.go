@@ -176,6 +176,7 @@ func (v *ReminderView) Clear() {
 //
 // Напоминание сработало 23.10.2023 в 18:00
 func ReminderMessage(reminder *model.Reminder) (string, error) {
+	logrus.Debugf("View: new reminder message. Reminder: %+v", reminder)
 	name := reminder.Name
 
 	date, err := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
