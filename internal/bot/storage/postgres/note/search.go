@@ -11,6 +11,8 @@ import (
 func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error) {
 	var notes []model.Note
 
+	// db.elasticClient.SearchNote()
+
 	// and "text" LIKE '%' || $2 || '%'
 	rows, err := db.db.QueryContext(ctx, `select note_number, text, created from notes.notes 
 	join notes.notes_view on notes.notes_view.id = notes.notes.id

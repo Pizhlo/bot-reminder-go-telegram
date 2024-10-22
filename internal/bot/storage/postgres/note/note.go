@@ -5,15 +5,23 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/elastic"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
 
 type NoteRepo struct {
-	db *sql.DB
+	db            *sql.DB
+	elasticClient elasticClient
 }
 
-func New(dbURl string) (*NoteRepo, error) {
+type elasticClient interface {
+	Save(ctx context.Context, search elastic.Data) error
+	// SearchNote()
+	// DeleteNote()
+}
+
+func New(dbURl string, elasticClient elasticClient) (*NoteRepo, error) {
 	db, err := sql.Open("postgres", dbURl)
 	if err != nil {
 		return nil, fmt.Errorf("connect open a db driver: %w", err)
@@ -23,7 +31,7 @@ func New(dbURl string) (*NoteRepo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to a db: %w", err)
 	}
-	return &NoteRepo{db}, nil
+	return &NoteRepo{db, elasticClient}, nil
 }
 
 func (db *NoteRepo) Close() {
