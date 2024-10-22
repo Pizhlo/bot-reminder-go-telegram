@@ -9,7 +9,7 @@ import (
 )
 
 func (c *client) Save(ctx context.Context, data elastic.Data) error {
-	err := validateNote(data)
+	_, err := data.ValidateNote()
 	if err != nil {
 		return fmt.Errorf("error validating note while saving: %+v", err)
 	}

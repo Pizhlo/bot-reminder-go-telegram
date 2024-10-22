@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/elastic"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
@@ -17,6 +18,8 @@ type NoteRepo struct {
 
 type elasticClient interface {
 	Save(ctx context.Context, search elastic.Data) error
+	// Search производит поиск по переданным данным. Возвращает ID подходящих записей
+	Search(ctx context.Context, search elastic.Data) ([]uuid.UUID, error)
 	// SearchNote()
 	// DeleteNote()
 }
