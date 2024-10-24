@@ -26,6 +26,11 @@ func (c *client) Delete(ctx context.Context, data elastic.Data) error {
 }
 
 func (c *client) DeleteAllByUserID(ctx context.Context, data elastic.Data) error {
+	_, err := data.ValidateNote()
+	if err != nil {
+		return fmt.Errorf("error validating note while deleting by user ID: %+v", err)
+	}
+
 	req, err := data.DeleteByQuery()
 	if err != nil {
 		return fmt.Errorf("error creating query for deleting by query: %+v", err)

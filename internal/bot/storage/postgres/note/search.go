@@ -22,9 +22,10 @@ func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchByT
 
 	ids, err := db.elasticClient.SearchByText(ctx, search)
 	if err != nil {
-		if errors.Is(err, &api_errors.ErrRecordsNotFound) {
+		if errors.Is(err, api_errors.ErrRecordsNotFound) {
 			return nil, api_errors.ErrNotesNotFound
 		}
+
 		return nil, err
 	}
 

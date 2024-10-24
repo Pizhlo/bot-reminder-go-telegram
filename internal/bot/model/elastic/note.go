@@ -19,15 +19,15 @@ type Note struct {
 }
 
 // ValidateNote проверяет поля структуры elastic.Data на правильность и возвращает заметку
-func (n Note) Validate() error {
+func (n Note) validate() error {
 	return nil
 }
 
-func (n Note) GetVal() interface{} {
+func (n Note) getVal() interface{} {
 	return n
 }
 
-func (n Note) SearchByTextQuery() (*search.Request, error) {
+func (n Note) searchByTextQuery() (*search.Request, error) {
 	must1 := []types.Query{
 		{
 			Bool: &types.BoolQuery{
@@ -79,7 +79,7 @@ func (n Note) SearchByTextQuery() (*search.Request, error) {
 	return req, nil
 }
 
-func (n Note) SearchByIDQuery() (*search.Request, error) {
+func (n Note) searchByIDQuery() (*search.Request, error) {
 	req := &search.Request{
 		Query: &types.Query{
 			Match: map[string]types.MatchQuery{
@@ -93,7 +93,7 @@ func (n Note) SearchByIDQuery() (*search.Request, error) {
 	return req, nil
 }
 
-func (n Note) DeleteByQuery() (*deletebyquery.Request, error) {
+func (n Note) deleteByQuery() (*deletebyquery.Request, error) {
 	req := &deletebyquery.Request{
 		Query: &types.Query{
 			Match: map[string]types.MatchQuery{

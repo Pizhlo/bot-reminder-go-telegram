@@ -2,7 +2,6 @@ package note
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -13,10 +12,7 @@ import (
 
 // DeleteAllByUserID удаляет все заметки пользователя по user ID
 func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
-	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelReadCommitted,
-		ReadOnly:  false,
-	})
+	tx, err := db.tx(ctx)
 	if err != nil {
 		return fmt.Errorf("error while creating transaction: %w", err)
 	}
@@ -54,16 +50,13 @@ func (db *NoteRepo) DeleteByID(ctx context.Context, noteID uuid.UUID) error {
 	// сначала необходимо узнать id заметки в эластике для удаления
 	ids, err := db.elasticClient.SearchByID(ctx, search)
 	if err != nil {
-		if errors.Is(err, &api_errors.ErrRecordsNotFound) {
+		if errors.Is(err, api_errors.ErrRecordsNotFound) {
 			return api_errors.ErrNotesNotFound
 		}
 		return err
 	}
 
-	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelReadCommitted,
-		ReadOnly:  false,
-	})
+	tx, err := db.tx(ctx)
 	if err != nil {
 		return fmt.Errorf("error while creating transaction: %w", err)
 	}

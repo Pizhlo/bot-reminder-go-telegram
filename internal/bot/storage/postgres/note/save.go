@@ -2,7 +2,6 @@ package note
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -13,10 +12,7 @@ import (
 
 // Save сохраняет заметку в базе данных. Для сохранения требуется: ID пользователя, содержимое заметки, дата создания
 func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
-	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelReadCommitted,
-		ReadOnly:  false,
-	})
+	tx, err := db.tx(ctx)
 	if err != nil {
 		return fmt.Errorf("error while creating transaction: %w", err)
 	}

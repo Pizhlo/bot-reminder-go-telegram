@@ -25,26 +25,26 @@ type Data struct {
 }
 
 type model interface {
-	Validate() error
-	GetVal() interface{}
-	SearchByIDQuery() (*search.Request, error)
-	SearchByTextQuery() (*search.Request, error)
-	DeleteByQuery() (*deletebyquery.Request, error)
+	validate() error
+	getVal() interface{}
+	searchByIDQuery() (*search.Request, error)
+	searchByTextQuery() (*search.Request, error)
+	deleteByQuery() (*deletebyquery.Request, error)
 }
 
 // SearchByIDQuery возвращает готовый запрос для поиска по ID.
 // Ищет в эластике по ID из базы
 func (d *Data) SearchByIDQuery() (*search.Request, error) {
-	return d.Model.SearchByIDQuery()
+	return d.Model.searchByIDQuery()
 }
 
 func (d *Data) DeleteByQuery() (*deletebyquery.Request, error) {
-	return d.Model.DeleteByQuery()
+	return d.Model.deleteByQuery()
 }
 
 // SearchByTextQuery возвращает готовый запрос для поиска по тексту
 func (d *Data) SearchByTextQuery() (*search.Request, error) {
-	return d.Model.SearchByTextQuery()
+	return d.Model.searchByTextQuery()
 }
 
 func (d *Data) ValidateNote() (*Note, error) {
@@ -52,12 +52,12 @@ func (d *Data) ValidateNote() (*Note, error) {
 		return nil, fmt.Errorf("index is not equal to `notes`: `%s`", d.Index)
 	}
 
-	val := d.Model.GetVal()
+	val := d.Model.getVal()
 
 	note, ok := val.(Note)
 	if !ok {
 		return nil, fmt.Errorf("cannot convert interface{} to elastic.Note. Value: %+v", val)
 	}
 
-	return &note, d.Model.Validate()
+	return &note, d.Model.validate()
 }

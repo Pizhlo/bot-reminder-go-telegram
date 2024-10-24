@@ -12,6 +12,11 @@ import (
 
 // Search производит поиск по переданным данным. Возвращает ID подходящих записей
 func (c *client) SearchByText(ctx context.Context, data elastic.Data) ([]uuid.UUID, error) {
+	_, err := data.ValidateNote()
+	if err != nil {
+		return nil, err
+	}
+
 	query, err := data.SearchByTextQuery()
 	if err != nil {
 		return nil, fmt.Errorf("error while creating query for search note: %+v", err)
@@ -42,7 +47,7 @@ func (c *client) SearchByText(ctx context.Context, data elastic.Data) ([]uuid.UU
 	}
 
 	if len(ids) == 0 {
-		return nil, api_errors.NewNotFound("records not found by text")
+		return nil, api_errors.ErrRecordsNotFound
 	}
 
 	return ids, nil
@@ -50,6 +55,11 @@ func (c *client) SearchByText(ctx context.Context, data elastic.Data) ([]uuid.UU
 
 // SearchByID производит поиск по ID из базы. Возвращает ID из эластика подходящих записей
 func (c *client) SearchByID(ctx context.Context, data elastic.Data) ([]string, error) {
+	_, err := data.ValidateNote()
+	if err != nil {
+		return nil, err
+	}
+
 	query, err := data.SearchByIDQuery()
 	if err != nil {
 		return nil, fmt.Errorf("error while creating query for search note: %+v", err)
@@ -69,7 +79,7 @@ func (c *client) SearchByID(ctx context.Context, data elastic.Data) ([]string, e
 	}
 
 	if len(ids) == 0 {
-		return nil, api_errors.NewNotFound("records not found by ID")
+		return nil, api_errors.ErrRecordsNotFound
 	}
 
 	return ids, nil
