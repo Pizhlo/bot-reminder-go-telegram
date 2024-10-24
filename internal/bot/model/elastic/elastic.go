@@ -5,6 +5,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/deletebyquery"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/update"
 )
 
 type ElasticIndex string
@@ -30,6 +31,8 @@ type model interface {
 	searchByIDQuery() (*search.Request, error)
 	searchByTextQuery() (*search.Request, error)
 	deleteByQuery() (*deletebyquery.Request, error)
+	updateQuery() (*update.Request, error)
+	setElasticID(id string)
 }
 
 // SearchByIDQuery возвращает готовый запрос для поиска по ID.
@@ -38,8 +41,16 @@ func (d *Data) SearchByIDQuery() (*search.Request, error) {
 	return d.Model.searchByIDQuery()
 }
 
+func (d *Data) SetElasticID(id string) {
+	d.Model.setElasticID(id)
+}
+
 func (d *Data) DeleteByQuery() (*deletebyquery.Request, error) {
 	return d.Model.deleteByQuery()
+}
+
+func (d *Data) UpdateQuery() (*update.Request, error) {
+	return d.Model.updateQuery()
 }
 
 // SearchByTextQuery возвращает готовый запрос для поиска по тексту

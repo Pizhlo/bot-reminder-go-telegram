@@ -28,7 +28,7 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 	// создаем структуру для сохранения в elastic
 	elasticData := elastic.Data{
 		Index: elastic.NoteIndex,
-		Model: elastic.Note{
+		Model: &elastic.Note{
 			ID:   id,
 			Text: note.Text,
 			TgID: note.TgID,

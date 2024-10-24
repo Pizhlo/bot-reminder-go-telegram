@@ -24,7 +24,7 @@ func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
 
 	data := elastic.Data{
 		Index: elastic.NoteIndex,
-		Model: elastic.Note{
+		Model: &elastic.Note{
 			TgID: userID,
 		},
 	}
@@ -42,7 +42,7 @@ func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
 func (db *NoteRepo) DeleteByID(ctx context.Context, noteID uuid.UUID) error {
 	search := elastic.Data{
 		Index: elastic.NoteIndex,
-		Model: elastic.Note{
+		Model: &elastic.Note{
 			ID: noteID,
 		},
 	}
@@ -66,7 +66,7 @@ func (db *NoteRepo) DeleteByID(ctx context.Context, noteID uuid.UUID) error {
 		return fmt.Errorf("error while deleting note by user ID: %w", err)
 	}
 
-	search.Model = elastic.Note{ElasticID: ids[0]}
+	search.Model = &elastic.Note{ElasticID: ids[0]}
 	err = db.elasticClient.Delete(ctx, search)
 	if err != nil {
 		//  откатываем изменения в случае ошибки

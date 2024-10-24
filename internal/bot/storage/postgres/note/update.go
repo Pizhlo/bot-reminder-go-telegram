@@ -25,7 +25,7 @@ func (db *NoteRepo) UpdateNote(ctx context.Context, note model.EditNote) error {
 
 	data := elastic.Data{
 		Index: elastic.NoteIndex,
-		Model: elastic.Note{
+		Model: &elastic.Note{
 			ID:   id,
 			TgID: note.TgID,
 			Text: note.Text,

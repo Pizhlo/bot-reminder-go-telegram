@@ -14,7 +14,7 @@ import (
 func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchByText) ([]model.Note, error) {
 	search := elastic.Data{
 		Index: elastic.NoteIndex,
-		Model: elastic.Note{
+		Model: &elastic.Note{
 			TgID: searchNote.TgID,
 			Text: searchNote.Text,
 		},

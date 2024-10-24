@@ -1,10 +1,12 @@
 package elastic
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/deletebyquery"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/update"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/operator"
 	"github.com/google/uuid"
@@ -105,6 +107,25 @@ func (n Note) deleteByQuery() (*deletebyquery.Request, error) {
 	}
 
 	return req, nil
+}
+
+func (n Note) updateQuery() (*update.Request, error) {
+	data := map[string]string{"Text": n.Text}
+
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	req := &update.Request{
+		Doc: dataBytes,
+	}
+
+	return req, nil
+}
+
+func (n *Note) setElasticID(id string) {
+	n.ElasticID = id
 }
 
 func valueToPointer[T string | float32 | float64](val T) *T {

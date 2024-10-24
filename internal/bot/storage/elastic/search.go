@@ -84,3 +84,31 @@ func (c *client) SearchByID(ctx context.Context, data elastic.Data) ([]string, e
 
 	return ids, nil
 }
+
+// getElasticID ищет запись в elasticSearch по тексту и userID. Возвращает id в elastic search
+func (c *client) getElasticID(ctx context.Context, data elastic.Data) (string, error) {
+	_, err := data.ValidateNote()
+	if err != nil {
+		return "", err
+	}
+
+	req, err := data.SearchByTextQuery()
+	if err != nil {
+		return "", err
+	}
+
+	res, err := c.cl.Search().
+		Index(data.Index.String()).
+		Request(req).Do(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error searching note: %+v", err)
+	}
+
+	if len(res.Hits.Hits) == 0 {
+		return "", api_errors.ErrRecordsNotFound
+	}
+
+	elasticID := res.Hits.Hits[0].Id_
+
+	return *elasticID, nil
+}
