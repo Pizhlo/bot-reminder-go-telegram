@@ -16,6 +16,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
 	user_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	tz_cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/elastic"
 	note_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/note"
 	reminder_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/reminder"
 	tz_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/timezone"
@@ -55,6 +56,12 @@ func Start(confName, path string) {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
 
+	// elastic
+	elasticClient, err := elastic.New([]string{conf.ElasticAddr})
+	if err != nil {
+		logrus.Fatalf("error creating elastic client: %+v", err)
+	}
+
 	// db
 	dbAddr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", conf.DBUser, conf.DBPass, conf.DBHost, conf.DBPort, conf.DBName)
 
@@ -68,7 +75,7 @@ func Start(confName, path string) {
 		logrus.Fatalf("cannot create user timezone repo: %v", err)
 	}
 
-	noteRepo, err := note_db.New(dbAddr)
+	noteRepo, err := note_db.New(dbAddr, elasticClient)
 	if err != nil {
 		logrus.Fatalf("cannot create note repo: %v", err)
 	}

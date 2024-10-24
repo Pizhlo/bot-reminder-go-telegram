@@ -937,7 +937,7 @@ func TestSaveCalendarDate_Valid_OnceYearType(t *testing.T) {
 	if month < 10 {
 		curDate = "12" + ".0" + strconv.Itoa(int(month))
 	} else {
-		curDate = "12" + strconv.Itoa(int(month))
+		curDate = "12" + "." + strconv.Itoa(int(month))
 	}
 
 	assert.Equal(t, r.TgID, result.TgID)

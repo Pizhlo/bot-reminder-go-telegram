@@ -18,14 +18,14 @@ import (
 func (c *ReminderService) CreateReminder(ctx context.Context, loc *time.Location, f gocron.Task, r *model.Reminder) (gocron.NewJob, error) {
 	var sch *gocron.Scheduler
 	var err error
-	sch, err = c.getScheduler(r.TgID)
+	sch, err = c.GetScheduler(r.TgID)
 	if err != nil {
 		err = c.CreateScheduler(ctx, r.TgID, loc, f)
 		if err != nil {
 			return gocron.NewJob{}, err
 		}
 
-		sch, _ = c.getScheduler(r.TgID)
+		sch, _ = c.GetScheduler(r.TgID)
 	}
 
 	logrus.Debugf(wrap(fmt.Sprintf("starting job for user %d. Reminder: %+v", r.TgID, r)))
@@ -102,7 +102,7 @@ func (c *ReminderService) CreateScheduler(ctx context.Context, tgID int64, loc *
 	return c.StartAllJobs(ctx, tgID, loc, f)
 }
 
-func (c *ReminderService) getScheduler(tgID int64) (*gocron.Scheduler, error) {
+func (c *ReminderService) GetScheduler(tgID int64) (*gocron.Scheduler, error) {
 	if val, ok := c.schedulers[tgID]; ok {
 		return val, nil
 	}
