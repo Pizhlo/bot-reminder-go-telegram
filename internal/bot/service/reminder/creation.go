@@ -156,7 +156,7 @@ func (n *ReminderService) SaveID(userID int64, reminderID uuid.UUID) error {
 
 	r, ok := n.reminderMap[userID]
 	if !ok {
-		return errors.New("error while getting reminder by user ID: reminder not found")
+		return errors.New(wrap("error while getting reminder by user ID: reminder not found"))
 	}
 
 	r.ID = reminderID
