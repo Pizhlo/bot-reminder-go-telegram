@@ -12,9 +12,11 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
+	"github.com/go-co-op/gocron/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -51,6 +53,34 @@ func TestListReminders_Positive(t *testing.T) {
 
 	err := srv.CreateScheduler(ctx, chat.ID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
 	assert.NoError(t, err)
+
+	sch, err := srv.GetScheduler(chat.ID)
+	require.NoError(t, err)
+
+	jobs := sch.Jobs()
+
+	jobsMap := map[uuid.UUID]gocron.Job{}
+
+	for _, j := range jobs {
+		jobsMap[j.ID()] = j
+	}
+
+	// заполняем поле nextRun у всех сгенерированных напоминаний
+	for i := 0; i < len(reminders); i++ {
+		j, ok := jobsMap[reminders[i].Job.ID]
+		if !ok {
+			t.Errorf("job not found in jobs map")
+			continue
+		}
+
+		nextRun, err := j.NextRun()
+		if err != nil {
+			t.Errorf("error getting next run for job: %+v", err)
+			continue
+		}
+
+		reminders[i].Job.NextRun = nextRun
+	}
 
 	view := view.NewReminder()
 

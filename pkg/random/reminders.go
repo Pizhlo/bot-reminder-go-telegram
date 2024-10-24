@@ -28,15 +28,25 @@ func Reminder() *model.Reminder {
 		ViewID:  int64(Int(1, 10)),
 		TgID:    1,
 		Name:    String(10),
-		Date:    "10.10.2024",
+		Date:    randomDate().Format("02.01.2006"),
 		Type:    model.DateType,
 		Time:    "10:10",
 		Created: time.Now(),
 		Job: model.Job{
 			ID:      uuid.Nil,
-			NextRun: time.Date(time.Now().Year(), time.October, 10, 10, 10, 0, 0, time.Local),
+			NextRun: time.Time{}, // в реальности в базе такие вещи не хранятся и из базы поле приходит пустым
 		},
 	}
 
 	return r
+}
+
+func randomDate() time.Time {
+	day := Int(1, 10)
+	month := time.Now().Add(30 * 24 * time.Hour).Month() // прибавляем 30 дней
+	year := time.Now().Year()
+
+	date := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
+
+	return date
 }

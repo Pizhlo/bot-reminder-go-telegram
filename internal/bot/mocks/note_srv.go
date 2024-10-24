@@ -10,6 +10,7 @@ import (
 
 	model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/google/uuid"
 )
 
 // MocknoteEditor is a mock of noteEditor interface.
@@ -49,18 +50,18 @@ func (mr *MocknoteEditorMockRecorder) DeleteAllByUserID(ctx, userID interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllByUserID", reflect.TypeOf((*MocknoteEditor)(nil).DeleteAllByUserID), ctx, userID)
 }
 
-// DeleteNoteByViewID mocks base method.
-func (m *MocknoteEditor) DeleteNoteByViewID(ctx context.Context, userID int64, viewID int) error {
+// DeleteByID mocks base method.
+func (m *MocknoteEditor) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteNoteByViewID", ctx, userID, viewID)
+	ret := m.ctrl.Call(m, "DeleteByID", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteNoteByViewID indicates an expected call of DeleteNoteByViewID.
-func (mr *MocknoteEditorMockRecorder) DeleteNoteByViewID(ctx, userID, viewID interface{}) *gomock.Call {
+// DeleteByID indicates an expected call of DeleteByID.
+func (mr *MocknoteEditorMockRecorder) DeleteByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoteByViewID", reflect.TypeOf((*MocknoteEditor)(nil).DeleteNoteByViewID), ctx, userID, viewID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MocknoteEditor)(nil).DeleteByID), ctx, id)
 }
 
 // GetAllByUserID mocks base method.

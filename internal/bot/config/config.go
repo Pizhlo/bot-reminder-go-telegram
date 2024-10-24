@@ -19,6 +19,7 @@ type Config struct {
 	DBPort             string        `mapstructure:"POSTGRES_PORT,required"`
 	Timeout            time.Duration `mapstructure:"TIMEOUT,required"`
 	TelegramMaxMsgSize int           `mapstructure:"MAX_MSG_SIZE,required"`
+	ElasticAddr        string        `mapstructure:"ELASTIC_ADDR,required"`
 	DBAddress          string
 	Token              string `mapstructure:"TOKEN,required"`
 	ChannelID          int64  `mapstructure:"CHANNEL_ID,required"`

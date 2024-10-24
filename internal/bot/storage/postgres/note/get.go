@@ -45,13 +45,13 @@ func (db *NoteRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.N
 func (db *NoteRepo) GetByViewID(ctx context.Context, userID int64, noteID int) (*model.Note, error) {
 	note := model.Note{}
 
-	row := db.db.QueryRowContext(ctx, `select note_number, text, created from notes.notes 
+	row := db.db.QueryRowContext(ctx, `select notes.notes.id, notes.notes_view.note_number, notes.notes.user_id, text, created, last_edit from notes.notes 
 	join notes.notes_view on notes.notes_view.id = notes.notes.id
 	where notes.notes.user_id = (select id from users.users where tg_id = $1)
 	and notes.notes_view.note_number = $2
 	order by created ASC;`, userID, noteID)
 
-	err := row.Scan(&note.ViewID, &note.Text, &note.Created)
+	err := row.Scan(&note.ID, &note.ViewID, &note.TgID, &note.Text, &note.Created, &note.LastEditSql)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, api_errors.ErrNotesNotFound

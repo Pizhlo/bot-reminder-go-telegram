@@ -18,7 +18,7 @@ func (s *ReminderService) GetAll(ctx context.Context, userID int64) ([]model.Rem
 		return nil, err
 	}
 
-	sch, err := s.getScheduler(userID)
+	sch, err := s.GetScheduler(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +30,7 @@ func (s *ReminderService) GetAll(ctx context.Context, userID int64) ([]model.Rem
 		jobsMap[j.ID()] = j
 	}
 
+	// заполняем поле nextRun у всех напоминаний
 	for i := 0; i < len(reminders); i++ {
 		j, ok := jobsMap[reminders[i].Job.ID]
 		if !ok {

@@ -190,11 +190,15 @@ func TestSaveMemory(t *testing.T) {
 		n.reminderMap[r.TgID] = &r
 	}
 
-	for _, r := range n.reminderMap {
-		reminderEditor.EXPECT().SaveMemory(gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx interface{}, reminder *model.Reminder) {
-			assert.Equal(t, r, reminder)
-		})
-	}
+	reminderEditor.EXPECT().SaveMemory(gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx interface{}, reminder *model.Reminder) {
+		r, ok := n.reminderMap[reminder.TgID]
+		if !ok {
+			t.Errorf("not found reminder in reminders map")
+			return
+		}
+
+		assert.Equal(t, r, reminder)
+	}).Times(len(reminders))
 
 	err := n.SaveMemory(context.Background())
 	assert.NoError(t, err)
