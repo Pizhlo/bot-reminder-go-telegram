@@ -47,17 +47,10 @@ func (d *Data) SearchNoteQuery() (*search.Request, error) {
 		return nil, err
 	}
 
-	req := &search.Request{
-		Query: &types.Query{
+	must1 := []types.Query{
+		{
 			Bool: &types.BoolQuery{
-				Must: []types.Query{
-					{
-						Match: map[string]types.MatchQuery{
-							"TgID": {
-								Query: fmt.Sprintf("%d", note.TgID),
-							},
-						},
-					},
+				Should: []types.Query{
 					{
 						Match: map[string]types.MatchQuery{
 							"Text": {
@@ -77,6 +70,27 @@ func (d *Data) SearchNoteQuery() (*search.Request, error) {
 						},
 					},
 				},
+			},
+		},
+		{
+			Bool: &types.BoolQuery{
+				Must: []types.Query{
+					{
+						Match: map[string]types.MatchQuery{
+							"TgID": {
+								Query: fmt.Sprintf("%d", note.TgID),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	req := &search.Request{
+		Query: &types.Query{
+			Bool: &types.BoolQuery{
+				Must: must1,
 			},
 		},
 	}
