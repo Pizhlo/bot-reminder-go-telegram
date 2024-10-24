@@ -16,6 +16,7 @@ type NoteRepo struct {
 	elasticClient elasticClient
 }
 
+//go:generate mockgen -source ./note.go -destination=../../../mocks/elastic.go -package=mocks
 type elasticClient interface {
 	Save(ctx context.Context, search elastic.Data) error
 	// SearchByText производит поиск по тексту (названию). Возвращает ID из базы подходящих записей
