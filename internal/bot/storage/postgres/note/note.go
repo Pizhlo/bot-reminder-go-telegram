@@ -18,10 +18,13 @@ type NoteRepo struct {
 
 type elasticClient interface {
 	Save(ctx context.Context, search elastic.Data) error
-	// Search производит поиск по переданным данным. Возвращает ID подходящих записей
-	Search(ctx context.Context, search elastic.Data) ([]uuid.UUID, error)
-	// SearchNote()
+	// SearchByText производит поиск по тексту (названию). Возвращает ID из базы подходящих записей
+	SearchByText(ctx context.Context, search elastic.Data) ([]uuid.UUID, error)
+	// SearchByID производит поиск по ID из базы. Возвращает ID  из эластика подходящих записей
+	SearchByID(ctx context.Context, search elastic.Data) ([]string, error)
+	Delete(ctx context.Context, search elastic.Data) error
 	// DeleteNote()
+	// UpdateNote()
 }
 
 func New(dbURl string, elasticClient elasticClient) (*NoteRepo, error) {

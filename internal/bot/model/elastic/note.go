@@ -11,9 +11,10 @@ import (
 
 // Структура для хранения и поиска по заметкам
 type Note struct {
-	ID   uuid.UUID // id из базы
-	TgID int64
-	Text string
+	ID        uuid.UUID // id из базы
+	ElasticID string    // id в elastic Search
+	TgID      int64
+	Text      string
 }
 
 // ValidateNote проверяет поля структуры elastic.Data на правильность и возвращает заметку
@@ -40,8 +41,32 @@ func (d *Data) GetNote() (*Note, error) {
 	return &val, nil
 }
 
-// SearchNoteQuery возвращает готовый запрос для поиска по заметкам
-func (d *Data) SearchNoteQuery() (*search.Request, error) {
+// SearchByTextQuery возвращает готовый запрос для поиска по тексту
+func (d *Data) SearchByTextQuery() (*search.Request, error) {
+	switch d.Index {
+	case NoteIndex:
+		return d.searchNoteByTextQuery()
+	case ReminderIndex:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unknown elastic index: %s", d.Index)
+	}
+}
+
+// SearchByIDQuery возвращает готовый запрос для поиска по ID.
+// Ищет в эластике по ID из базы
+func (d *Data) SearchByIDQuery() (*search.Request, error) {
+	switch d.Index {
+	case NoteIndex:
+		return d.searchNoteByID()
+	case ReminderIndex:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unknown elastic index: %s", d.Index)
+	}
+}
+
+func (d *Data) searchNoteByTextQuery() (*search.Request, error) {
 	note, err := d.ValidateNote()
 	if err != nil {
 		return nil, err
@@ -91,6 +116,25 @@ func (d *Data) SearchNoteQuery() (*search.Request, error) {
 		Query: &types.Query{
 			Bool: &types.BoolQuery{
 				Must: must1,
+			},
+		},
+	}
+
+	return req, nil
+}
+
+func (d *Data) searchNoteByID() (*search.Request, error) {
+	note, err := d.ValidateNote()
+	if err != nil {
+		return nil, err
+	}
+
+	req := &search.Request{
+		Query: &types.Query{
+			Match: map[string]types.MatchQuery{
+				"ID": {
+					Query: note.ID.String(),
+				},
 			},
 		},
 	}

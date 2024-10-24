@@ -6,6 +6,7 @@ import (
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,8 +28,8 @@ type noteEditor interface {
 	// DeleteAllByUserID удаляет все заметки пользователя по user ID
 	DeleteAllByUserID(ctx context.Context, userID int64) error
 
-	// DeleteNoteByViewID удаляет одну заметку. Для удаления необходим ID заметки и пользователя
-	DeleteNoteByViewID(ctx context.Context, userID int64, viewID int) error
+	// DeleteByID удаляет одну заметку. Для удаления необходим ID заметки
+	DeleteByID(ctx context.Context, id uuid.UUID) error
 
 	// GetByID возвращает заметку с переданным ID. Если такой заметки нет, возвращает ErrNotesNotFound
 	GetByViewID(ctx context.Context, userID int64, viewID int) (*model.Note, error)

@@ -2,6 +2,7 @@ package note
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -19,13 +20,12 @@ func (db *NoteRepo) SearchByText(ctx context.Context, searchNote model.SearchByT
 		},
 	}
 
-	ids, err := db.elasticClient.Search(ctx, search)
+	ids, err := db.elasticClient.SearchByText(ctx, search)
 	if err != nil {
+		if errors.Is(err, &api_errors.ErrRecordsNotFound) {
+			return nil, api_errors.ErrNotesNotFound
+		}
 		return nil, err
-	}
-
-	if len(ids) == 0 {
-		return nil, api_errors.ErrNotesNotFound
 	}
 
 	var notes []model.Note

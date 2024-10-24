@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/elastic"
 	"github.com/google/uuid"
 )
 
 // Search производит поиск по переданным данным. Возвращает ID подходящих записей
-func (c *client) Search(ctx context.Context, data elastic.Data) ([]uuid.UUID, error) {
-	query, err := data.SearchNoteQuery()
+func (c *client) SearchByText(ctx context.Context, data elastic.Data) ([]uuid.UUID, error) {
+	query, err := data.SearchByTextQuery()
 	if err != nil {
 		return nil, fmt.Errorf("error while creating query for search note: %+v", err)
 	}
@@ -38,6 +39,37 @@ func (c *client) Search(ctx context.Context, data elastic.Data) ([]uuid.UUID, er
 		}
 
 		ids = append(ids, note.ID)
+	}
+
+	if len(ids) == 0 {
+		return nil, api_errors.NewNotFound("records not found by text")
+	}
+
+	return ids, nil
+}
+
+// SearchByID производит поиск по ID из базы. Возвращает ID из эластика подходящих записей
+func (c *client) SearchByID(ctx context.Context, data elastic.Data) ([]string, error) {
+	query, err := data.SearchByIDQuery()
+	if err != nil {
+		return nil, fmt.Errorf("error while creating query for search note: %+v", err)
+	}
+
+	res, err := c.cl.Search().
+		Index(data.Index).
+		Request(query).Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error searching note: %+v", err)
+	}
+
+	var ids []string
+
+	for _, val := range res.Hits.Hits {
+		ids = append(ids, *val.Id_)
+	}
+
+	if len(ids) == 0 {
+		return nil, api_errors.NewNotFound("records not found by ID")
 	}
 
 	return ids, nil
