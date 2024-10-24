@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
@@ -15,7 +15,7 @@ import (
 func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, location model.UserTimezone) (*user.User, error) {
 	finder, err := tzf.NewDefaultFinder()
 	if err != nil {
-		return nil, fmt.Errorf(wrap(fmt.Sprintf("error creating default finder: %v", err)))
+		return nil, errors.New(wrap("error creating default finder: %v", err))
 	}
 
 	tz := finder.GetTimezoneName(float64(location.Long), float64(location.Lat))
@@ -34,12 +34,12 @@ func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, 
 
 	err = s.SaveUser(ctx, userID, u)
 	if err != nil {
-		return nil, fmt.Errorf(wrap(fmt.Sprintf("error saving new user: %v", err)))
+		return nil, errors.New(wrap("error saving new user: %v", err))
 	}
 
 	err = s.SaveTimezone(ctx, userID, &u.Timezone, loc)
 	if err != nil {
-		return nil, fmt.Errorf(wrap(fmt.Sprintf("error saving timezone: %v", err)))
+		return nil, errors.New(wrap("error saving timezone: %v", err))
 	}
 
 	return u, nil

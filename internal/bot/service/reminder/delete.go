@@ -46,7 +46,7 @@ func (n *ReminderService) deleteReminderByID(ctx context.Context, reminder *mode
 	// удаляем из шедулера
 	err := n.DeleteJob(reminder.TgID, reminder.Job.ID)
 	if err != nil {
-		return fmt.Errorf(wrap(fmt.Sprintf("error while deleting job: %v", err)))
+		return errors.New(wrap(fmt.Sprintf("error while deleting job: %v", err)))
 	}
 
 	_, err = n.reminderEditor.DeleteReminderByID(ctx, reminder.ID)
@@ -71,7 +71,7 @@ func (n *ReminderService) DeleteByViewID(ctx context.Context, userID int64, view
 func (n *ReminderService) DeleteReminder(ctx context.Context, reminder *model.Reminder) error {
 	job, err := n.reminderEditor.DeleteReminderByID(ctx, reminder.ID)
 	if err != nil {
-		return fmt.Errorf(wrap(fmt.Sprintf("error while deleting reminder: %v", err)))
+		return errors.New(wrap(fmt.Sprintf("error while deleting reminder: %v", err)))
 	}
 
 	return n.DeleteJob(reminder.TgID, job)

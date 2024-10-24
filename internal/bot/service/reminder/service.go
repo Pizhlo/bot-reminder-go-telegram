@@ -80,10 +80,10 @@ func New(reminderEditor reminderEditor) *ReminderService {
 // SaveUser сохраняет пользователя в мапе view
 func (n *ReminderService) SaveUser(userID int64) {
 	if _, ok := n.viewsMap[userID]; !ok {
-		logrus.Debugf(wrap(fmt.Sprintf("user %d not found in the views map. Saving...\n", userID)))
+		logrus.Debugf(wrap("user %d not found in the views map. Saving...\n", userID))
 		n.viewsMap[userID] = view.NewReminder()
 	} else {
-		logrus.Debugf(wrap(fmt.Sprintf("user %d already saved in the views map.\n", userID)))
+		logrus.Debugf(wrap("user %d already saved in the views map.\n", userID))
 	}
 
 }
@@ -125,6 +125,7 @@ func (n *ReminderService) SaveMemory(ctx context.Context) error {
 	return res
 }
 
-func wrap(s string) string {
-	return fmt.Sprintf("Reminder service: %s", s)
+func wrap(s string, args ...any) string {
+	str := fmt.Sprintf(s, args...)
+	return fmt.Sprintf("Reminder service: %s", str)
 }
