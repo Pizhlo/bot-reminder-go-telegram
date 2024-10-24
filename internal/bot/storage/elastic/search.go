@@ -18,7 +18,7 @@ func (c *client) SearchByText(ctx context.Context, data elastic.Data) ([]uuid.UU
 	}
 
 	res, err := c.cl.Search().
-		Index(data.Index).
+		Index(data.Index.String()).
 		Request(query).Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error searching note: %+v", err)
@@ -56,7 +56,7 @@ func (c *client) SearchByID(ctx context.Context, data elastic.Data) ([]string, e
 	}
 
 	res, err := c.cl.Search().
-		Index(data.Index).
+		Index(data.Index.String()).
 		Request(query).Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error searching note: %+v", err)

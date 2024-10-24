@@ -23,8 +23,8 @@ type elasticClient interface {
 	// SearchByID производит поиск по ID из базы. Возвращает ID  из эластика подходящих записей
 	SearchByID(ctx context.Context, search elastic.Data) ([]string, error)
 	Delete(ctx context.Context, search elastic.Data) error
-	// DeleteNote()
-	// UpdateNote()
+	DeleteAllByUserID(ctx context.Context, data elastic.Data) error
+	Update(ctx context.Context, search elastic.Data) error
 }
 
 func New(dbURl string, elasticClient elasticClient) (*NoteRepo, error) {

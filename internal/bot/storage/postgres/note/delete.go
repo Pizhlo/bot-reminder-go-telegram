@@ -26,6 +26,19 @@ func (db *NoteRepo) DeleteAllByUserID(ctx context.Context, userID int64) error {
 		return fmt.Errorf("error while deleting all notes by user ID: %w", err)
 	}
 
+	data := elastic.Data{
+		Index: elastic.NoteIndex,
+		Model: elastic.Note{
+			TgID: userID,
+		},
+	}
+
+	err = db.elasticClient.DeleteAllByUserID(ctx, data)
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("error while deleting all notes from elastic: %+v", err)
+	}
+
 	return tx.Commit()
 }
 

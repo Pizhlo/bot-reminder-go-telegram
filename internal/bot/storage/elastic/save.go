@@ -14,11 +14,11 @@ func (c *client) Save(ctx context.Context, data elastic.Data) error {
 		return fmt.Errorf("error validating note while saving: %+v", err)
 	}
 
-	_, err = c.cl.Index(data.Index).
+	_, err = c.cl.Index(data.Index.String()).
 		Request(data.Model).
 		Do(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error while saving note in elastic: %+v", err)
 	}
 
 	logrus.Debugf("Elastic: sucecssfully saved user's note")
