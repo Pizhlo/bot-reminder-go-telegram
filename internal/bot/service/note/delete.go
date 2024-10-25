@@ -19,18 +19,18 @@ func (n *NoteService) DeleteAll(ctx context.Context, userID int64) error {
 	return n.noteEditor.DeleteAllByUserID(ctx, userID)
 }
 
-// DeleteByID удаляет заметку пользователя по user ID
-func (n *NoteService) DeleteByID(ctx context.Context, userID int64, noteID int) error {
-	logrus.Debug(wrap(fmt.Sprintf("deleting user's note by ID: %d. Checking if user has note with this ID...\n", noteID)))
+// DeleteByID удаляет заметку пользователя по view ID
+func (n *NoteService) DeleteByID(ctx context.Context, userID int64, viewID int) error {
+	logrus.Debug(wrap(fmt.Sprintf("deleting user's note by ID: %d. Checking if user has note with this ID...\n", viewID)))
 
 	// проверяем, существует ли заметка с таким номером
-	_, err := n.noteEditor.GetByViewID(ctx, userID, noteID)
+	note, err := n.noteEditor.GetByViewID(ctx, userID, viewID)
 	if err != nil {
-		logrus.Debug(wrap(fmt.Sprintf("error while checking note ID %d: %v\n", noteID, err)))
+		logrus.Debug(wrap(fmt.Sprintf("error while checking note ID %d: %v\n", viewID, err)))
 		return err
 	}
 
-	logrus.Debug(wrap(fmt.Sprintf("found note by ID %d. Deleting...\n", noteID)))
-	// удаляем все заметки
-	return n.noteEditor.DeleteNoteByViewID(ctx, userID, noteID)
+	logrus.Debug(wrap(fmt.Sprintf("found note by ID %d. Deleting...\n", viewID)))
+
+	return n.noteEditor.DeleteByID(ctx, note.ID)
 }

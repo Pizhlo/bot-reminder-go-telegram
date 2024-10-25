@@ -12,6 +12,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	tele "gopkg.in/telebot.v3"
 )
@@ -39,9 +40,8 @@ func TestDeleteNoteByID_Positive(t *testing.T) {
 	}).Return(&note, nil)
 
 	// n.noteEditor.DeleteNoteByViewID(ctx, userID, noteID)
-	noteEditor.EXPECT().DeleteNoteByViewID(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx interface{}, userID int64, noteID int) {
-		assert.Equal(t, chat.ID, userID)
-		assert.Equal(t, 1, noteID)
+	noteEditor.EXPECT().DeleteByID(gomock.Any(), gomock.Any()).Do(func(ctx interface{}, noteID uuid.UUID) {
+		assert.Equal(t, note.ID, noteID)
 	}).Return(nil)
 
 	expectedText := fmt.Sprintf(messages.NoteDeletedSuccessMessage, 1)

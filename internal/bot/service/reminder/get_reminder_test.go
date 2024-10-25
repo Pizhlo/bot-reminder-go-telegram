@@ -10,9 +10,11 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/Pizhlo/bot-reminder-go-telegram/pkg/random"
+	"github.com/go-co-op/gocron/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetAll(t *testing.T) {
@@ -38,12 +40,41 @@ func TestGetAll(t *testing.T) {
 		for i := 0; i < len(expectedResult); i++ {
 			if expectedResult[i].ID == reminderID {
 				expectedResult[i].Job.ID = jobID
+				return
 			}
 		}
 	})
 
 	err := n.CreateScheduler(ctx, userID, time.Local, func(ctx context.Context, reminder *model.Reminder) error { return nil })
 	assert.NoError(t, err)
+
+	sch, err := n.GetScheduler(userID)
+	require.NoError(t, err)
+
+	jobs := sch.Jobs()
+
+	jobsMap := map[uuid.UUID]gocron.Job{}
+
+	for _, j := range jobs {
+		jobsMap[j.ID()] = j
+	}
+
+	// заполняем поле nextRun у всех сгенерированных напоминаний
+	for i := 0; i < len(expectedResult); i++ {
+		j, ok := jobsMap[expectedResult[i].Job.ID]
+		if !ok {
+			t.Errorf("job not found in jobs map")
+			continue
+		}
+
+		nextRun, err := j.NextRun()
+		if err != nil {
+			t.Errorf("error getting next run for job: %+v", err)
+			continue
+		}
+
+		expectedResult[i].Job.NextRun = nextRun
+	}
 
 	// создаем view для генерации сообщения на основе данных из БД
 	view := view.NewReminder()
@@ -53,9 +84,11 @@ func TestGetAll(t *testing.T) {
 	reminders, err := n.GetAll(context.Background(), userID)
 	assert.NoError(t, err)
 
-	msg, err := n.Message(userID, reminders)
+	actual, err := n.Message(userID, reminders)
 	assert.NoError(t, err)
-	assert.Equal(t, view.First(), msg)
+
+	expected := view.First()
+	assert.Equal(t, expected, actual)
 
 	kb := n.Keyboard(userID)
 	assert.Equal(t, view.Keyboard(), kb)
