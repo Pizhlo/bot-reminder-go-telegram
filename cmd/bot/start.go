@@ -56,6 +56,8 @@ func Start(confName, path string) {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
 
+	logrus.Infof("connecting to elastic on %v", conf.ElasticAddr)
+
 	// elastic
 	elasticClient, err := elastic.New([]string{conf.ElasticAddr})
 	if err != nil {

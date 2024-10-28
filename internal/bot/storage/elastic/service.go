@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/sirupsen/logrus"
 )
 
 type client struct {
@@ -18,6 +19,8 @@ func New(addresses []string) (*client, error) {
 	}
 
 	c := &client{cl: cl, addresses: addresses}
+
+	logrus.Infof("sucessfully connected elastic on %v", addresses)
 
 	return c, nil
 }
