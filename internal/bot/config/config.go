@@ -141,10 +141,17 @@ func loadEnvVariables() (*Config, error) {
 
 	borUrl := os.Getenv("BOT_URL")
 	if len(borUrl) == 0 {
-		return nil, errors.New("BOT_URL is not set")
+		logrus.Warn("BOT_URL is not set")
 	}
 
 	conf.BotURL = borUrl
+
+	elasticAddr := os.Getenv("ELASTIC_ADDR")
+	if len(elasticAddr) == 0 {
+		return nil, errors.New("ELASTIC_ADDR is not set")
+	}
+
+	conf.ElasticAddr = elasticAddr
 
 	return conf, nil
 }
