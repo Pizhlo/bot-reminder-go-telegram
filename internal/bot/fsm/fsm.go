@@ -117,6 +117,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 	// note
 	fsm.createNote = newCreateNoteState(controller, fsm)
 	fsm.ListNote = newListNoteState(fsm, controller)
+
 	// fsm.editNote = newEditNoteState(controller, fsm)
 	fsm.SearchNoteByText = newSearchNoteByTextState(controller, fsm)
 	fsm.SearchNoteOneDate = newSearchNoteOneDateState(controller, fsm)

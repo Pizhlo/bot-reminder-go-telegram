@@ -63,13 +63,13 @@ func TestGetAll(t *testing.T) {
 	for i := 0; i < len(expectedResult); i++ {
 		j, ok := jobsMap[expectedResult[i].Job.ID]
 		if !ok {
-			t.Errorf("job not found in jobs map")
+			t.Fatalf("job not found in jobs map")
 			continue
 		}
 
 		nextRun, err := j.NextRun()
 		if err != nil {
-			t.Errorf("error getting next run for job: %+v", err)
+			t.Fatalf("error getting next run for job: %+v", err)
 			continue
 		}
 
