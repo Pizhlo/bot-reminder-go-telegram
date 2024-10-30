@@ -92,7 +92,7 @@ func (c *client) getElasticID(ctx context.Context, data elastic.Data) (string, e
 		return "", err
 	}
 
-	req, err := data.SearchByTextQuery()
+	req, err := data.SearchByIDQuery()
 	if err != nil {
 		return "", err
 	}
