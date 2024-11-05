@@ -14,7 +14,9 @@ var (
 	BtnReminders = tele.Btn{Text: "⏰Напоминания", Unique: "reminders"}
 
 	// inline кнопка для доступа к совместным пространствам
-	BtnSharedAccess = tele.Btn{Text: "🫂Совместный доступ", Unique: "shared_access"}
+	BtnSharedSpace = tele.Btn{Text: "🫂Совместный доступ", Unique: "shared_space"}
+
+	BtnCreateSharedSpace = tele.Btn{Text: "➕Создать совместное пространство", Unique: "create_shared_space"}
 
 	BtnBugReport = tele.Btn{Text: "⚠️Сообщить о баге", Unique: "bag_report"}
 
@@ -61,7 +63,7 @@ func MainMenu() *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnNotes, BtnReminders),
-		menu.Row(BtnSharedAccess),
+		menu.Row(BtnSharedSpace),
 		menu.Row(BtnTimezone),
 		menu.Row(BtnBugReport),
 	)
@@ -75,6 +77,18 @@ func TimezoneMenu() *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnEditTimezone),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}
+
+// SharedAccessMenu возвращает меню раздела Совместный доступ
+func SharedAccessMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnCreateSharedSpace),
 		menu.Row(BtnBackToMenu),
 	)
 

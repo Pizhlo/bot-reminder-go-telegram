@@ -8,3 +8,4 @@ var ErrUnableCastVariable = errors.New(`unable to cast variable`)
 
 // DB ERROR
 var ErrNotesNotFound = errors.New(`notes not found`)
+var ErrSharedSpacesNotFound = errors.New("shared spaces not found")

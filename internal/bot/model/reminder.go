@@ -35,6 +35,7 @@ type Reminder struct {
 	Type             ReminderType
 	Created          time.Time
 	Job              Job
+	SpaceID          int
 }
 
 type Job struct {

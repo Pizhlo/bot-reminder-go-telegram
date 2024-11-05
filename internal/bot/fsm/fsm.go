@@ -16,6 +16,7 @@ type stateName string
 const (
 	defaultStateName                   stateName = "default"
 	startStateName                     stateName = "start"
+	createSharedSpaceName              stateName = "createSharedSpace"
 	listNoteName                       stateName = "list_note"
 	createNoteName                     stateName = "create_note"
 	editNoteName                       stateName = "edit_note"
@@ -93,7 +94,9 @@ type FSM struct {
 	SearchNoteTwoDates state
 	// Состояние для баг репорта
 	BugReportState state
-	mu             sync.RWMutex
+
+	sharedSpaceName state
+	mu              sync.RWMutex
 }
 
 // Интерфейс для управления состояниями бота
@@ -142,6 +145,9 @@ func NewFSM(controller *controller.Controller) *FSM {
 
 	// когда пользователь только начал пользоваться, ожидаем команду старт
 	fsm.current = fsm.defaultState
+
+	// shared space
+	fsm.sharedSpaceName = newSharedSpaceName(fsm, controller)
 
 	return fsm
 }
@@ -252,6 +258,8 @@ func (s *FSM) parseString(state stateName) (state, error) {
 		return s.EveryWeek, nil
 	case yearReminderState:
 		return s.Year, nil
+	case createSharedSpaceName:
+		return s.sharedSpaceName, nil
 	default:
 		return nil, fmt.Errorf("unknown state: %s", state)
 	}

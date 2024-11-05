@@ -11,7 +11,7 @@ import (
 	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
-	sharedaccess "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/shared_access"
+	sharedaccess "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/shared_space"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ type Controller struct {
 	mu  sync.Mutex
 	bot *tele.Bot
 	// совместные пространства пользователей
-	sharedAccess sharedaccess.SharedAccess
+	sharedSpace sharedaccess.SharedSpace
 	// отвечает за информацию о пользователях
 	userSrv *user.UserService
 	// отвечает за обработку заметок

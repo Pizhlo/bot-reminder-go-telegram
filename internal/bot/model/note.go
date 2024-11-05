@@ -14,6 +14,7 @@ type Note struct {
 	Text        string
 	Created     time.Time
 	LastEditSql sql.NullTime
+	SpaceID     int
 	// HasPhoto bool
 }
 

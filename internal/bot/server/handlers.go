@@ -72,6 +72,28 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// shared space
+	restricted.Handle(&view.BtnSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.HandleSharedAccess(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	restricted.Handle(&view.BtnCreateSharedSpace, func(telectx tele.Context) error {
+		s.fsm[telectx.Chat().ID].SetFromString("createSharedSpace")
+		err := telectx.EditOrSend(messages.SharedSpaceNameMessage, view.BackToMenuBtn())
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// изменить часовой пояс
 	restricted.Handle(&view.BtnEditTimezone, func(telectx tele.Context) error {
 		logrus.Debugf("Edit timezone btn")
