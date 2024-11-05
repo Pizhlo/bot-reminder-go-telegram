@@ -94,3 +94,15 @@ func SharedAccessMenu() *tele.ReplyMarkup {
 
 	return menu
 }
+
+// ShowSharedSpacesMenu возвращает меню с кнопками: Совместный доступ, Назад в меню
+func ShowSharedSpacesMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnSharedSpace),
+		menu.Row(BtnBackToMenu),
+	)
+
+	return menu
+}

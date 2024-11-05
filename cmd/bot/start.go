@@ -14,11 +14,13 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/server"
 	note_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
+	sharedaccess "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/shared_space"
 	user_srv "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	tz_cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/elastic"
 	note_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/note"
 	reminder_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/reminder"
+	sharedspace "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/shared_space"
 	tz_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/timezone"
 	user_db "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/postgres/user"
 	"github.com/sirupsen/logrus"
@@ -87,6 +89,11 @@ func Start(confName, path string) {
 		logrus.Fatalf("cannot create reminder repo: %v", err)
 	}
 
+	sharedSpacesRepo, err := sharedspace.New(dbAddr)
+	if err != nil {
+		logrus.Fatalf("cannot create shared space repo: %v", err)
+	}
+
 	// bot
 	bot, err := tele.NewBot(tele.Settings{
 		URL:       conf.BotURL,
@@ -107,8 +114,9 @@ func Start(confName, path string) {
 	userSrv := user_srv.New(ctx, userRepo, tz, tzRepo)
 	noteSrv := note_srv.New(noteRepo)
 	reminderSrv := reminder.New(reminderRepo)
+	sharedSpaceSrv := sharedaccess.New(userSrv, noteSrv, reminderSrv, sharedSpacesRepo)
 
-	controller := controller.New(userSrv, noteSrv, bot, reminderSrv, conf.ChannelID)
+	controller := controller.New(userSrv, noteSrv, bot, reminderSrv, conf.ChannelID, sharedSpaceSrv)
 
 	// server
 	server := server.New(bot, controller)
@@ -152,6 +160,7 @@ func Start(confName, path string) {
 		noteRepo.Close()
 		tzRepo.Close()
 		reminderRepo.Close()
+		sharedSpacesRepo.Close()
 	}(&wg)
 
 	wg.Wait()

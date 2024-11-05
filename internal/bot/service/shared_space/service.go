@@ -1,11 +1,14 @@
 package sharedaccess
 
 import (
-	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+	"context"
+
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
-	"gopkg.in/telebot.v3"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
+	"github.com/sirupsen/logrus"
 )
 
 // SharedSpace - структура, управляющая совместными пространствами
@@ -16,20 +19,38 @@ type SharedSpace struct {
 	noteSrv *note.NoteService
 	// отвечает за напоминания
 	reminderSrv *reminder.ReminderService
+	// хранилище совместных пространств
+	storage editor
+
+	viewsMap map[int64]*view.SharedSpaceView
+}
+
+type editor interface {
+	GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error)
+	Save(ctx context.Context, space model.SharedSpace) error
 }
 
 func New(userSrv *user.UserService,
 	noteSrv *note.NoteService,
 	reminderSrv *reminder.ReminderService,
-	channelID int64) *SharedSpace {
+	editor editor) *SharedSpace {
 
 	return &SharedSpace{
 		userSrv:     userSrv,
 		noteSrv:     noteSrv,
 		reminderSrv: reminderSrv,
+		storage:     editor,
+		viewsMap:    make(map[int64]*view.SharedSpaceView),
 	}
 }
 
-func (s *SharedSpace) GetAllByUserID(userID int64) (string, *telebot.ReplyMarkup, error) {
-	return "", nil, api_errors.ErrSharedSpacesNotFound
+// SaveUser сохраняет пользователя в мапе view
+func (n *SharedSpace) SaveUser(userID int64) {
+	if _, ok := n.viewsMap[userID]; !ok {
+		logrus.Debugf("SharedSpaceSrv: user %d not found in the views map. Saving...\n", userID)
+		n.viewsMap[userID] = view.NewSharedSpaceView()
+	} else {
+		logrus.Debugf("SharedSpaceSrv: user %d already saved in the views map.\n", userID)
+	}
+
 }

@@ -74,7 +74,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 
 	// shared space
 	restricted.Handle(&view.BtnSharedSpace, func(telectx tele.Context) error {
-		err := s.controller.HandleSharedAccess(ctx, telectx)
+		err := s.controller.GetSharedAccess(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

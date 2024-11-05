@@ -22,7 +22,7 @@ type Controller struct {
 	mu  sync.Mutex
 	bot *tele.Bot
 	// совместные пространства пользователей
-	sharedSpace sharedaccess.SharedSpace
+	sharedSpace *sharedaccess.SharedSpace
 	// отвечает за информацию о пользователях
 	userSrv *user.UserService
 	// отвечает за обработку заметок
@@ -53,7 +53,8 @@ func New(userSrv *user.UserService,
 	noteSrv *note.NoteService,
 	bot *tele.Bot,
 	reminderSrv *reminder.ReminderService,
-	channelID int64) *Controller {
+	channelID int64,
+	sharedSpace *sharedaccess.SharedSpace) *Controller {
 
 	return &Controller{
 		userSrv:          userSrv,
@@ -65,6 +66,7 @@ func New(userSrv *user.UserService,
 		reminderCalendar: make(map[int64]bool),
 		mu:               sync.Mutex{},
 		channelID:        channelID,
+		sharedSpace:      sharedSpace,
 	}
 }
 
@@ -118,6 +120,8 @@ func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
 		c.noteSrv.SaveUser(u.TGID)
 
 		c.reminderSrv.SaveUser(u.TGID)
+
+		c.sharedSpace.SaveUser(u.TGID)
 
 		loc, err := c.userSrv.GetLocation(ctx, u.TGID)
 		if err != nil {
@@ -180,6 +184,7 @@ func (c *Controller) saveUser(ctx context.Context, tgID int64, loc *time.Locatio
 	c.noteCalendar[tgID] = false
 	c.noteSrv.SaveUser(tgID)
 	c.reminderSrv.SaveUser(tgID)
+	c.sharedSpace.SaveUser(tgID)
 
 	return c.reminderSrv.CreateScheduler(ctx, tgID, loc, c.SendReminder)
 }
