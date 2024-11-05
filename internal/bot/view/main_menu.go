@@ -13,6 +13,9 @@ var (
 	// inline кнопка просмотра напоминаний
 	BtnReminders = tele.Btn{Text: "⏰Напоминания", Unique: "reminders"}
 
+	// inline кнопка для доступа к совместным пространствам
+	BtnSharedAccess = tele.Btn{Text: "🫂Совместный доступ", Unique: "shared_access"}
+
 	BtnBugReport = tele.Btn{Text: "⚠️Сообщить о баге", Unique: "bag_report"}
 
 	// inline кнопка для возвращения в меню
@@ -58,6 +61,7 @@ func MainMenu() *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnNotes, BtnReminders),
+		menu.Row(BtnSharedAccess),
 		menu.Row(BtnTimezone),
 		menu.Row(BtnBugReport),
 	)

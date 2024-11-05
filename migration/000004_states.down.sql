@@ -1,2 +1,0 @@
-DROP TABLE IF EXISTS users.states CASCADE;
-DROP TABLE IF EXISTS users.state_types CASCADE;
