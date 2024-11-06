@@ -25,10 +25,16 @@ func (s *SharedSpaceView) Message(spaces []model.SharedSpace) string {
 	// сохраняем пространства, они понадобятся для того чтобы сделать клавиатуру
 	s.spaces = spaces
 
-	messageTxt := "<b>%d. %s</b>\n\nУчастники: %+v\n\nСоздано: %+v\n\n"
+	messageTxt := "<b>%d. %s</b>\n\nУчастники:\n%+v\n\nСоздано: %+v\n\n"
 
 	for _, space := range spaces {
-		res += fmt.Sprintf(messageTxt, space.ViewID, space.Name, space.Participants, space.Created.Format(createdFieldFormat))
+		participantsTxt := ""
+
+		for _, u := range space.Participants {
+			participantsTxt += fmt.Sprintf("* @%s\n", u.UsernameSQL.String)
+		}
+
+		res += fmt.Sprintf(messageTxt, space.ViewID, space.Name, participantsTxt, space.Created.Format(createdFieldFormat))
 	}
 
 	if len(s.pages) < 5 && res != "" {
