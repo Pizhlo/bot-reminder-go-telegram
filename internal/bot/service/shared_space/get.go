@@ -6,7 +6,6 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"gopkg.in/telebot.v3"
 )
 
@@ -35,10 +34,31 @@ func (s *SharedSpace) GetSharedSpace(spaceID int, userID int64) (string, *telebo
 	return msg, s.viewsMap[userID].KeyboardForSpace(), nil
 }
 
+func (s *SharedSpace) CurrentSharedSpace(userID int64) (string, *telebot.ReplyMarkup, error) {
+	msg, err := s.viewsMap[userID].MessageByCurrentSpace()
+	if err != nil {
+		return "", nil, err
+	}
+
+	return msg, s.viewsMap[userID].KeyboardForSpace(), nil
+}
+
 // NotesBySpace возвращает заметки, принадлежащие конкретному пространству, которое уже было выбрано, поэтому
 // для запроса нужен только userID
 func (s *SharedSpace) NotesBySpace(userID int64) (string, *telebot.ReplyMarkup, error) {
 	msg := s.viewsMap[userID].Notes()
+	kb := s.viewsMap[userID].KeyboardForNotes()
 
-	return msg, view.BackToMenuBtn(), nil
+	return msg, kb, nil
+}
+
+func (s *SharedSpace) RemindersBySpace(userID int64) (string, *telebot.ReplyMarkup, error) {
+	msg, err := s.viewsMap[userID].Reminders()
+	if err != nil {
+		return "", nil, err
+	}
+
+	kb := s.viewsMap[userID].KeyboardForReminders()
+
+	return msg, kb, nil
 }

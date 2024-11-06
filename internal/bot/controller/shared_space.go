@@ -81,8 +81,26 @@ func (c *Controller) GetSharedSpace(ctx context.Context, telectx tele.Context, s
 	return telectx.EditOrSend(msg, kb)
 }
 
+func (c *Controller) GetCurrentSharedSpace(ctx context.Context, telectx tele.Context) error {
+	msg, kb, err := c.sharedSpace.CurrentSharedSpace(telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(msg, kb)
+}
+
 func (c *Controller) NotesBySharedSpace(ctx context.Context, telectx tele.Context) error {
 	msg, kb, err := c.sharedSpace.NotesBySpace(telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(msg, kb)
+}
+
+func (c *Controller) RemindersBySharedSpace(ctx context.Context, telectx tele.Context) error {
+	msg, kb, err := c.sharedSpace.RemindersBySpace(telectx.Chat().ID)
 	if err != nil {
 		return err
 	}

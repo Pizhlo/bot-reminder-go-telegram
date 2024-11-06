@@ -13,8 +13,18 @@ var (
 	BtnNotesSharedSpace = tele.Btn{Text: "📝Заметки", Unique: "notes_by_shared_space"}
 	// inline кнопка просмотра напоминаний в совместном пространстве
 	BtnRemindersSharedSpace = tele.Btn{Text: "⏰Напоминания", Unique: "reminders_by_shared_space"}
+
 	// inline кнопка для добавления пользователей в совместное пространство
 	BtnAddUsersToSpace = tele.Btn{Text: "Добавить пользователей", Unique: "add_users_to_shared_space"}
+	// inline кнопка для добавления заметки в совметное пространство
+	BtnAddNote = tele.Btn{Text: "📝Добавить заметку", Unique: "add_note_to_shared_space"}
+	// inline кнопка для добавления заметки в совметное пространство
+	BtnAddReminder = tele.Btn{Text: "Добавить напоминание", Unique: "add_reminder_to_shared_space"}
+
+	// inline кнопка для возврата в совместное пространство
+	BtnBackToSharedSpace = tele.Btn{Text: "⬅️Назад", Unique: "back_to_shared_space"}
+	// inline кнопка для возврата в совместное пространство
+	BtnBackToAllSharedSpaces = tele.Btn{Text: "⬅️Назад", Unique: "back_to_all_shared_spaces"}
 )
 
 type SharedSpaceView struct {
@@ -81,6 +91,15 @@ func (s *SharedSpaceView) MessageBySpace(spaceID int) (string, error) {
 	return s.messageBySpace(space), nil
 }
 
+func (s *SharedSpaceView) MessageByCurrentSpace() (string, error) {
+	space, ok := s.spaces[s.currentSpace]
+	if !ok {
+		return "", fmt.Errorf("not found space by ID %d", s.currentSpace)
+	}
+
+	return s.messageBySpace(space), nil
+}
+
 func (s *SharedSpaceView) messageBySpace(space model.SharedSpace) string {
 	participantsTxt := ""
 
@@ -128,7 +147,7 @@ func (s *SharedSpaceView) KeyboardForSpace() *tele.ReplyMarkup {
 			BtnNotesSharedSpace, BtnRemindersSharedSpace,
 		),
 		menu.Row(BtnAddUsersToSpace),
-		menu.Row(BtnBackToMenu),
+		menu.Row(BtnBackToAllSharedSpaces),
 	)
 
 	return menu
@@ -144,8 +163,30 @@ func (s *SharedSpaceView) Notes() string {
 	return s.noteView.Message(space.Notes)
 }
 
+func (s *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnAddNote),
+		menu.Row(BtnBackToSharedSpace),
+	)
+
+	return menu
+}
+
 func (s *SharedSpaceView) Reminders() (string, error) {
 	space := s.spaces[s.currentSpace]
 
 	return s.reminderView.Message(space.Reminders)
+}
+
+func (s *SharedSpaceView) KeyboardForReminders() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnAddReminder),
+		menu.Row(BtnBackToSharedSpace),
+	)
+
+	return menu
 }

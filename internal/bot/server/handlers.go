@@ -83,6 +83,17 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// вернуться назад в меню совместных пространств
+	restricted.Handle(&view.BtnBackToAllSharedSpaces, func(telectx tele.Context) error {
+		err := s.controller.GetSharedAccess(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// создать shared space
 	restricted.Handle(&view.BtnCreateSharedSpace, func(telectx tele.Context) error {
 		s.fsm[telectx.Chat().ID].SetFromString("createSharedSpace")
@@ -98,6 +109,28 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	// заметки в shared space
 	restricted.Handle(&view.BtnNotesSharedSpace, func(telectx tele.Context) error {
 		err := s.controller.NotesBySharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// напоминания в shared space
+	restricted.Handle(&view.BtnRemindersSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.RemindersBySharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// вернуться назад в shared space
+	restricted.Handle(&view.BtnBackToSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.GetCurrentSharedSpace(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
