@@ -80,3 +80,12 @@ func (c *Controller) GetSharedSpace(ctx context.Context, telectx tele.Context, s
 
 	return telectx.EditOrSend(msg, kb)
 }
+
+func (c *Controller) NotesBySharedSpace(ctx context.Context, telectx tele.Context) error {
+	msg, kb, err := c.sharedSpace.NotesBySpace(telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(msg, kb)
+}

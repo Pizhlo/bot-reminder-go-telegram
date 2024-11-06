@@ -95,6 +95,17 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// заметки в shared space
+	restricted.Handle(&view.BtnNotesSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.NotesBySharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// изменить часовой пояс
 	restricted.Handle(&view.BtnEditTimezone, func(telectx tele.Context) error {
 		logrus.Debugf("Edit timezone btn")
