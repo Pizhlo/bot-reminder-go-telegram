@@ -51,11 +51,18 @@ func (s *SharedSpaceView) Keyboard() *tele.ReplyMarkup {
 		btns = append(btns, btn)
 	}
 
-	menu.Inline(
-		menu.Row(btns...),
-		menu.Row(BtnCreateSharedSpace),
-		menu.Row(BtnBackToMenu),
-	)
+	if len(btns) > 0 {
+		menu.Inline(
+			menu.Row(btns...),
+			menu.Row(BtnCreateSharedSpace),
+			menu.Row(BtnBackToMenu),
+		)
+	} else {
+		menu.Inline(
+			menu.Row(BtnCreateSharedSpace),
+			menu.Row(BtnBackToMenu),
+		)
+	}
 
 	return menu
 }

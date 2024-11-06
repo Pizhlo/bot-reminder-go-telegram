@@ -45,7 +45,8 @@ func (c *Controller) CreateSharedSpace(ctx context.Context, telectx tele.Context
 		Name:    telectx.Message().Text,
 		Created: time.Now().In(loc),
 		Creator: user.User{
-			TGID: telectx.Chat().ID,
+			TGID:     telectx.Chat().ID,
+			Username: telectx.Chat().Username,
 		},
 	}
 

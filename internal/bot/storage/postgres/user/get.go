@@ -38,7 +38,7 @@ func (db *UserRepo) GetAll(ctx context.Context) ([]*user.User, error) {
 	for rows.Next() {
 		u := &user.User{}
 
-		err = rows.Scan(&u.ID, &u.TGID)
+		err = rows.Scan(&u.ID, &u.TGID, &u.UsernameSQL)
 		if err != nil {
 			return nil, fmt.Errorf("error while scanning user: %w", err)
 		}

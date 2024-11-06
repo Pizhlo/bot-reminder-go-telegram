@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
@@ -32,6 +33,10 @@ func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]
 		}
 
 		spaces = append(spaces, space)
+	}
+
+	if len(spaces) == 0 {
+		return nil, api_errors.ErrSharedSpacesNotFound
 	}
 
 	for i, space := range spaces {

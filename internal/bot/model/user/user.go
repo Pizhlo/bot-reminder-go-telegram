@@ -1,13 +1,16 @@
 package user
 
 import (
+	"database/sql"
 	"errors"
 )
 
 type User struct {
-	ID       int
-	TGID     int64
-	Timezone Timezone
+	ID          int
+	TGID        int64
+	Timezone    Timezone
+	UsernameSQL sql.NullString // для выгрузки из БД
+	Username    string
 }
 
 func (p *User) HasTimezone() bool {
