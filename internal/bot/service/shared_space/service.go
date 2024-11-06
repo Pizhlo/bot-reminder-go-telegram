@@ -9,6 +9,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/user"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/telebot.v3"
 )
 
 // SharedSpace - структура, управляющая совместными пространствами
@@ -26,7 +27,7 @@ type SharedSpace struct {
 }
 
 type editor interface {
-	GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error)
+	GetAllByUserID(ctx context.Context, userID int64) (map[int]model.SharedSpace, error)
 	Save(ctx context.Context, space model.SharedSpace) error
 }
 
@@ -53,4 +54,8 @@ func (n *SharedSpace) SaveUser(userID int64) {
 		logrus.Debugf("SharedSpaceSrv: user %d already saved in the views map.\n", userID)
 	}
 
+}
+
+func (s *SharedSpace) Buttons(userID int64) []telebot.Btn {
+	return s.viewsMap[userID].Buttons()
 }

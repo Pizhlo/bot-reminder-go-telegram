@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -26,6 +27,19 @@ func (c *Controller) GetSharedAccess(ctx context.Context, telectx tele.Context) 
 		logrus.Errorf("Error while handling shared spaces command. User ID: %d. Error: %+v\n", telectx.Chat().ID, err)
 
 		return err
+	}
+
+	btns := c.sharedSpace.Buttons(telectx.Chat().ID)
+
+	for _, btn := range btns {
+		c.bot.Handle(&btn, func(telectx tele.Context) error {
+			spaceID, err := strconv.Atoi(btn.Unique)
+			if err != nil {
+				return fmt.Errorf("error converting string space ID '%s' to int: %+v", btn.Unique, err)
+			}
+
+			return c.GetSharedSpace(ctx, telectx, spaceID)
+		})
 	}
 
 	logrus.Debugf("Controller: successfully got all user's shared spaces. Sending message to user...\n")
@@ -56,4 +70,13 @@ func (c *Controller) CreateSharedSpace(ctx context.Context, telectx tele.Context
 
 	msg := fmt.Sprintf(messages.SharedSpaceCreationSuccessMessage, space.Name)
 	return telectx.EditOrSend(msg, view.ShowSharedSpacesMenu())
+}
+
+func (c *Controller) GetSharedSpace(ctx context.Context, telectx tele.Context, spaceID int) error {
+	msg, kb, err := c.sharedSpace.GetSharedSpace(spaceID, telectx.Chat().ID)
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(msg, kb)
 }

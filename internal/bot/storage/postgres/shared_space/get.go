@@ -9,8 +9,8 @@ import (
 	user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
 
-func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error) {
-	spaces := make([]model.SharedSpace, 0)
+func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) (map[int]model.SharedSpace, error) {
+	spaces := make(map[int]model.SharedSpace, 0)
 
 	rows, err := db.db.QueryContext(ctx, `select shared_spaces.shared_spaces.id, space_number, name, created
 	from shared_spaces.shared_spaces
@@ -31,20 +31,34 @@ func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]
 			return nil, fmt.Errorf("error scanning shared space: %+v", err)
 		}
 
-		spaces = append(spaces, space)
+		spaces[space.ID] = space
 	}
 
 	if len(spaces) == 0 {
 		return nil, api_errors.ErrSharedSpacesNotFound
 	}
 
-	for i, space := range spaces {
+	for _, space := range spaces {
 		participants, err := db.getAllParticipants(ctx, space.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		spaces[i].Participants = participants
+		notes, err := db.getAllNotes(ctx, space.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		reminders, err := db.getAllReminders(ctx, space.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		space.Participants = participants
+		space.Notes = notes
+		space.Reminders = reminders
+
+		spaces[space.ID] = space
 	}
 
 	return spaces, nil
@@ -70,6 +84,61 @@ where space_id = $1;`, spaceID)
 		}
 
 		res = append(res, user)
+	}
+
+	return res, nil
+}
+
+func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]model.Note, error) {
+	res := make([]model.Note, 0)
+
+	rows, err := db.db.QueryContext(ctx, `select notes.notes.id, text, created, last_edit, space_id, tg_id from notes.notes
+join users.users on users.users.id = notes.notes.user_id
+where space_id = $1;`, spaceID)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting all notes for shared space from DB: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		note := model.Note{}
+
+		err := rows.Scan(&note.ID, &note.Text, &note.Created, &note.LastEditSql, &note.SpaceID, &note.TgID)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
+		}
+
+		res = append(res, note)
+	}
+
+	return res, nil
+}
+
+func (db *sharedSpaceRepo) getAllReminders(ctx context.Context, spaceID int) ([]model.Reminder, error) {
+	res := make([]model.Reminder, 0)
+
+	rows, err := db.db.QueryContext(ctx, `select reminders.reminders.id, reminder_number, tg_id, text, created, date, time, name as type, reminders.jobs.job_id
+	from reminders.reminders
+		join reminders.types on reminders.types.id = reminders.reminders.type_id
+		join users.users on users.id = reminders.user_id
+		join reminders.reminders_view on reminders.reminders_view.id = reminders.reminders.id
+		join reminders.jobs on reminders.jobs.reminder_id = reminders.reminders.id
+		where space_id = $1
+		order by created ASC;`, spaceID)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting all notes for shared space from DB: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		reminder := model.Reminder{}
+
+		err := rows.Scan(&reminder.ID, &reminder.ViewID, &reminder.TgID, &reminder.Name, &reminder.Created, &reminder.Date, &reminder.Time, &reminder.Type, &reminder.Job.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
+		}
+
+		res = append(res, reminder)
 	}
 
 	return res, nil

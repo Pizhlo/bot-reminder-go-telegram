@@ -14,6 +14,8 @@ type SharedSpace struct {
 	Created      time.Time
 	Participants []user.User
 	Creator      user.User
+	Notes        []Note
+	Reminders    []Reminder
 }
 
 // структура, связывающая пространство и пользователя (многие-ко-многим)

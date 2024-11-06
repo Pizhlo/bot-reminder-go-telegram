@@ -23,3 +23,12 @@ func (s *SharedSpace) GetAllByUserID(ctx context.Context, userID int64) (string,
 
 	return msg, s.viewsMap[userID].Keyboard(), nil
 }
+
+func (s *SharedSpace) GetSharedSpace(spaceID int, userID int64) (string, *telebot.ReplyMarkup, error) {
+	msg, err := s.viewsMap[userID].MessageBySpace(spaceID)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return msg, s.viewsMap[userID].KeyboardForSpace(), nil
+}

@@ -72,7 +72,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
-	// shared space
+	// просмотр shared space
 	restricted.Handle(&view.BtnSharedSpace, func(telectx tele.Context) error {
 		err := s.controller.GetSharedAccess(ctx, telectx)
 		if err != nil {
@@ -83,6 +83,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// создать shared space
 	restricted.Handle(&view.BtnCreateSharedSpace, func(telectx tele.Context) error {
 		s.fsm[telectx.Chat().ID].SetFromString("createSharedSpace")
 		err := telectx.EditOrSend(messages.SharedSpaceNameMessage, view.BackToMenuBtn())
