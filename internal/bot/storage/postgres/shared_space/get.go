@@ -90,9 +90,11 @@ where space_id = $1;`, spaceID)
 func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]model.Note, error) {
 	res := make([]model.Note, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select notes.notes.id, text, created, last_edit, space_id, tg_id from notes.notes
-join users.users on users.users.id = notes.notes.user_id
-where space_id = $1;`, spaceID)
+	rows, err := db.db.QueryContext(ctx, `select note_number, text, created, last_edit, tg_id from notes.notes 
+	join notes.notes_view on notes.notes_view.id = notes.notes.id
+	join users.users on users.users.id = notes.notes.user_id
+	where notes.notes.space_id = $1 
+	order by created ASC;`, spaceID)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting all notes for shared space from DB: %w", err)
 	}
@@ -101,7 +103,7 @@ where space_id = $1;`, spaceID)
 	for rows.Next() {
 		note := model.Note{}
 
-		err := rows.Scan(&note.ID, &note.Text, &note.Created, &note.LastEditSql, &note.SpaceID, &note.TgID)
+		err := rows.Scan(&note.ViewID, &note.Text, &note.Created, &note.LastEditSql, &note.TgID)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
 		}
