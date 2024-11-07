@@ -128,6 +128,17 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// участники shared space
+	restricted.Handle(&view.BtnSpaceParticipants, func(telectx tele.Context) error {
+		err := s.controller.SharedSpaceParticipants(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// вернуться назад в shared space
 	restricted.Handle(&view.BtnBackToSharedSpace, func(telectx tele.Context) error {
 		err := s.controller.GetCurrentSharedSpace(ctx, telectx)

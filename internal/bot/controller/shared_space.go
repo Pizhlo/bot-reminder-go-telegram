@@ -107,3 +107,9 @@ func (c *Controller) RemindersBySharedSpace(ctx context.Context, telectx tele.Co
 
 	return telectx.EditOrSend(msg, kb)
 }
+
+func (c *Controller) SharedSpaceParticipants(ctx context.Context, telectx tele.Context) error {
+	msg, kb := c.sharedSpace.SharedSpaceParticipants(telectx.Chat().ID)
+
+	return telectx.EditOrSend(msg, kb)
+}

@@ -62,3 +62,11 @@ func (s *SharedSpace) RemindersBySpace(userID int64) (string, *telebot.ReplyMark
 
 	return msg, kb, nil
 }
+
+func (s *SharedSpace) SharedSpaceParticipants(userID int64) (string, *telebot.ReplyMarkup) {
+	msg := s.viewsMap[userID].ParticipantsMessage()
+
+	kb := s.viewsMap[userID].ParticipantsKeyboard()
+
+	return msg, kb
+}

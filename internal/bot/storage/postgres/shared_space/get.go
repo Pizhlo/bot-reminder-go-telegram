@@ -9,12 +9,14 @@ import (
 	user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
 
-func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) (map[int]model.SharedSpace, error) {
-	spaces := make(map[int]model.SharedSpace, 0)
+func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error) {
+	spaces := make([]model.SharedSpace, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select shared_spaces.shared_spaces.id, space_number, name, created
-	from shared_spaces.shared_spaces
+	rows, err := db.db.QueryContext(ctx,
+		`select shared_spaces.shared_spaces.id, space_number, name, created, tg_id, username
+		from shared_spaces.shared_spaces
 		join shared_spaces.shared_spaces_view on shared_spaces.shared_spaces_view.id = shared_spaces.shared_spaces.id
+		join users.users on users.users.id = shared_spaces.creator
 		where shared_spaces.shared_spaces.creator = (select id from users.users where tg_id = $1)
 		order by created ASC;`, userID)
 
@@ -26,19 +28,11 @@ func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) (ma
 	for rows.Next() {
 		space := model.SharedSpace{}
 
-		err := rows.Scan(&space.ID, &space.ViewID, &space.Name, &space.Created)
+		err := rows.Scan(&space.ID, &space.ViewID, &space.Name, &space.Created, &space.Creator.TGID, &space.Creator.Username)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning shared space: %+v", err)
 		}
 
-		spaces[space.ID] = space
-	}
-
-	if len(spaces) == 0 {
-		return nil, api_errors.ErrSharedSpacesNotFound
-	}
-
-	for _, space := range spaces {
 		participants, err := db.getAllParticipants(ctx, space.ID)
 		if err != nil {
 			return nil, err
@@ -58,7 +52,11 @@ func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) (ma
 		space.Notes = notes
 		space.Reminders = reminders
 
-		spaces[space.ID] = space
+		spaces = append(spaces, space)
+	}
+
+	if len(spaces) == 0 {
+		return nil, api_errors.ErrSharedSpacesNotFound
 	}
 
 	return spaces, nil

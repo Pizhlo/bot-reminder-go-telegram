@@ -27,7 +27,7 @@ type SharedSpace struct {
 }
 
 type editor interface {
-	GetAllByUserID(ctx context.Context, userID int64) (map[int]model.SharedSpace, error)
+	GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error)
 	Save(ctx context.Context, space model.SharedSpace) error
 }
 

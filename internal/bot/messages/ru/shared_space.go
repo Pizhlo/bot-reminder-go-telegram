@@ -7,3 +7,6 @@ const SharedSpaceNameMessage = "Напиши название нового пр�
 const SharedSpaceCreationSuccessMessage = "Пространство <b>%s</b> успешно создано!"
 
 const SharedSpaceMessage = "<b>%d. %s</b>\n\nУчастники:\n%+v\nЗаметок: %d\nНапоминаний: %d\n\nСоздано: %+v\n\n"
+
+const NoNotesInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одной заметки"
+const NoRemindersInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одного напоминания"
