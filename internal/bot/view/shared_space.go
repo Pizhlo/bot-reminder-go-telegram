@@ -30,6 +30,10 @@ var (
 	BtnAddParticipants = tele.Btn{Text: "Добавить", Unique: "add_users_to_shared_space"}
 	// inline кнопка для исключения участников
 	BtnRemoveParticipants = tele.Btn{Text: "Исключить", Unique: "add_users_to_shared_space"}
+
+	// invintation
+	BtnAcceptInvintation = tele.Btn{Text: "✅Принять", Unique: "accept_invintation"}
+	BtnDenyInvintation   = tele.Btn{Text: "❌Отклонить", Unique: "deny_invintation"}
 )
 
 type SharedSpaceView struct {
@@ -227,6 +231,16 @@ func (s *SharedSpaceView) ParticipantsKeyboard() *tele.ReplyMarkup {
 		menu.Row(BtnAddParticipants),
 		menu.Row(BtnRemoveParticipants),
 		menu.Row(BtnBackToSharedSpace),
+	)
+
+	return menu
+}
+
+func (s *SharedSpaceView) InvintationKeyboard() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
+		menu.Row(BtnAcceptInvintation, BtnDenyInvintation),
 	)
 
 	return menu

@@ -22,11 +22,12 @@ type UserService struct {
 
 //go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type userEditor interface {
-	Get(ctx context.Context, userID int64) (*user.User, error)
+	GetByID(ctx context.Context, userID int64) (*user.User, error)
 	Save(ctx context.Context, id int64, u *user.User) error
 	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
 	SaveState(ctx context.Context, id int64, state string) error
 	GetState(ctx context.Context, id int64) (string, error)
+	GetByUsername(ctx context.Context, username string) (*user.User, error)
 }
 
 //go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
@@ -104,7 +105,7 @@ func (s *UserService) checkInCache(ctx context.Context, tgID int64) bool {
 }
 
 func (s *UserService) checkInRepo(ctx context.Context, tgID int64) bool {
-	u, err := s.userEditor.Get(ctx, tgID)
+	u, err := s.userEditor.GetByID(ctx, tgID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			logrus.Errorf(wrap("error while checking user in DB: %v\n", err))
@@ -128,4 +129,8 @@ func (s *UserService) GetState(ctx context.Context, tgID int64) (string, error) 
 func wrap(s string, args ...any) string {
 	str := fmt.Sprintf(s, args...)
 	return fmt.Sprintf("User service: %s", str)
+}
+
+func (s *UserService) GetByUsername(ctx context.Context, username string) (*user.User, error) {
+	return s.userEditor.GetByUsername(ctx, username)
 }

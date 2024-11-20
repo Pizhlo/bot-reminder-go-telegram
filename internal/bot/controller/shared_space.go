@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
@@ -112,4 +113,65 @@ func (c *Controller) SharedSpaceParticipants(ctx context.Context, telectx tele.C
 	msg, kb := c.sharedSpace.SharedSpaceParticipants(telectx.Chat().ID)
 
 	return telectx.EditOrSend(msg, kb)
+}
+
+// AddParticipant обрабатывает нажатие на кнопку "Добавить участника"
+func (c *Controller) AddParticipant(ctx context.Context, telectx tele.Context) error {
+	return telectx.EditOrSend(messages.AddParticipantMessage, view.BackToMenuBtn())
+}
+
+// HandleParticipant обрабатывает ссылку на пользователя, которого надо добавить в совместное пространство
+func (c *Controller) HandleParticipant(ctx context.Context, telectx tele.Context, spaceName string) error {
+	user := telectx.Message().Text
+	from := telectx.Chat().Username
+
+	// если пользователь прислал username с собакой
+	if strings.HasPrefix(user, "@") {
+		username := strings.TrimPrefix(user, "@")
+		return c.handleUsername(ctx, telectx, username, from, spaceName)
+	}
+
+	// если пользователь прислал ссылку
+	if strings.Contains(user, "t.me") {
+		return c.handleUserLink(ctx, telectx, user, from, spaceName)
+	}
+
+	// если нет собаки, скорее всего это тоже username
+	return c.handleUsername(ctx, telectx, user, from, spaceName)
+}
+
+// handleUsername обрабатывает username во время добавления пользователя как нового участника пространства
+func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, username, from, spaceName string) error {
+	user, err := c.userSrv.GetByUsername(ctx, username)
+	if err != nil {
+		if errors.Is(err, api_errors.ErrUserNotFound) {
+			return telectx.EditOrSend(messages.UserNotRegisteredMessage, view.BackToMenuBtn())
+		}
+
+		return err
+	}
+
+	msg := fmt.Sprintf(messages.InvintationMessage, from, spaceName)
+
+	_, err = c.bot.Send(&tele.Chat{ID: user.TGID}, msg, c.sharedSpace.InvintationKeyboard(telectx.Chat().ID))
+	if err != nil {
+		return err
+	}
+
+	return telectx.EditOrSend(messages.SuccessfullySentInvintationMessage)
+}
+
+// handleUserLink обрабатывает ссылку на пользователя во время добавления его как нового участника пространства
+func (c *Controller) handleUserLink(ctx context.Context, telectx tele.Context, user, from, spaceName string) error {
+	// https://t.me/iloveprogramming
+
+	link := strings.Split(user, "/")
+
+	if len(link) != 4 {
+		return telectx.EditOrSend(messages.InvalidUserLinkMessage, view.BackToMenuBtn())
+	}
+
+	username := link[3]
+
+	return c.handleUsername(ctx, telectx, username, from, spaceName)
 }

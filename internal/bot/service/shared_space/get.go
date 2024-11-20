@@ -70,3 +70,7 @@ func (s *SharedSpace) SharedSpaceParticipants(userID int64) (string, *telebot.Re
 
 	return msg, kb
 }
+
+func (s *SharedSpace) InvintationKeyboard(userID int64) *telebot.ReplyMarkup {
+	return s.viewsMap[userID].InvintationKeyboard()
+}

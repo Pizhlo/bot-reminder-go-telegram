@@ -16,7 +16,6 @@ type stateName string
 const (
 	defaultStateName                   stateName = "default"
 	startStateName                     stateName = "start"
-	createSharedSpaceName              stateName = "createSharedSpace"
 	listNoteName                       stateName = "list_note"
 	createNoteName                     stateName = "create_note"
 	editNoteName                       stateName = "edit_note"
@@ -41,6 +40,10 @@ const (
 	yearReminderState                  stateName = "every_year"
 
 	bugReportState stateName = "bug_report"
+
+	// shared spaces
+	createSharedSpaceName stateName = "createSharedSpace"
+	addParticipantState   stateName = "add_participant_to_shared_space"
 )
 
 // Менеджер для управления состояниями бота
@@ -94,6 +97,8 @@ type FSM struct {
 	SearchNoteTwoDates state
 	// Состояние для баг репорта
 	BugReportState state
+	// Добавление нового участника в совместное пространство
+	AddParticipant state
 
 	sharedSpaceName state
 	mu              sync.RWMutex
@@ -148,6 +153,7 @@ func NewFSM(controller *controller.Controller) *FSM {
 
 	// shared space
 	fsm.sharedSpaceName = newSharedSpaceName(fsm, controller)
+	fsm.AddParticipant = NewAddParticipantState(controller, fsm, "")
 
 	return fsm
 }
@@ -260,6 +266,8 @@ func (s *FSM) parseString(state stateName) (state, error) {
 		return s.Year, nil
 	case createSharedSpaceName:
 		return s.sharedSpaceName, nil
+	case addParticipantState:
+		return s.AddParticipant, nil
 	default:
 		return nil, fmt.Errorf("unknown state: %s", state)
 	}

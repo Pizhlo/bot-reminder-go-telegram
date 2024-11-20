@@ -96,8 +96,13 @@ func (s *Server) setupHandlers(ctx context.Context) {
 
 	// создать shared space
 	restricted.Handle(&view.BtnCreateSharedSpace, func(telectx tele.Context) error {
-		s.fsm[telectx.Chat().ID].SetFromString("createSharedSpace")
-		err := telectx.EditOrSend(messages.SharedSpaceNameMessage, view.BackToMenuBtn())
+		err := s.fsm[telectx.Chat().ID].SetFromString("createSharedSpace")
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		err = telectx.EditOrSend(messages.SharedSpaceNameMessage, view.BackToMenuBtn())
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -131,6 +136,57 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	// участники shared space
 	restricted.Handle(&view.BtnSpaceParticipants, func(telectx tele.Context) error {
 		err := s.controller.SharedSpaceParticipants(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// добавить участника shared space
+	restricted.Handle(&view.BtnAddParticipants, func(telectx tele.Context) error {
+		err := s.fsm[telectx.Chat().ID].SetFromString("add_participant_to_shared_space")
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		err = s.controller.AddParticipant(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// кнопка приглашения участника: принять
+	restricted.Handle(&view.BtnAcceptInvintation, func(telectx tele.Context) error {
+		_, err := s.bot.Send(&tele.Chat{ID: 297850814}, "Кирилл принял приглашение")
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		err = telectx.EditOrSend("Кирилл лох!!!", view.BackToMenuBtn())
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// кнопка приглашения участника: отклонить
+	restricted.Handle(&view.BtnDenyInvintation, func(telectx tele.Context) error {
+		_, err := s.bot.Send(&tele.Chat{ID: 297850814}, "Кирилл отклонил приглашение")
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		err = telectx.EditOrSend("Кирилл лох!!!", view.BackToMenuBtn())
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

@@ -12,7 +12,7 @@ import (
 	_ "time/tzdata"
 )
 
-func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, location model.UserTimezone) (*user.User, error) {
+func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, location model.UserTimezone, username string) (*user.User, error) {
 	finder, err := tzf.NewDefaultFinder()
 	if err != nil {
 		return nil, errors.New(wrap("error creating default finder: %v", err))
@@ -25,6 +25,7 @@ func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, 
 		Timezone: user.Timezone{
 			Name: tz,
 		},
+		Username: "",
 	}
 
 	loc, err := time.LoadLocation(u.Timezone.Name)

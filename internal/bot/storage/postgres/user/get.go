@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
 
-func (db *UserRepo) Get(ctx context.Context, tgID int64) (*user.User, error) {
+func (db *UserRepo) GetByID(ctx context.Context, tgID int64) (*user.User, error) {
 	var dbID int
 
 	row := db.db.QueryRowContext(ctx, `select id from users.users where tg_id = $1`, tgID)
@@ -61,4 +63,21 @@ func (db *UserRepo) GetState(ctx context.Context, id int64) (string, error) {
 	}
 
 	return state, nil
+}
+
+func (db *UserRepo) GetByUsername(ctx context.Context, username string) (*user.User, error) {
+	var user user.User
+
+	row := db.db.QueryRowContext(ctx, `select * from users.users where username = $1`, username)
+
+	err := row.Scan(&user.ID, &user.TGID, &user.Username)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, api_errors.ErrUserNotFound
+		}
+
+		return nil, fmt.Errorf("error while scanning user by username %s: %w", username, err)
+	}
+
+	return &user, nil
 }
