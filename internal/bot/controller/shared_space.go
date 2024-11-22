@@ -175,3 +175,7 @@ func (c *Controller) handleUserLink(ctx context.Context, telectx tele.Context, u
 
 	return c.handleUsername(ctx, telectx, username, from, spaceName)
 }
+
+func (c *Controller) SpaceName(ctx context.Context, telectx tele.Context) string {
+	return c.sharedSpace.CurrentSpace(telectx.Chat().ID)
+}

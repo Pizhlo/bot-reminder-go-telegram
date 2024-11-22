@@ -8,6 +8,7 @@ import (
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/commands"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/controller"
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/fsm"
 	logger "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/logger"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
@@ -146,6 +147,10 @@ func (s *Server) setupHandlers(ctx context.Context) {
 
 	// добавить участника shared space
 	restricted.Handle(&view.BtnAddParticipants, func(telectx tele.Context) error {
+		spaceName := s.controller.SpaceName(ctx, telectx)
+
+		s.fsm[telectx.Chat().ID].AddParticipant = fsm.NewAddParticipantState(s.controller, s.fsm[telectx.Chat().ID], spaceName)
+
 		err := s.fsm[telectx.Chat().ID].SetFromString("add_participant_to_shared_space")
 		if err != nil {
 			s.HandleError(telectx, err)

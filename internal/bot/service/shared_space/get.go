@@ -74,3 +74,8 @@ func (s *SharedSpace) SharedSpaceParticipants(userID int64) (string, *telebot.Re
 func (s *SharedSpace) InvintationKeyboard(userID int64) *telebot.ReplyMarkup {
 	return s.viewsMap[userID].InvintationKeyboard()
 }
+
+// CurrentSpace возвращает название текущего (выбранного) совметного доступа
+func (s *SharedSpace) CurrentSpace(userID int64) string {
+	return s.viewsMap[userID].CurrentSpace()
+}

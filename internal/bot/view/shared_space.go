@@ -150,6 +150,11 @@ func (s *SharedSpaceView) Keyboard() *tele.ReplyMarkup {
 	return menu
 }
 
+// CurrentSpace возвращает название текущего (выбранного) совметного доступа
+func (s *SharedSpaceView) CurrentSpace() string {
+	return s.spacesMap[s.currentSpace].Name
+}
+
 func (s *SharedSpaceView) KeyboardForSpace() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
