@@ -24,7 +24,9 @@ func (c *Controller) CreateNote(ctx context.Context, telectx tele.Context) error
 	}
 
 	note := model.Note{
-		TgID:    telectx.Chat().ID,
+		Creator: model.User{
+			TGID: telectx.Chat().ID,
+		},
 		Text:    telectx.Text(),
 		Created: time.Now().In(loc),
 	}

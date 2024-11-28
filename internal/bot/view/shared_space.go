@@ -182,7 +182,32 @@ func (s *SharedSpaceView) Notes() (string, error) {
 
 	// pages := textForRecord(space.Notes, "")
 
-	return s.noteView.Message(space.Notes)
+	// return s.noteView.Message(space.Notes)
+
+	res := ""
+
+	s.pages = make([]string, 0)
+
+	for i, note := range space.Notes {
+		header := s.noteView.fillHeader(i+1, note)
+
+		msg := fmt.Sprintf("<b>%s. Автор: @%v</b>\n\n%s\n\n", header, note.Creator.Username, note.Text)
+
+		res += msg
+
+		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
+			s.pages = append(s.pages, res)
+			res = ""
+		}
+	}
+
+	if len(s.pages) < 5 && res != "" {
+		s.pages = append(s.pages, res)
+	}
+
+	s.currentPage = 0
+
+	return s.pages[0], nil
 }
 
 func (s *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {

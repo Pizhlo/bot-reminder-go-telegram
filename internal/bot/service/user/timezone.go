@@ -6,13 +6,12 @@ import (
 	"time"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/ringsaturn/tzf"
 
 	_ "time/tzdata"
 )
 
-func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, location model.UserTimezone, username string) (*user.User, error) {
+func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, location model.UserTimezone, username string) (*model.User, error) {
 	finder, err := tzf.NewDefaultFinder()
 	if err != nil {
 		return nil, errors.New(wrap("error creating default finder: %v", err))
@@ -20,9 +19,9 @@ func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, 
 
 	tz := finder.GetTimezoneName(float64(location.Long), float64(location.Lat))
 
-	u := &user.User{
+	u := &model.User{
 		TGID: userID,
-		Timezone: user.Timezone{
+		Timezone: model.Timezone{
 			Name: tz,
 		},
 		Username: "",
@@ -50,7 +49,7 @@ func (s *UserService) GetLocation(ctx context.Context, userID int64) (*time.Loca
 	return s.timezoneCache.Get(ctx, userID)
 }
 
-func (s *UserService) SaveTimezone(ctx context.Context, userID int64, tz *user.Timezone, loc *time.Location) error {
+func (s *UserService) SaveTimezone(ctx context.Context, userID int64, tz *model.Timezone, loc *time.Location) error {
 	s.timezoneCache.Save(ctx, userID, loc)
 
 	return s.timezoneEditor.Save(ctx, userID, tz)

@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 )
 
 // SaveUserTimezone сохраняет часовой пояс пользователя. Аргументы: id - id базы данных, timezone - модель часового пояса
-func (db *TimezoneRepo) Save(ctx context.Context, id int64, timezone *user.Timezone) error {
+func (db *TimezoneRepo) Save(ctx context.Context, id int64, timezone *model.Timezone) error {
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,

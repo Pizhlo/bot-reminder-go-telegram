@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -48,34 +47,11 @@ func (v *NoteView) Message(notes []model.Note) (string, error) {
 
 	v.pages = make([]string, 0)
 
-	// messageWithEditTimetag := "<b>%d. Создано: %s. Изменено: %s. Удалить: /dn%d. Изменить: /editn%d</b>\n\n%s\n\n"
-	// defaultMessage := "<b>%d. Создано: %s. Удалить: /dn%d. Изменить: /editn%d</b>\n\n%s\n\n"
-
 	for i, note := range notes {
 
-		// если заполнено поле последнее изменение - заполняем
-		if note.LastEditSql.Valid {
-			// res += fmt.Sprintf(messageWithEditTimetag, i+1, note.Created.Format(createdFieldFormat), note.LastEditSql.Time.Format(createdFieldFormat),
-			// 	note.ViewID, note.ViewID, note.Text)
+		header := v.fillHeader(i+1, note)
 
-			txt, err := textForRecord(note, messages.MessageWithEditTimetag)
-			if err != nil {
-				return "", err
-			}
-
-			res += txt
-
-		} else {
-			// res += fmt.Sprintf(defaultMessage, i+1, note.Created.Format(createdFieldFormat),
-			// 	note.ViewID, note.ViewID, note.Text)
-
-			txt, err := textForRecord(note, messages.DefaultMessage)
-			if err != nil {
-				return "", err
-			}
-
-			res += txt
-		}
+		res += fmt.Sprintf("%s\n\n%s\n\n", header, note.Text)
 
 		//res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /dn%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ViewID, note.Text)
 		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
@@ -91,6 +67,20 @@ func (v *NoteView) Message(notes []model.Note) (string, error) {
 	v.currentPage = 0
 
 	return v.pages[0], nil
+}
+
+func (v *NoteView) fillHeader(idx int, note model.Note) string {
+	messageWithEditTimetag := "<b>%d. Создано: %s. Изменено: %s. Удалить: /dn%d. Изменить: /editn%d</b>"
+	defaultMessage := "<b>%d. Создано: %s. Удалить: /dn%d. Изменить: /editn%d</b>"
+
+	// если заполнено поле последнее изменение - заполняем
+	if note.LastEditSql.Valid {
+		return fmt.Sprintf(messageWithEditTimetag, idx, note.Created.Format(createdFieldFormat), note.LastEditSql.Time.Format(createdFieldFormat),
+			note.ViewID, note.ViewID)
+	}
+
+	return fmt.Sprintf(defaultMessage, idx, note.Created.Format(createdFieldFormat),
+		note.ViewID, note.ViewID)
 }
 
 // Next возвращает следующую страницу сообщений

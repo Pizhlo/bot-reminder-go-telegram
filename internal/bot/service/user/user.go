@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	cache "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/storage/cache/timezone"
 	"github.com/sirupsen/logrus"
 )
@@ -22,19 +22,19 @@ type UserService struct {
 
 //go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type userEditor interface {
-	GetByID(ctx context.Context, userID int64) (*user.User, error)
-	Save(ctx context.Context, id int64, u *user.User) error
-	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
+	GetByID(ctx context.Context, userID int64) (*model.User, error)
+	Save(ctx context.Context, id int64, u *model.User) error
+	GetAll(ctx context.Context) ([]*model.User, error) // для восстановления кэша на старте
 	SaveState(ctx context.Context, id int64, state string) error
 	GetState(ctx context.Context, id int64) (string, error)
-	GetByUsername(ctx context.Context, username string) (*user.User, error)
+	GetByUsername(ctx context.Context, username string) (*model.User, error)
 }
 
 //go:generate mockgen -source ./user.go -destination=../../mocks/user_srv.go -package=mocks
 type timezoneEditor interface {
-	Get(ctx context.Context, userID int64) (*user.Timezone, error)
-	Save(ctx context.Context, id int64, tz *user.Timezone) error
-	GetAll(ctx context.Context) ([]*user.User, error) // для восстановления кэша на старте
+	Get(ctx context.Context, userID int64) (*model.Timezone, error)
+	Save(ctx context.Context, id int64, tz *model.Timezone) error
+	GetAll(ctx context.Context) ([]*model.User, error) // для восстановления кэша на старте
 }
 
 func New(ctx context.Context, userEditor userEditor, timezoneCache *cache.TimezoneCache, timezoneEditor timezoneEditor) *UserService {
@@ -74,11 +74,11 @@ func (s *UserService) loadAll(ctx context.Context) {
 	logrus.Debugf(wrap("successfully saved %d users' timezone(s) to cache\n", len(tzs)))
 }
 
-func (s *UserService) GetAll(ctx context.Context) ([]*user.User, error) {
+func (s *UserService) GetAll(ctx context.Context) ([]*model.User, error) {
 	return s.userEditor.GetAll(ctx)
 }
 
-func (s *UserService) SaveUser(ctx context.Context, userID int64, u *user.User) error {
+func (s *UserService) SaveUser(ctx context.Context, userID int64, u *model.User) error {
 	return s.userEditor.Save(ctx, userID, u)
 }
 
@@ -131,6 +131,6 @@ func wrap(s string, args ...any) string {
 	return fmt.Sprintf("User service: %s", str)
 }
 
-func (s *UserService) GetByUsername(ctx context.Context, username string) (*user.User, error) {
+func (s *UserService) GetByUsername(ctx context.Context, username string) (*model.User, error) {
 	return s.userEditor.GetByUsername(ctx, username)
 }

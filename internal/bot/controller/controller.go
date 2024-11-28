@@ -7,7 +7,7 @@ import (
 	"time"
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
-	user_model "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	gocron "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/scheduler"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/note"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
@@ -81,7 +81,7 @@ func (c *Controller) CheckUser(ctx context.Context, tgID int64) bool {
 }
 
 // GetAllUsers возвращает всех зарегистрированных пользователей
-func (c *Controller) GetAllUsers(ctx context.Context) ([]*user_model.User, error) {
+func (c *Controller) GetAllUsers(ctx context.Context) ([]*model.User, error) {
 	return c.userSrv.GetAll(ctx)
 }
 
@@ -114,7 +114,7 @@ func (c *Controller) LoadMemoryReminders(ctx context.Context) error {
 }
 
 // SaveUsers сохраняет пользователей в сервисах
-func (c *Controller) SaveUsers(ctx context.Context, users []*user_model.User) {
+func (c *Controller) SaveUsers(ctx context.Context, users []*model.User) {
 	errors := []error{}
 	for _, u := range users {
 		c.noteSrv.SaveUser(u.TGID)

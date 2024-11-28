@@ -18,7 +18,7 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 	}
 
 	var id uuid.UUID
-	row := tx.QueryRowContext(ctx, `insert into notes.notes (user_id, text, created) values((select id from users.users where tg_id=$1), $2, $3) returning ID`, note.TgID, note.Text, note.Created)
+	row := tx.QueryRowContext(ctx, `insert into notes.notes (user_id, text, created) values((select id from users.users where tg_id=$1), $2, $3) returning ID`, note.Creator.TGID, note.Text, note.Created)
 
 	err = row.Scan(&id)
 	if err != nil {
@@ -31,7 +31,7 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 		Model: &elastic.Note{
 			ID:   id,
 			Text: note.Text,
-			TgID: note.TgID,
+			TgID: note.Creator.TGID,
 		}}
 
 	// сохраняем в elastic
@@ -42,7 +42,7 @@ func (db *NoteRepo) Save(ctx context.Context, note model.Note) error {
 		return fmt.Errorf("error saving note to Elastic: %+v", err)
 	}
 
-	logrus.Debugf("NoteRepo: successfully saved user's note. User: %+v", note.TgID)
+	logrus.Debugf("NoteRepo: successfully saved user's note. User: %+v", note.Creator.TGID)
 
 	return tx.Commit()
 }

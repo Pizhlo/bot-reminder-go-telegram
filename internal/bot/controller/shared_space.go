@@ -11,7 +11,6 @@ import (
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -59,7 +58,7 @@ func (c *Controller) CreateSharedSpace(ctx context.Context, telectx tele.Context
 	space := model.SharedSpace{
 		Name:    telectx.Message().Text,
 		Created: time.Now().In(loc),
-		Creator: user.User{
+		Creator: model.User{
 			TGID:     telectx.Chat().ID,
 			Username: telectx.Chat().Username,
 		},

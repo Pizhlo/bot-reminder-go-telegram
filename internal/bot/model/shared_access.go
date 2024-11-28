@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
 
 // совместный доступ для нескольких пользователей к заметкам и напоминаниям
@@ -12,8 +10,8 @@ type SharedSpace struct {
 	ViewID       int // номер для отображения
 	Name         string
 	Created      time.Time
-	Participants []user.User
-	Creator      user.User
+	Participants []User
+	Creator      User
 	Notes        []Note
 	Reminders    []Reminder
 }

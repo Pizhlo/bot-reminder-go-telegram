@@ -24,8 +24,10 @@ func Note() model.Note {
 	return model.Note{
 		ID:      uuid.New(),
 		ViewID:  Int(1, 10),
-		TgID:    1,
 		Text:    String(10),
 		Created: time.Now(),
+		Creator: model.User{
+			TGID: int64(1),
+		},
 	}
 }

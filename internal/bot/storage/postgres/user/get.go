@@ -7,11 +7,10 @@ import (
 	"fmt"
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
-
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 )
 
-func (db *UserRepo) GetByID(ctx context.Context, tgID int64) (*user.User, error) {
+func (db *UserRepo) GetByID(ctx context.Context, tgID int64) (*model.User, error) {
 	var dbID int
 
 	row := db.db.QueryRowContext(ctx, `select id from users.users where tg_id = $1`, tgID)
@@ -20,7 +19,7 @@ func (db *UserRepo) GetByID(ctx context.Context, tgID int64) (*user.User, error)
 		return nil, fmt.Errorf("error while scanning user by id %d: %w", tgID, err)
 	}
 
-	u := &user.User{
+	u := &model.User{
 		ID:   dbID,
 		TGID: tgID,
 	}
@@ -28,8 +27,8 @@ func (db *UserRepo) GetByID(ctx context.Context, tgID int64) (*user.User, error)
 	return u, nil
 }
 
-func (db *UserRepo) GetAll(ctx context.Context) ([]*user.User, error) {
-	res := make([]*user.User, 0)
+func (db *UserRepo) GetAll(ctx context.Context) ([]*model.User, error) {
+	res := make([]*model.User, 0)
 
 	rows, err := db.db.QueryContext(ctx, `select * from users.users`)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -38,7 +37,7 @@ func (db *UserRepo) GetAll(ctx context.Context) ([]*user.User, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		u := &user.User{}
+		u := &model.User{}
 
 		err = rows.Scan(&u.ID, &u.TGID, &u.UsernameSQL)
 		if err != nil {
@@ -65,8 +64,8 @@ func (db *UserRepo) GetState(ctx context.Context, id int64) (string, error) {
 	return state, nil
 }
 
-func (db *UserRepo) GetByUsername(ctx context.Context, username string) (*user.User, error) {
-	var user user.User
+func (db *UserRepo) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	var user model.User
 
 	row := db.db.QueryRowContext(ctx, `select * from users.users where username = $1`, username)
 

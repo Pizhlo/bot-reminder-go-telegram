@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
 
 func (db *sharedSpaceRepo) Save(ctx context.Context, space model.SharedSpace) error {
@@ -30,7 +29,7 @@ func (db *sharedSpaceRepo) Save(ctx context.Context, space model.SharedSpace) er
 	return tx.Commit()
 }
 
-func (db *sharedSpaceRepo) SaveParticipant(ctx context.Context, tx *sql.Tx, spaceID int64, user user.User) error {
+func (db *sharedSpaceRepo) SaveParticipant(ctx context.Context, tx *sql.Tx, spaceID int64, user model.User) error {
 	// tx, err := db.tx(ctx)
 	// if err != nil {
 	// 	return err

@@ -6,7 +6,6 @@ import (
 
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
-	user "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/user"
 )
 
 func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error) {
@@ -62,8 +61,8 @@ func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]
 	return spaces, nil
 }
 
-func (db *sharedSpaceRepo) getAllParticipants(ctx context.Context, spaceID int) ([]user.User, error) {
-	res := make([]user.User, 0)
+func (db *sharedSpaceRepo) getAllParticipants(ctx context.Context, spaceID int) ([]model.User, error) {
+	res := make([]model.User, 0)
 
 	rows, err := db.db.QueryContext(ctx, `select tg_id, username from shared_spaces.participants 
 join users.users on users.users.id = shared_spaces.participants.user_id
@@ -74,7 +73,7 @@ where space_id = $1;`, spaceID)
 	defer rows.Close()
 
 	for rows.Next() {
-		user := user.User{}
+		user := model.User{}
 
 		err := rows.Scan(&user.TGID, &user.UsernameSQL)
 		if err != nil {
@@ -90,7 +89,7 @@ where space_id = $1;`, spaceID)
 func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]model.Note, error) {
 	res := make([]model.Note, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select note_number, text, created, last_edit, tg_id from notes.notes 
+	rows, err := db.db.QueryContext(ctx, `select note_number, text, created, last_edit, username, tg_id from notes.notes 
 	join notes.notes_view on notes.notes_view.id = notes.notes.id
 	join users.users on users.users.id = notes.notes.user_id
 	where notes.notes.space_id = $1 
@@ -103,7 +102,7 @@ func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]mode
 	for rows.Next() {
 		note := model.Note{}
 
-		err := rows.Scan(&note.ViewID, &note.Text, &note.Created, &note.LastEditSql, &note.TgID)
+		err := rows.Scan(&note.ViewID, &note.Text, &note.Created, &note.LastEditSql, &note.Creator.Username, &note.Creator.TGID)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
 		}

@@ -51,7 +51,7 @@ func (db *NoteRepo) GetByViewID(ctx context.Context, userID int64, noteID int) (
 	and notes.notes_view.note_number = $2
 	order by created ASC;`, userID, noteID)
 
-	err := row.Scan(&note.ID, &note.ViewID, &note.TgID, &note.Text, &note.Created, &note.LastEditSql)
+	err := row.Scan(&note.ID, &note.ViewID, &note.Creator.TGID, &note.Text, &note.Created, &note.LastEditSql)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, api_errors.ErrNotesNotFound
