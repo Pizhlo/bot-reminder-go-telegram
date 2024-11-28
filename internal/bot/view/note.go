@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -42,23 +43,38 @@ var (
 
 // Message формирует список сообщений из моделей заметок и возвращает первую страницу.
 // Количество заметок на одной странице задает переменная noteCountPerPage (по умолчанию - 5)
-func (v *NoteView) Message(notes []model.Note) string {
+func (v *NoteView) Message(notes []model.Note) (string, error) {
 	var res = ""
 
 	v.pages = make([]string, 0)
 
-	messageWithEditTimetag := "<b>%d. Создано: %s. Изменено: %s. Удалить: /dn%d. Изменить: /editn%d</b>\n\n%s\n\n"
-	defaultMessage := "<b>%d. Создано: %s. Удалить: /dn%d. Изменить: /editn%d</b>\n\n%s\n\n"
+	// messageWithEditTimetag := "<b>%d. Создано: %s. Изменено: %s. Удалить: /dn%d. Изменить: /editn%d</b>\n\n%s\n\n"
+	// defaultMessage := "<b>%d. Создано: %s. Удалить: /dn%d. Изменить: /editn%d</b>\n\n%s\n\n"
 
 	for i, note := range notes {
 
 		// если заполнено поле последнее изменение - заполняем
 		if note.LastEditSql.Valid {
-			res += fmt.Sprintf(messageWithEditTimetag, i+1, note.Created.Format(createdFieldFormat), note.LastEditSql.Time.Format(createdFieldFormat),
-				note.ViewID, note.ViewID, note.Text)
+			// res += fmt.Sprintf(messageWithEditTimetag, i+1, note.Created.Format(createdFieldFormat), note.LastEditSql.Time.Format(createdFieldFormat),
+			// 	note.ViewID, note.ViewID, note.Text)
+
+			txt, err := textForRecord(note, messages.MessageWithEditTimetag)
+			if err != nil {
+				return "", err
+			}
+
+			res += txt
+
 		} else {
-			res += fmt.Sprintf(defaultMessage, i+1, note.Created.Format(createdFieldFormat),
-				note.ViewID, note.ViewID, note.Text)
+			// res += fmt.Sprintf(defaultMessage, i+1, note.Created.Format(createdFieldFormat),
+			// 	note.ViewID, note.ViewID, note.Text)
+
+			txt, err := textForRecord(note, messages.DefaultMessage)
+			if err != nil {
+				return "", err
+			}
+
+			res += txt
 		}
 
 		//res += fmt.Sprintf("<b>%d. Создано: %s. Удалить: /dn%d</b>\n\n%s\n\n", i+1, note.Created.Format(createdFieldFormat), note.ViewID, note.Text)
@@ -74,7 +90,7 @@ func (v *NoteView) Message(notes []model.Note) string {
 
 	v.currentPage = 0
 
-	return v.pages[0]
+	return v.pages[0], nil
 }
 
 // Next возвращает следующую страницу сообщений

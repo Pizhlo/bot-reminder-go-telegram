@@ -28,3 +28,7 @@ const AllNotesDeletedMessage = "Все заметки успешно удале�
 const NotDeleteMessage = "Я отменил операцию😌"
 const NoteDeletedSuccessMessage = "Заметка под номером <b>%d</b> успешно удалена!🥳"
 const NoNoteFoundByNumberMessage = "У тебя нет заметки под номером %d🤔"
+
+// эти сообщения используются для шаблонизатора в base view
+const MessageWithEditTimetag = "<b>{{ .ViewID }}. Создано: {{ .Created }}. Изменено: {{ .Edited }}. Удалить: /dn{{ .ViewID }}. Изменить: /editn{{ .ViewID }}</b>\n\n{{ .Text }}\n\n"
+const DefaultMessage = "<b>{{ .ViewID }}. Создано: {{ .Created }}. Удалить: /dn{{ .ViewID }} Изменить: /editn{{ .ViewID }}</b>\n\n{{ .Text }}\n\n"

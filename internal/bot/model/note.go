@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,6 +17,33 @@ type Note struct {
 	LastEditSql sql.NullTime
 	SpaceID     int
 	// HasPhoto bool
+}
+
+const createdFieldFormat = "02.01.2006 15:04:05"
+
+// Fields реализует интерфейс baseView.record. Возвращает значения всех полей
+func (n Note) Fields() map[string]string {
+	res := make(map[string]string)
+
+	res["ID"] = n.ID.String()
+	res["ViewID"] = strconv.Itoa(n.ViewID)
+	res["TgID"] = strconv.Itoa(int(n.TgID))
+	res["Text"] = n.Text
+	res["Created"] = n.Created.Format(createdFieldFormat)
+
+	if n.LastEditSql.Valid {
+		res["Edited"] = n.LastEditSql.Time.GoString()
+
+		if n.SpaceID != 0 {
+			res["SpaceID"] = strconv.Itoa(n.SpaceID)
+		}
+	} else {
+		if n.SpaceID != 0 {
+			res["SpaceID"] = strconv.Itoa(n.SpaceID)
+		}
+	}
+
+	return res
 }
 
 // for searching reminders and notes by text

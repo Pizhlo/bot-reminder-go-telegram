@@ -46,7 +46,11 @@ func (s *SharedSpace) CurrentSharedSpace(userID int64) (string, *telebot.ReplyMa
 // NotesBySpace возвращает заметки, принадлежащие конкретному пространству, которое уже было выбрано, поэтому
 // для запроса нужен только userID
 func (s *SharedSpace) NotesBySpace(userID int64) (string, *telebot.ReplyMarkup, error) {
-	msg := s.viewsMap[userID].Notes()
+	msg, err := s.viewsMap[userID].Notes()
+	if err != nil {
+		return "", nil, err
+	}
+
 	kb := s.viewsMap[userID].KeyboardForNotes()
 
 	return msg, kb, nil

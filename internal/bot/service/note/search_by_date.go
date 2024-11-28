@@ -17,7 +17,9 @@ func (s *NoteService) SearchByOneDate(ctx context.Context, note model.SearchByOn
 		return "", nil, err
 	}
 
-	return s.viewsMap[note.TgID].Message(notes), s.viewsMap[note.TgID].Keyboard(), nil
+	msg, err := s.viewsMap[note.TgID].Message(notes)
+
+	return msg, s.viewsMap[note.TgID].Keyboard(), err
 }
 
 // SaveFirstDate сохраняет первую дату для поиска заметок по двум датам
@@ -78,5 +80,7 @@ func (s *NoteService) SearchByTwoDates(ctx context.Context, userID int64) (strin
 		return "", nil, err
 	}
 
-	return s.viewsMap[note.TgID].Message(notes), s.viewsMap[note.TgID].Keyboard(), nil
+	msg, err := s.viewsMap[note.TgID].Message(notes)
+
+	return msg, s.viewsMap[note.TgID].Keyboard(), err
 }

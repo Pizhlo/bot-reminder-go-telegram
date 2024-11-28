@@ -173,12 +173,14 @@ func (s *SharedSpaceView) Buttons() []tele.Btn {
 	return s.btns
 }
 
-func (s *SharedSpaceView) Notes() string {
+func (s *SharedSpaceView) Notes() (string, error) {
 	space := s.spacesMap[s.currentSpace]
 
 	if len(space.Notes) == 0 {
-		return fmt.Sprintf(messages.NoNotesInSharedSpaceMessage, space.Name)
+		return fmt.Sprintf(messages.NoNotesInSharedSpaceMessage, space.Name), nil
 	}
+
+	// pages := textForRecord(space.Notes, "")
 
 	return s.noteView.Message(space.Notes)
 }

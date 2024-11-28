@@ -17,7 +17,9 @@ func (s *NoteService) GetAll(ctx context.Context, userID int64) (string, *tele.R
 		return "", nil, err
 	}
 
-	return s.viewsMap[userID].Message(notes), s.viewsMap[userID].Keyboard(), nil
+	msg, err := s.viewsMap[userID].Message(notes)
+
+	return msg, s.viewsMap[userID].Keyboard(), err
 }
 
 // NextPage обрабатывает кнопку переключения на следующую страницу

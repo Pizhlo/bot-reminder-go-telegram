@@ -14,5 +14,7 @@ func (s *NoteService) SearchByText(ctx context.Context, note model.SearchByText)
 		return "", nil, err
 	}
 
-	return s.viewsMap[note.TgID].Message(notes), s.viewsMap[note.TgID].KeyboardForSearch(), nil
+	msg, err := s.viewsMap[note.TgID].Message(notes)
+
+	return msg, s.viewsMap[note.TgID].KeyboardForSearch(), err
 }
