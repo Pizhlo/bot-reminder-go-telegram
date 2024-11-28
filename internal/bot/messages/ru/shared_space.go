@@ -21,3 +21,4 @@ const NoRemindersInSharedSpaceMessage = "В пространстве <b>%s</b> �
 // Notes
 const AskNoteTextMessage = "Напиши текст заметки"
 const SuccessfullyAddedNoteMessage = "Заметка успешно добавлена в совместное пространство <b>%s</b>!"
+const UserAddedNoteMessage = "Пользователь @%s добавил новую заметку в пространство <b>%s</b>!"

@@ -199,6 +199,26 @@ func (c *Controller) AddNoteToSharedSpace(ctx context.Context, telectx tele.Cont
 		return err
 	}
 
-	msg := fmt.Sprintf(messages.SuccessfullyAddedNoteMessage, c.SpaceName(ctx, telectx))
+	// рассылка уведомлений участникам пространства
+	participants := c.sharedSpace.SpaceParticipants(telectx.Chat().ID)
+	creator := c.sharedSpace.SpaceCreator(telectx.Chat().ID)
+	spaceName := c.SpaceName(ctx, telectx)
+
+	for _, user := range participants {
+		if user.TGID != creator.TGID {
+			msg := fmt.Sprintf(messages.UserAddedNoteMessage, telectx.Chat().Username, spaceName)
+			_, err = c.bot.Send(&tele.User{ID: user.TGID}, msg)
+			if err != nil {
+				return err
+			}
+		}
+		msg := fmt.Sprintf(messages.UserAddedNoteMessage, telectx.Chat().Username, spaceName)
+		_, err = c.bot.Send(&tele.User{ID: user.TGID}, msg, view.ShowSharedSpacesMenu())
+		if err != nil {
+			return err
+		}
+	}
+
+	msg := fmt.Sprintf(messages.SuccessfullyAddedNoteMessage, spaceName)
 	return telectx.EditOrSend(msg, c.sharedSpace.BackToSharedSpaceMenu(telectx.Chat().ID))
 }

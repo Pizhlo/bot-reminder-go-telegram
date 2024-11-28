@@ -100,3 +100,8 @@ func (s *SharedSpace) CurrentSpaceName(userID int64) string {
 func (s *SharedSpace) SpaceParticipants(userID int64) []model.User {
 	return s.viewsMap[userID].CurrentSpace().Participants
 }
+
+// SpaceCreator возвращает создателя совместного пространства
+func (s *SharedSpace) SpaceCreator(userID int64) model.User {
+	return s.viewsMap[userID].CurrentSpace().Creator
+}
