@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/elastic"
+	"github.com/google/uuid"
 )
 
 func (db *sharedSpaceRepo) Save(ctx context.Context, space model.SharedSpace) error {
@@ -54,11 +56,31 @@ func (db *sharedSpaceRepo) SaveNote(ctx context.Context, note model.Note) error 
 	if err != nil {
 		return err
 	}
-
-	_, err = tx.ExecContext(ctx, "insert into notes.notes (user_id, text, created, space_id) values((select id from users.users where tg_id=$1), $2, $3, $4)",
+	var id uuid.UUID
+	row := tx.QueryRowContext(ctx, "insert into notes.notes (user_id, text, created, space_id) values((select id from users.users where tg_id=$1), $2, $3, $4) returning id",
 		note.Creator.TGID, note.Text, note.Created, note.Space.ID)
+
+	err = row.Scan(&id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error scanning ID: %+v", err)
+	}
+
+	// создаем структуру для сохранения в elastic
+	elasticData := elastic.Data{
+		Index: elastic.NoteIndex,
+		Model: &elastic.Note{
+			ID:          id,
+			Text:        note.Text,
+			TgID:        note.Creator.TGID,
+			SharedSpace: note.Space,
+		}}
+
+	// сохраняем в elastic
+	err = db.elasticClient.Save(ctx, elasticData)
+	if err != nil {
+		// отменяем транзакцию в случае ошибки (для консистентности данных)
+		_ = tx.Rollback()
+		return fmt.Errorf("error saving note for shared space to Elastic: %+v", err)
 	}
 
 	return tx.Commit()

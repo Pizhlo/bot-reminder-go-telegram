@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	models "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/deletebyquery"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/update"
@@ -14,10 +15,11 @@ import (
 
 // Структура для хранения и поиска по заметкам
 type Note struct {
-	ID        uuid.UUID // id из базы
-	ElasticID string    // id в elastic Search
-	TgID      int64
-	Text      string
+	ID          uuid.UUID // id из базы
+	ElasticID   string    // id в elastic Search
+	TgID        int64
+	Text        string
+	SharedSpace models.SharedSpace
 }
 
 // ValidateNote проверяет поля структуры elastic.Data на правильность и возвращает заметку

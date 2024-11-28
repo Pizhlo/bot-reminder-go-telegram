@@ -89,7 +89,7 @@ func Start(confName, path string) {
 		logrus.Fatalf("cannot create reminder repo: %v", err)
 	}
 
-	sharedSpacesRepo, err := sharedspace.New(dbAddr)
+	sharedSpacesRepo, err := sharedspace.New(dbAddr, elasticClient)
 	if err != nil {
 		logrus.Fatalf("cannot create shared space repo: %v", err)
 	}
