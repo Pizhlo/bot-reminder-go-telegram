@@ -44,6 +44,7 @@ const (
 	// shared spaces
 	createSharedSpaceName stateName = "createSharedSpace"
 	addParticipantState   stateName = "add_participant_to_shared_space"
+	addNoteToSharedSpace  stateName = "add_note_to_shared_space"
 )
 
 // Менеджер для управления состояниями бота
@@ -99,6 +100,8 @@ type FSM struct {
 	BugReportState state
 	// Добавление нового участника в совместное пространство
 	AddParticipant state
+	// Добавление заметки в shared space
+	AddNoteToSharedSpace state
 
 	sharedSpaceName state
 	mu              sync.RWMutex
@@ -268,6 +271,8 @@ func (s *FSM) parseString(state stateName) (state, error) {
 		return s.sharedSpaceName, nil
 	case addParticipantState:
 		return s.AddParticipant, nil
+	case addNoteToSharedSpace:
+		return s.AddNoteToSharedSpace, nil
 	default:
 		return nil, fmt.Errorf("unknown state: %s", state)
 	}

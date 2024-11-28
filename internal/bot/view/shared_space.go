@@ -150,9 +150,19 @@ func (s *SharedSpaceView) Keyboard() *tele.ReplyMarkup {
 	return menu
 }
 
-// CurrentSpace возвращает название текущего (выбранного) совметного доступа
-func (s *SharedSpaceView) CurrentSpace() string {
+// CurrentSpaceName возвращает название текущего (выбранного) совметного доступа
+func (s *SharedSpaceView) CurrentSpaceName() string {
 	return s.spacesMap[s.currentSpace].Name
+}
+
+// CurrentSpaceName возвращает ID текущего (выбранного) совметного доступа
+func (s *SharedSpaceView) CurrentSpaceID() int {
+	return s.spacesMap[s.currentSpace].ID
+}
+
+// CurrentSpace возвращает текущее выбранное совместное пространство
+func (s *SharedSpaceView) CurrentSpace() model.SharedSpace {
+	return s.spacesMap[s.currentSpace]
 }
 
 func (s *SharedSpaceView) KeyboardForSpace() *tele.ReplyMarkup {
@@ -262,6 +272,16 @@ func (s *SharedSpaceView) ParticipantsKeyboard() *tele.ReplyMarkup {
 	menu.Inline(
 		menu.Row(BtnAddParticipants),
 		menu.Row(BtnRemoveParticipants),
+		menu.Row(BtnBackToSharedSpace),
+	)
+
+	return menu
+}
+
+func (s *SharedSpaceView) BackToSharedSpaceMenu() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	menu.Inline(
 		menu.Row(BtnBackToSharedSpace),
 	)
 

@@ -48,3 +48,18 @@ func (db *sharedSpaceRepo) SaveParticipant(ctx context.Context, tx *sql.Tx, spac
 
 	return nil
 }
+
+func (db *sharedSpaceRepo) SaveNote(ctx context.Context, note model.Note) error {
+	tx, err := db.tx(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "insert into notes.notes (user_id, text, created, space_id) values((select id from users.users where tg_id=$1), $2, $3, $4)",
+		note.Creator.TGID, note.Text, note.Created, note.Space.ID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}

@@ -176,5 +176,29 @@ func (c *Controller) handleUserLink(ctx context.Context, telectx tele.Context, u
 }
 
 func (c *Controller) SpaceName(ctx context.Context, telectx tele.Context) string {
-	return c.sharedSpace.CurrentSpace(telectx.Chat().ID)
+	return c.sharedSpace.CurrentSpaceName(telectx.Chat().ID)
+}
+
+// SharedSpaceNewNote запрашивает у пользователя текст новой заметки для добавления в shared space
+func (c *Controller) SharedSpaceNewNote(ctx context.Context, telectx tele.Context) error {
+	return telectx.EditOrSend(messages.AskNoteTextMessage, view.BackToMenuBtn())
+}
+
+// AddNoteToSharedSpace принимает текст новой заметки и сохраняет ее в хранилище
+func (c *Controller) AddNoteToSharedSpace(ctx context.Context, telectx tele.Context) error {
+	note := model.Note{
+		Text: telectx.Message().Text,
+		Creator: model.User{
+			TGID:     telectx.Chat().ID,
+			Username: telectx.Chat().Username,
+		},
+	}
+
+	err := c.sharedSpace.SaveNote(ctx, note)
+	if err != nil {
+		return err
+	}
+
+	msg := fmt.Sprintf(messages.SuccessfullyAddedNoteMessage, c.SpaceName(ctx, telectx))
+	return telectx.EditOrSend(msg, c.sharedSpace.BackToSharedSpaceMenu(telectx.Chat().ID))
 }

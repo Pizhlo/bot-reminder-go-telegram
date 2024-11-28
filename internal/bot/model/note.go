@@ -13,7 +13,7 @@ type Note struct {
 	Text        string
 	Created     time.Time
 	LastEditSql sql.NullTime
-	SpaceID     int
+	Space       SharedSpace
 	Creator     User
 	// HasPhoto bool
 }

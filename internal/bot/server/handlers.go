@@ -114,7 +114,18 @@ func (s *Server) setupHandlers(ctx context.Context) {
 
 	// заметки в shared space
 	restricted.Handle(&view.BtnNotesSharedSpace, func(telectx tele.Context) error {
-		err := s.controller.NotesBySharedSpace(ctx, telectx)
+		// устанавливаем текущий state в add_note_to_shared_space
+		spaceName := s.controller.SpaceName(ctx, telectx)
+
+		s.fsm[telectx.Chat().ID].AddNoteToSharedSpace = fsm.NewAddNoteState(s.controller, s.fsm[telectx.Chat().ID], spaceName)
+
+		err := s.fsm[telectx.Chat().ID].SetFromString("add_note_to_shared_space")
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		err = s.controller.NotesBySharedSpace(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
@@ -158,6 +169,27 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		}
 
 		err = s.controller.AddParticipant(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// добавить заметку в shared space
+	restricted.Handle(&view.BtnAddNote, func(telectx tele.Context) error {
+		spaceName := s.controller.SpaceName(ctx, telectx)
+
+		s.fsm[telectx.Chat().ID].AddNoteToSharedSpace = fsm.NewAddNoteState(s.controller, s.fsm[telectx.Chat().ID], spaceName)
+
+		err := s.fsm[telectx.Chat().ID].SetFromString("add_note_to_shared_space")
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		err = s.controller.SharedSpaceNewNote(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

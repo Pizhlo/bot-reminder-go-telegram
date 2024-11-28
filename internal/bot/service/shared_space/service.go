@@ -21,20 +21,21 @@ type SharedSpace struct {
 	// отвечает за напоминания
 	reminderSrv *reminder.ReminderService
 	// хранилище совместных пространств
-	storage editor
+	storage storage
 
 	viewsMap map[int64]*view.SharedSpaceView
 }
 
-type editor interface {
+type storage interface {
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error)
 	Save(ctx context.Context, space model.SharedSpace) error
+	SaveNote(ctx context.Context, note model.Note) error
 }
 
 func New(userSrv *user.UserService,
 	noteSrv *note.NoteService,
 	reminderSrv *reminder.ReminderService,
-	editor editor) *SharedSpace {
+	editor storage) *SharedSpace {
 
 	return &SharedSpace{
 		userSrv:     userSrv,
