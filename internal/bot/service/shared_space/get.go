@@ -105,3 +105,23 @@ func (s *SharedSpace) SpaceParticipants(userID int64) []model.User {
 func (s *SharedSpace) SpaceCreator(userID int64) model.User {
 	return s.viewsMap[userID].CurrentSpace().Creator
 }
+
+// NextPage обрабатывает кнопку переключения на следующую страницу заметок совместного пространства
+func (s *SharedSpace) NextPageNotes(userID int64) (string, *telebot.ReplyMarkup) {
+	return s.viewsMap[userID].Next(), s.viewsMap[userID].KeyboardForNotes()
+}
+
+// PrevPage обрабатывает кнопку переключения на предыдущую страницу заметок совместного пространства
+func (s *SharedSpace) PrevPageNotes(userID int64) (string, *telebot.ReplyMarkup) {
+	return s.viewsMap[userID].Previous(), s.viewsMap[userID].KeyboardForNotes()
+}
+
+// LastPage обрабатывает кнопку переключения на последнюю страницу заметок совместного пространства
+func (s *SharedSpace) LastPageNotes(userID int64) (string, *telebot.ReplyMarkup) {
+	return s.viewsMap[userID].Last(), s.viewsMap[userID].KeyboardForNotes()
+}
+
+// FirstPage обрабатывает кнопку переключения на первую страницу заметок совместного пространства
+func (s *SharedSpace) FirstPageNotes(userID int64) (string, *telebot.ReplyMarkup) {
+	return s.viewsMap[userID].First(), s.viewsMap[userID].KeyboardForNotes()
+}

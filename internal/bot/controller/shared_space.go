@@ -212,13 +212,68 @@ func (c *Controller) AddNoteToSharedSpace(ctx context.Context, telectx tele.Cont
 				return err
 			}
 		}
-		msg := fmt.Sprintf(messages.UserAddedNoteMessage, telectx.Chat().Username, spaceName)
-		_, err = c.bot.Send(&tele.User{ID: user.TGID}, msg, view.ShowSharedSpacesMenu())
-		if err != nil {
-			return err
-		}
 	}
 
 	msg := fmt.Sprintf(messages.SuccessfullyAddedNoteMessage, spaceName)
 	return telectx.EditOrSend(msg, c.sharedSpace.BackToSharedSpaceMenu(telectx.Chat().ID))
+}
+
+// NextPageNotes обрабатывает кнопку переключения на следующую страницу заметок в совместном пространстве
+func (c *Controller) NextPageNotesSharedSpace(ctx context.Context, telectx tele.Context) error {
+	next, kb := c.sharedSpace.NextPageNotes(telectx.Chat().ID)
+
+	return telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
+}
+
+// NextPageNotes обрабатывает кнопку переключения на предыдущую страницу заметок в совместном пространстве
+func (c *Controller) PrevPageNotesSharedSpace(ctx context.Context, telectx tele.Context) error {
+	next, kb := c.sharedSpace.PrevPageNotes(telectx.Chat().ID)
+
+	return telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
+
+}
+
+// NextPageNotes обрабатывает кнопку переключения на последнюю страницу заметок в совместном пространстве
+func (c *Controller) LastPageNotesSharedSpace(ctx context.Context, telectx tele.Context) error {
+	next, kb := c.sharedSpace.LastPageNotes(telectx.Chat().ID)
+
+	err := telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
+
+	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
+	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
+	// то же самое происходит и с последней страницей
+	if err != nil {
+		return checkError(err)
+	}
+
+	return nil
+}
+
+// NextPageNotes обрабатывает кнопку переключения на первую страницу заметок в совместном пространстве
+func (c *Controller) FirstPageNotesSharedSpace(ctx context.Context, telectx tele.Context) error {
+	next, kb := c.sharedSpace.FirstPageNotes(telectx.Chat().ID)
+
+	err := telectx.Edit(next, &tele.SendOptions{
+		ReplyMarkup: kb,
+		ParseMode:   htmlParseMode,
+	})
+
+	// если пришла ошибка о том, что сообщение не изменено - игнорируем.
+	// такая ошибка происходит, если быть на первой странице и нажать кнопку "первая страница".
+	// то же самое происходит и с последней страницей
+
+	if err != nil {
+		return checkError(err)
+	}
+
+	return nil
 }

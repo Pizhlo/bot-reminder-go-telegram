@@ -5,6 +5,7 @@ import (
 
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -16,8 +17,6 @@ var (
 
 	// inline кнопка для управления участниками в совместном пространстве
 	BtnSpaceParticipants = tele.Btn{Text: "Участники", Unique: "shared_space_participants"}
-	// inline кнопка для добавления заметки в совметное пространство
-	BtnAddNote = tele.Btn{Text: "📝Добавить заметку", Unique: "add_note_to_shared_space"}
 	// inline кнопка для добавления напоминания в совметное пространство
 	BtnAddReminder = tele.Btn{Text: "Добавить напоминание", Unique: "add_reminder_to_shared_space"}
 
@@ -34,6 +33,21 @@ var (
 	// invintation
 	BtnAcceptInvintation = tele.Btn{Text: "✅Принять", Unique: "accept_invintation"}
 	BtnDenyInvintation   = tele.Btn{Text: "❌Отклонить", Unique: "deny_invintation"}
+
+	// notes buttons
+
+	// inline кнопка для переключения на предыдущую страницу (заметки)
+	BtnPrevPgNotesSharedSpace = tele.Btn{Text: "<", Unique: "prev_pg_notes_shared_space"}
+	// inline кнопка для переключения на следующую страницу (заметки)
+	BtnNextPgNotesSharedSpace = tele.Btn{Text: ">", Unique: "next_pg_notes_shared_space"}
+
+	// inline кнопка для обновления заметок
+	BtnRefreshNotesSharedSpace = tele.Btn{Text: "🔁", Unique: "notes_shared_space"}
+
+	// inline кнопка для переключения на первую страницу (заметки)
+	BtnFirstPgNotesSharedSpace = tele.Btn{Text: "<<", Unique: "start_pg_notes_shared_space"}
+	// inline кнопка для переключения на последнюю страницу (заметки)
+	BtnLastPgNotesSharedSpace = tele.Btn{Text: ">>", Unique: "end_pg_notes_shared_space"}
 )
 
 type SharedSpaceView struct {
@@ -192,7 +206,7 @@ func (s *SharedSpaceView) Notes() (string, error) {
 
 	// pages := textForRecord(space.Notes, "")
 
-	// return s.noteView.Message(space.Notes)
+	// return s.SharedSpaceView.Message(space.Notes)
 
 	res := ""
 
@@ -220,16 +234,16 @@ func (s *SharedSpaceView) Notes() (string, error) {
 	return s.pages[0], nil
 }
 
-func (s *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
+// func (s *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
+// 	menu := &tele.ReplyMarkup{}
 
-	menu.Inline(
-		menu.Row(BtnAddNote),
-		menu.Row(BtnBackToSharedSpace),
-	)
+// 	menu.Inline(
+// 		menu.Row(BtnAddNote),
+// 		menu.Row(BtnBackToSharedSpace),
+// 	)
 
-	return menu
-}
+// 	return menu
+// }
 
 func (s *SharedSpaceView) Reminders() (string, error) {
 	space := s.spacesMap[s.currentSpace]
@@ -293,6 +307,90 @@ func (s *SharedSpaceView) InvintationKeyboard() *tele.ReplyMarkup {
 
 	menu.Inline(
 		menu.Row(BtnAcceptInvintation, BtnDenyInvintation),
+	)
+
+	return menu
+}
+
+// Next возвращает следующую страницу сообщений
+func (v *SharedSpaceView) Next() string {
+	logrus.Debugf("SharedSpaceView: getting next page. Current: %d\n", v.currentPage)
+
+	if v.currentPage == v.total()-1 {
+		logrus.Debugf("SharedSpaceView: current page is the last. Setting current page to 0.\n")
+		v.currentPage = 0
+	} else {
+		v.currentPage++
+		logrus.Debugf("SharedSpaceView: incrementing current page. New value: %d\n", v.currentPage)
+	}
+
+	return v.pages[v.currentPage]
+}
+
+// Previous возвращает предыдущую страницу сообщений
+func (v *SharedSpaceView) Previous() string {
+	logrus.Debugf("SharedSpaceView: getting previous page. Current: %d\n", v.currentPage)
+
+	if v.currentPage == 0 {
+		logrus.Debugf("SharedSpaceView: previous page is the last. Setting current page to maximum: %d.\n", v.total())
+		v.currentPage = v.total() - 1
+	} else {
+		v.currentPage--
+		logrus.Debugf("SharedSpaceView: decrementing current page. New value: %d\n", v.currentPage)
+	}
+
+	return v.pages[v.currentPage]
+}
+
+// Last возвращает последнюю страницу сообщений
+func (v *SharedSpaceView) Last() string {
+	logrus.Debugf("SharedSpaceView: getting the last page. Current: %d\n", v.currentPage)
+
+	v.currentPage = v.total() - 1
+
+	return v.pages[v.currentPage]
+}
+
+// First возвращает первую страницу сообщений
+func (v *SharedSpaceView) First() string {
+	logrus.Debugf("SharedSpaceView: getting the first page. Current: %d\n", v.currentPage)
+
+	v.currentPage = 0
+
+	return v.pages[v.currentPage]
+}
+
+// current возвращает номер текущей страницы
+func (v *SharedSpaceView) current() int {
+	return v.currentPage + 1
+}
+
+// total возвращает общее количество страниц
+func (v *SharedSpaceView) total() int {
+	return len(v.pages)
+}
+
+// Keyboard делает клавиатуру для навигации по страницам заметок
+func (v *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	// если страниц 1, клавиатура не нужна
+	if v.total() == 1 {
+		menu.Inline(
+			menu.Row(BtnRefreshNotes),
+			menu.Row(BtnBackToSharedSpace),
+		)
+		return menu
+	}
+
+	text := fmt.Sprintf("%d / %d", v.current(), v.total())
+
+	btn := menu.Data(text, "")
+
+	menu.Inline(
+		menu.Row(BtnFirstPgNotesSharedSpace, BtnPrevPgNotesSharedSpace, btn, BtnNextPgNotesSharedSpace, BtnLastPgNotesSharedSpace),
+		menu.Row(BtnRefreshNotesSharedSpace),
+		menu.Row(BtnBackToSharedSpace),
 	)
 
 	return menu

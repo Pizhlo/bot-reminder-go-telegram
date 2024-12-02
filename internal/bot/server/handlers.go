@@ -134,6 +134,61 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// обновить заметки в shared space
+	restricted.Handle(&view.BtnRefreshNotesSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.NotesBySharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// переключить на предыдущую страницу заметок в совместном пространстве
+	restricted.Handle(&view.BtnPrevPgNotesSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.PrevPageNotesSharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// переключить на следующую страницу заметок в совместном пространстве
+	restricted.Handle(&view.BtnNextPgNotesSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.NextPageNotesSharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// переключить на первую страницу заметок в совместном пространстве
+	restricted.Handle(&view.BtnFirstPgNotesSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.FirstPageNotesSharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// переключить на последнюю страницу заметок в совместном пространстве
+	restricted.Handle(&view.BtnLastPgNotesSharedSpace, func(telectx tele.Context) error {
+		err := s.controller.LastPageNotesSharedSpace(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// напоминания в shared space
 	restricted.Handle(&view.BtnRemindersSharedSpace, func(telectx tele.Context) error {
 		err := s.controller.RemindersBySharedSpace(ctx, telectx)
@@ -169,27 +224,6 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		}
 
 		err = s.controller.AddParticipant(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		return nil
-	})
-
-	// добавить заметку в shared space
-	restricted.Handle(&view.BtnAddNote, func(telectx tele.Context) error {
-		spaceName := s.controller.SpaceName(ctx, telectx)
-
-		s.fsm[telectx.Chat().ID].AddNoteToSharedSpace = fsm.NewAddNoteState(s.controller, s.fsm[telectx.Chat().ID], spaceName)
-
-		err := s.fsm[telectx.Chat().ID].SetFromString("add_note_to_shared_space")
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		err = s.controller.SharedSpaceNewNote(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err
