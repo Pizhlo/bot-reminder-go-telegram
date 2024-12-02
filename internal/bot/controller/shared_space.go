@@ -207,7 +207,7 @@ func (c *Controller) AddNoteToSharedSpace(ctx context.Context, telectx tele.Cont
 	for _, user := range participants {
 		if user.TGID != creator.TGID {
 			msg := fmt.Sprintf(messages.UserAddedNoteMessage, telectx.Chat().Username, spaceName)
-			_, err = c.bot.Send(&tele.User{ID: user.TGID}, msg)
+			_, err = c.bot.Send(&tele.User{ID: user.TGID}, msg, view.ShowSharedSpacesMenu())
 			if err != nil {
 				return err
 			}

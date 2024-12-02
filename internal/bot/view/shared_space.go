@@ -83,17 +83,10 @@ func (s *SharedSpaceView) Message(spaces []model.SharedSpace) string {
 		s.spacesMap[space.ID] = space
 
 		i++
-		participantsTxt := ""
 
-		for _, u := range space.Participants {
-			if u.TGID == space.Creator.TGID {
-				participantsTxt += fmt.Sprintf("* @%s - админ\n", u.UsernameSQL.String)
-			} else {
-				participantsTxt += fmt.Sprintf("* @%s\n", u.UsernameSQL.String)
-			}
-		}
+		participants := participantsTxt(space.Participants, space.Creator.TGID)
 
-		res += fmt.Sprintf(messages.SharedSpaceMessage, i, space.Name, participantsTxt, len(space.Notes), len(space.Reminders), space.Created.Format(createdFieldFormat))
+		res += fmt.Sprintf(messages.SharedSpaceMessage, i, space.Name, participants, len(space.Notes), len(space.Reminders), space.Created.Format(createdFieldFormat))
 	}
 
 	if len(s.pages) < 5 && res != "" {
@@ -126,13 +119,23 @@ func (s *SharedSpaceView) MessageByCurrentSpace() (string, error) {
 }
 
 func (s *SharedSpaceView) messageBySpace(space model.SharedSpace) string {
+	participants := participantsTxt(space.Participants, space.Creator.TGID)
+
+	return fmt.Sprintf(messages.SharedSpaceMessage, space.ViewID, space.Name, participants, len(space.Notes), len(space.Reminders), space.Created.Format(createdFieldFormat))
+}
+
+func participantsTxt(participants []model.User, creatorID int64) string {
 	participantsTxt := ""
 
-	for _, u := range space.Participants {
-		participantsTxt += fmt.Sprintf("* @%s\n", u.UsernameSQL.String)
+	for _, u := range participants {
+		if u.TGID == creatorID {
+			participantsTxt += fmt.Sprintf("* @%s - админ\n", u.UsernameSQL.String)
+		} else {
+			participantsTxt += fmt.Sprintf("* @%s\n", u.UsernameSQL.String)
+		}
 	}
 
-	return fmt.Sprintf(messages.SharedSpaceMessage, space.ViewID, space.Name, participantsTxt, len(space.Notes), len(space.Reminders), space.Created.Format(createdFieldFormat))
+	return participantsTxt
 }
 
 func (s *SharedSpaceView) Keyboard() *tele.ReplyMarkup {
@@ -377,7 +380,7 @@ func (v *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {
 		menu.Inline(
-			menu.Row(BtnRefreshNotes),
+			menu.Row(BtnRefreshNotesSharedSpace),
 			menu.Row(BtnBackToSharedSpace),
 		)
 		return menu

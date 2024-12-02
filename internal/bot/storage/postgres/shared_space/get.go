@@ -12,11 +12,11 @@ func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]
 	spaces := make([]model.SharedSpace, 0)
 
 	rows, err := db.db.QueryContext(ctx,
-		`select shared_spaces.shared_spaces.id, space_number, name, created, tg_id, username
-		from shared_spaces.shared_spaces
+		`select shared_spaces.shared_spaces.id, space_number, name, created, tg_id, username from shared_spaces.participants
+		join shared_spaces.shared_spaces on shared_spaces.shared_spaces.id = shared_spaces.participants.space_id
+		join users.users on users.users.id = shared_spaces.participants.user_id
 		join shared_spaces.shared_spaces_view on shared_spaces.shared_spaces_view.id = shared_spaces.shared_spaces.id
-		join users.users on users.users.id = shared_spaces.creator
-		where shared_spaces.shared_spaces.creator = (select id from users.users where tg_id = $1)
+		where shared_spaces.participants.user_id = (select id from users.users where tg_id = $1)
 		order by created ASC;`, userID)
 
 	if err != nil {
