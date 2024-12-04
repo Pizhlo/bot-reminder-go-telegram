@@ -59,20 +59,6 @@ func (s *SharedSpace) RemindersBySpace(userID int64) (string, *telebot.ReplyMark
 	return msg, kb, nil
 }
 
-// SharedSpaceParticipants возвращает участников совместного пространства в виде сообщения и меню
-func (s *SharedSpace) SharedSpaceParticipants(userID int64) (string, *telebot.ReplyMarkup) {
-	msg := s.viewsMap[userID].ParticipantsMessage()
-
-	kb := s.viewsMap[userID].ParticipantsKeyboard()
-
-	return msg, kb
-}
-
-// InvintationKeyboard возвращает клавиатуру для приглашения пользователя с кнопками "Принять" и "Отклонить"
-func (s *SharedSpace) InvintationKeyboard(userID int64) *telebot.ReplyMarkup {
-	return s.viewsMap[userID].InvintationKeyboard()
-}
-
 // InvintationKeyboard возвращает клавиатуру с кнопкой "Назад в совместное пространство"
 func (s *SharedSpace) BackToSharedSpaceMenu(userID int64) *telebot.ReplyMarkup {
 	return s.viewsMap[userID].BackToSharedSpaceMenu()
@@ -81,11 +67,6 @@ func (s *SharedSpace) BackToSharedSpaceMenu(userID int64) *telebot.ReplyMarkup {
 // CurrentSpace возвращает название текущего (выбранного) совметного доступа
 func (s *SharedSpace) CurrentSpaceName(userID int64) string {
 	return s.viewsMap[userID].CurrentSpaceName()
-}
-
-// SpaceParticipants возвращает участников выбранного совместного пространства
-func (s *SharedSpace) SpaceParticipants(userID int64) []model.User {
-	return s.viewsMap[userID].CurrentSpace().Participants
 }
 
 // SpaceCreator возвращает создателя совместного пространства

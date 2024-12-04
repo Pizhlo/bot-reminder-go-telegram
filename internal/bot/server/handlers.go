@@ -85,15 +85,15 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// вернуться назад в меню совместных пространств
-	restricted.Handle(&view.BtnBackToAllSharedSpaces, func(telectx tele.Context) error {
-		err := s.controller.GetSharedAccess(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
+	// restricted.Handle(&view.BtnBackToAllSharedSpaces, func(telectx tele.Context) error {
+	// 	err := s.controller.GetSharedAccess(ctx, telectx)
+	// 	if err != nil {
+	// 		s.HandleError(telectx, err)
+	// 		return err
+	// 	}
 
-		return nil
-	})
+	// 	return nil
+	// })
 
 	// создать shared space
 	restricted.Handle(&view.BtnCreateSharedSpace, func(telectx tele.Context) error {

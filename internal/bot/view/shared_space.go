@@ -16,19 +16,21 @@ var (
 	BtnRemindersSharedSpace = tele.Btn{Text: "⏰Напоминания", Unique: "reminders_by_shared_space"}
 
 	// inline кнопка для управления участниками в совместном пространстве
-	BtnSpaceParticipants = tele.Btn{Text: "Участники", Unique: "shared_space_participants"}
+	BtnSpaceParticipants = tele.Btn{Text: "🫂Участники", Unique: "shared_space_participants"}
 	// inline кнопка для добавления напоминания в совметное пространство
 	BtnAddReminder = tele.Btn{Text: "Добавить напоминание", Unique: "add_reminder_to_shared_space"}
 
 	// inline кнопка для возврата в совместное пространство
 	BtnBackToSharedSpace = tele.Btn{Text: "⬅️Назад", Unique: "back_to_shared_space"}
 	// inline кнопка для возврата в совместные пространства
-	BtnBackToAllSharedSpaces = tele.Btn{Text: "⬅️Назад", Unique: "back_to_all_shared_spaces"}
+	BtnBackToAllSharedSpaces = tele.Btn{Text: "⬅️Назад", Unique: "shared_space"}
+	//
+	BtnBackToParticipants = tele.Btn{Text: "⬅️Назад", Unique: "shared_space_participants"}
 
 	// inline кнопка для добавления участников
-	BtnAddParticipants = tele.Btn{Text: "Добавить", Unique: "add_users_to_shared_space"}
+	BtnAddParticipants = tele.Btn{Text: "➕Добавить", Unique: "add_users_to_shared_space"}
 	// inline кнопка для исключения участников
-	BtnRemoveParticipants = tele.Btn{Text: "Исключить", Unique: "add_users_to_shared_space"}
+	BtnRemoveParticipants = tele.Btn{Text: "🚫Исключить", Unique: "add_users_to_shared_space"}
 
 	// invintation
 	BtnAcceptInvintation = tele.Btn{Text: "✅Принять", Unique: "accept_invintation"}
@@ -84,9 +86,13 @@ func (s *SharedSpaceView) Message(spaces []model.SharedSpace) string {
 
 		i++
 
-		participants := participantsTxt(space.Participants, space.Creator.TGID)
-
-		res += fmt.Sprintf(messages.SharedSpaceMessage, i, space.Name, participants, len(space.Notes), len(space.Reminders), space.Created.Format(createdFieldFormat))
+		res += fmt.Sprintf(messages.SharedSpaceMessage,
+			i, space.Name,
+			fmt.Sprintf("Участников: %d",
+				len(space.Participants)),
+			len(space.Notes),
+			len(space.Reminders),
+			space.Created.Format(createdFieldFormat))
 	}
 
 	if len(s.pages) < 5 && res != "" {
@@ -125,7 +131,7 @@ func (s *SharedSpaceView) messageBySpace(space model.SharedSpace) string {
 }
 
 func participantsTxt(participants []model.User, creatorID int64) string {
-	participantsTxt := ""
+	participantsTxt := "Участники:\n"
 
 	for _, u := range participants {
 		if u.TGID == creatorID {
@@ -182,6 +188,7 @@ func (s *SharedSpaceView) CurrentSpace() model.SharedSpace {
 	return s.spacesMap[s.currentSpace]
 }
 
+// KeyboardForSpace возвращает клавиатуру для управления совместным пространством
 func (s *SharedSpaceView) KeyboardForSpace() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
