@@ -68,7 +68,7 @@ func (db *sharedSpaceRepo) getAllParticipants(ctx context.Context, spaceID int) 
 join users.users on users.users.id = shared_spaces.participants.user_id
 where space_id = $1;`, spaceID)
 	if err != nil {
-		return nil, fmt.Errorf("error while getting all users for shared space from DB: %w", err)
+		return nil, fmt.Errorf("error while getting all participants for shared space from DB: %w", err)
 	}
 	defer rows.Close()
 
@@ -89,10 +89,10 @@ where space_id = $1;`, spaceID)
 func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]model.Note, error) {
 	res := make([]model.Note, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select note_number, text, created, last_edit, username, tg_id from notes.notes 
-	join notes.notes_view on notes.notes_view.id = notes.notes.id
-	join users.users on users.users.id = notes.notes.user_id
-	where notes.notes.space_id = $1 
+	rows, err := db.db.QueryContext(ctx, `select note_number, text, created, last_edit, username, tg_id from shared_spaces.notes
+	join shared_spaces.notes_view on shared_spaces.notes_view.id = shared_spaces.notes.id
+	join users.users on users.users.id = shared_spaces.notes.user_id
+	where shared_spaces.notes.space_id = $1 
 	order by created ASC;`, spaceID)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting all notes for shared space from DB: %w", err)
@@ -104,7 +104,7 @@ func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]mode
 
 		err := rows.Scan(&note.ViewID, &note.Text, &note.Created, &note.LastEditSql, &note.Creator.Username, &note.Creator.TGID)
 		if err != nil {
-			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
+			return nil, fmt.Errorf("error scanning user ID while searching all space's notes: %+v", err)
 		}
 
 		res = append(res, note)
@@ -116,16 +116,13 @@ func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]mode
 func (db *sharedSpaceRepo) getAllReminders(ctx context.Context, spaceID int) ([]model.Reminder, error) {
 	res := make([]model.Reminder, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select reminders.reminders.id, reminder_number, tg_id, text, created, date, time, name as type, reminders.jobs.job_id
-	from reminders.reminders
-		join reminders.types on reminders.types.id = reminders.reminders.type_id
-		join users.users on users.id = reminders.user_id
-		join reminders.reminders_view on reminders.reminders_view.id = reminders.reminders.id
-		join reminders.jobs on reminders.jobs.reminder_id = reminders.reminders.id
-		where space_id = $1
-		order by created ASC;`, spaceID)
+	rows, err := db.db.QueryContext(ctx, `select reminder_number, text, created, username, tg_id from shared_spaces.reminders
+	join shared_spaces.reminders_view on shared_spaces.reminders_view.id = shared_spaces.reminders.id
+	join users.users on users.users.id = shared_spaces.reminders.user_id
+	where shared_spaces.reminders.space_id = $1 
+	order by created ASC;`, spaceID)
 	if err != nil {
-		return nil, fmt.Errorf("error while getting all notes for shared space from DB: %w", err)
+		return nil, fmt.Errorf("error while getting all reminders for shared space from DB: %w", err)
 	}
 	defer rows.Close()
 
@@ -134,7 +131,7 @@ func (db *sharedSpaceRepo) getAllReminders(ctx context.Context, spaceID int) ([]
 
 		err := rows.Scan(&reminder.ID, &reminder.ViewID, &reminder.TgID, &reminder.Name, &reminder.Created, &reminder.Date, &reminder.Time, &reminder.Type, &reminder.Job.ID)
 		if err != nil {
-			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
+			return nil, fmt.Errorf("error scanning user ID while searching all space's reminders: %+v", err)
 		}
 
 		res = append(res, reminder)

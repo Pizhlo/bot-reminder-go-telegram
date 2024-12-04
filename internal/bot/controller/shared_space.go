@@ -152,7 +152,7 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 
 	msg := fmt.Sprintf(messages.InvintationMessage, from, spaceName)
 
-	_, err = c.bot.Send(&tele.Chat{ID: user.TGID}, msg, c.sharedSpace.InvintationKeyboard(telectx.Chat().ID))
+	_, err = c.bot.Send(&tele.Chat{ID: user.TGID}, msg, view.InvintationKeyboard())
 	if err != nil {
 		return err
 	}
@@ -215,7 +215,7 @@ func (c *Controller) AddNoteToSharedSpace(ctx context.Context, telectx tele.Cont
 	}
 
 	msg := fmt.Sprintf(messages.SuccessfullyAddedNoteMessage, spaceName)
-	return telectx.EditOrSend(msg, c.sharedSpace.BackToSharedSpaceMenu(telectx.Chat().ID))
+	return telectx.EditOrSend(msg, view.BackToSharedSpaceMenu())
 }
 
 // NextPageNotes обрабатывает кнопку переключения на следующую страницу заметок в совместном пространстве

@@ -125,12 +125,12 @@ func (s *SharedSpaceView) MessageByCurrentSpace() (string, error) {
 }
 
 func (s *SharedSpaceView) messageBySpace(space model.SharedSpace) string {
-	participants := participantsTxt(space.Participants, space.Creator.TGID)
+	participants := formatParticipants(space.Participants, space.Creator.TGID)
 
 	return fmt.Sprintf(messages.SharedSpaceMessage, space.ViewID, space.Name, participants, len(space.Notes), len(space.Reminders), space.Created.Format(createdFieldFormat))
 }
 
-func participantsTxt(participants []model.User, creatorID int64) string {
+func formatParticipants(participants []model.User, creatorID int64) string {
 	participantsTxt := "Участники:\n"
 
 	for _, u := range participants {
@@ -142,35 +142,6 @@ func participantsTxt(participants []model.User, creatorID int64) string {
 	}
 
 	return participantsTxt
-}
-
-func (s *SharedSpaceView) Keyboard() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
-
-	btns := []tele.Btn{}
-
-	for _, space := range s.spacesMap {
-		btn := tele.Btn{Text: space.Name, Unique: fmt.Sprintf("%v", space.ID)}
-
-		btns = append(btns, btn)
-	}
-
-	if len(btns) > 0 {
-		menu.Inline(
-			menu.Row(btns...),
-			menu.Row(BtnCreateSharedSpace),
-			menu.Row(BtnBackToMenu),
-		)
-
-		s.btns = btns
-	} else {
-		menu.Inline(
-			menu.Row(BtnCreateSharedSpace),
-			menu.Row(BtnBackToMenu),
-		)
-	}
-
-	return menu
 }
 
 // CurrentSpaceName возвращает название текущего (выбранного) совметного доступа
@@ -186,25 +157,6 @@ func (s *SharedSpaceView) CurrentSpaceID() int {
 // CurrentSpace возвращает текущее выбранное совместное пространство
 func (s *SharedSpaceView) CurrentSpace() model.SharedSpace {
 	return s.spacesMap[s.currentSpace]
-}
-
-// KeyboardForSpace возвращает клавиатуру для управления совместным пространством
-func (s *SharedSpaceView) KeyboardForSpace() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
-
-	menu.Inline(
-		menu.Row(
-			BtnNotesSharedSpace, BtnRemindersSharedSpace,
-		),
-		menu.Row(BtnSpaceParticipants),
-		menu.Row(BtnBackToAllSharedSpaces),
-	)
-
-	return menu
-}
-
-func (s *SharedSpaceView) Buttons() []tele.Btn {
-	return s.btns
 }
 
 func (s *SharedSpaceView) Notes() (string, error) {
@@ -265,17 +217,6 @@ func (s *SharedSpaceView) Reminders() (string, error) {
 	return s.reminderView.Message(space.Reminders)
 }
 
-func (s *SharedSpaceView) KeyboardForReminders() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
-
-	menu.Inline(
-		menu.Row(BtnAddReminder),
-		menu.Row(BtnBackToSharedSpace),
-	)
-
-	return menu
-}
-
 // ParticipantsMessage возвращает сообщение для пункта меню "Участники"
 func (s *SharedSpaceView) ParticipantsMessage() string {
 	space := s.spacesMap[s.currentSpace]
@@ -288,38 +229,6 @@ func (s *SharedSpaceView) ParticipantsMessage() string {
 	}
 
 	return msg
-}
-
-func (s *SharedSpaceView) ParticipantsKeyboard() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
-
-	menu.Inline(
-		menu.Row(BtnAddParticipants),
-		menu.Row(BtnRemoveParticipants),
-		menu.Row(BtnBackToSharedSpace),
-	)
-
-	return menu
-}
-
-func (s *SharedSpaceView) BackToSharedSpaceMenu() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
-
-	menu.Inline(
-		menu.Row(BtnBackToSharedSpace),
-	)
-
-	return menu
-}
-
-func (s *SharedSpaceView) InvintationKeyboard() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
-
-	menu.Inline(
-		menu.Row(BtnAcceptInvintation, BtnDenyInvintation),
-	)
-
-	return menu
 }
 
 // Next возвращает следующую страницу сообщений
@@ -378,30 +287,4 @@ func (v *SharedSpaceView) current() int {
 // total возвращает общее количество страниц
 func (v *SharedSpaceView) total() int {
 	return len(v.pages)
-}
-
-// Keyboard делает клавиатуру для навигации по страницам заметок
-func (v *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
-	menu := &tele.ReplyMarkup{}
-
-	// если страниц 1, клавиатура не нужна
-	if v.total() == 1 {
-		menu.Inline(
-			menu.Row(BtnRefreshNotesSharedSpace),
-			menu.Row(BtnBackToSharedSpace),
-		)
-		return menu
-	}
-
-	text := fmt.Sprintf("%d / %d", v.current(), v.total())
-
-	btn := menu.Data(text, "")
-
-	menu.Inline(
-		menu.Row(BtnFirstPgNotesSharedSpace, BtnPrevPgNotesSharedSpace, btn, BtnNextPgNotesSharedSpace, BtnLastPgNotesSharedSpace),
-		menu.Row(BtnRefreshNotesSharedSpace),
-		menu.Row(BtnBackToSharedSpace),
-	)
-
-	return menu
 }

@@ -7,6 +7,7 @@ import (
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"gopkg.in/telebot.v3"
 )
 
@@ -33,7 +34,7 @@ func (s *SharedSpace) GetSharedSpace(spaceID int, userID int64) (string, *telebo
 		return "", nil, err
 	}
 
-	return msg, s.viewsMap[userID].KeyboardForSpace(), nil
+	return msg, view.KeyboardForSpace(), nil
 }
 
 // CurrentSharedSpace возвращает информацию о выбранном совместном пространстве
@@ -43,7 +44,7 @@ func (s *SharedSpace) CurrentSharedSpace(userID int64) (string, *telebot.ReplyMa
 		return "", nil, err
 	}
 
-	return msg, s.viewsMap[userID].KeyboardForSpace(), nil
+	return msg, view.KeyboardForSpace(), nil
 }
 
 // RemindersBySpace возвращает напоминания, принадлежащие конкретному пространству, которое уже было выбрано, поэтому
@@ -54,14 +55,9 @@ func (s *SharedSpace) RemindersBySpace(userID int64) (string, *telebot.ReplyMark
 		return "", nil, err
 	}
 
-	kb := s.viewsMap[userID].KeyboardForReminders()
+	kb := view.KeyboardForReminders()
 
 	return msg, kb, nil
-}
-
-// InvintationKeyboard возвращает клавиатуру с кнопкой "Назад в совместное пространство"
-func (s *SharedSpace) BackToSharedSpaceMenu(userID int64) *telebot.ReplyMarkup {
-	return s.viewsMap[userID].BackToSharedSpaceMenu()
 }
 
 // CurrentSpace возвращает название текущего (выбранного) совметного доступа

@@ -57,7 +57,7 @@ func (db *sharedSpaceRepo) SaveNote(ctx context.Context, note model.Note) error 
 		return err
 	}
 	var id uuid.UUID
-	row := tx.QueryRowContext(ctx, "insert into notes.notes (user_id, text, created, space_id) values((select id from users.users where tg_id=$1), $2, $3, $4) returning id",
+	row := tx.QueryRowContext(ctx, "insert into shared_spaces.notes (user_id, text, created, space_id) values((select id from users.users where tg_id=$1), $2, $3, $4) returning id",
 		note.Creator.TGID, note.Text, note.Created, note.Space.ID)
 
 	err = row.Scan(&id)
