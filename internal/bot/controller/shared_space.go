@@ -153,8 +153,6 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 		return err
 	}
 
-	msg := fmt.Sprintf(messages.InvitationsMessage, from, spaceName)
-
 	spaceID := c.sharedSpace.CurrentSpaceID(telectx.Chat().ID)
 
 	fromUser := model.Participant{
@@ -170,19 +168,39 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 		State: model.PendingState,
 	}
 
-	_, err = c.bot.Send(&tele.Chat{ID: toUser.TGID}, msg,
-		view.InvintationKeyboard(fmt.Sprintf("%d", telectx.Chat().ID),
-			fmt.Sprintf("%d", to.TGID), fmt.Sprintf("%d", spaceID)))
+	err = c.sendInvitation(from, spaceName, to.TGID, fromUser.TGID, int64(spaceID))
 	if err != nil {
 		return err
 	}
 
-	err = c.sharedSpace.ProcessInvitation(ctx, fromUser, to, int64(spaceID))
+	return c.processInvitation(ctx, telectx, fromUser, to, int64(spaceID))
+}
+
+func (c *Controller) processInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, spaceID int64) error {
+	err := c.sharedSpace.ProcessInvitation(ctx, from, to, int64(spaceID))
 	if err != nil {
 		return fmt.Errorf("error processing invitation: %+v", err)
 	}
 
-	// btns := c.sharedSpace.Buttons(telectx.Chat().ID)
+	btns := c.sharedSpace.Buttons(telectx.Chat().ID) // 0 - Accept, 1 - Deny
+
+	c.bot.Handle(&btns[0], func(telectx tele.Context) error {
+		err := c.AcceptInvitation(ctx, telectx)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	c.bot.Handle(&btns[1], func(telectx tele.Context) error {
+		err := c.DenyInvitation(ctx, telectx)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	return telectx.EditOrSend(messages.SuccessfullySentInvitationsMessage)
 }
@@ -305,10 +323,60 @@ func (c *Controller) FirstPageNotesSharedSpace(ctx context.Context, telectx tele
 	return nil
 }
 
+// HandleContact обрабатывает контакт при создании приглашения в совместное пространство
+func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) error {
+	contact := telectx.Message().Contact
+
+	exists := c.userSrv.CheckUser(ctx, contact.UserID)
+	if !exists {
+		return telectx.EditOrSend(messages.UserNotRegisteredMessage, view.BackToMenuBtn())
+	}
+
+	spaceID := c.sharedSpace.CurrentSpaceID(telectx.Chat().ID)
+	spaceName := c.SpaceName(ctx, telectx)
+
+	err := c.sendInvitation(telectx.Chat().Username, spaceName, contact.UserID, telectx.Chat().ID, int64(spaceID))
+	if err != nil {
+		return fmt.Errorf("error sending invitation by contact: %+v", err)
+	}
+
+	fromUser := model.Participant{
+		User: model.User{
+			TGID: telectx.Chat().ID,
+		},
+	}
+
+	to := model.Participant{
+		User: model.User{
+			TGID: contact.UserID,
+		},
+		State: model.PendingState,
+	}
+
+	return c.processInvitation(ctx, telectx, fromUser, to, int64(spaceID))
+}
+
 // AcceptInvitation обрабатывает кнопку согласия вступить в совместное пространство
 func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context) error {
 	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь согласился
 	// удалить приглашение из БД
 	// обновить state у приглашенного пользователя
-	return nil
+	return telectx.EditOrSend("accept")
+}
+
+// AcceptInvitation обрабатывает кнопку отказаться вступить в совместное пространство
+func (c *Controller) DenyInvitation(ctx context.Context, telectx tele.Context) error {
+	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь согласился
+	// удалить приглашение из БД
+	// обновить state у приглашенного пользователя
+	return telectx.EditOrSend("deny")
+}
+
+func (c *Controller) sendInvitation(from, spaceName string, toID, fromID, spaceID int64) error {
+	msg := fmt.Sprintf(messages.InvitationsMessage, from, spaceName)
+
+	_, err := c.bot.Send(&tele.Chat{ID: toID}, msg,
+		c.sharedSpace.InvintationKeyboard(fromID, fmt.Sprintf("%d", fromID),
+			fmt.Sprintf("%d", toID), fmt.Sprintf("%d", spaceID)))
+	return err
 }

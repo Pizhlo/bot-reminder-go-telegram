@@ -79,17 +79,21 @@ func BackToSharedSpaceMenu() *tele.ReplyMarkup {
 // Клавиатура состоит из двух кнопок: согласиться и отказаться.
 // Аргументами необходимо передать айди пользователя, который приглашает (from),
 // пользователя, которого пригласили (to) и spaceID в виде строк.
-func InvintationKeyboard(from, to, spaceID string) *tele.ReplyMarkup {
+func (v *SharedSpaceView) InvintationKeyboard(from, to, spaceID string) *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	unique := fmt.Sprintf("from=%s; to=%s; spaceID=%s", from, to, spaceID)
 
-	BtnAcceptInvitations.Unique = unique
-	BtnDenyInvitations.Unique = unique
+	BtnAcceptInvitations.Unique = fmt.Sprintf("accept: %s", unique)
+	BtnDenyInvitations.Unique = fmt.Sprintf("deny: %s", unique)
 
 	menu.Inline(
 		menu.Row(BtnAcceptInvitations, BtnDenyInvitations),
 	)
+
+	v.btns = make([]tele.Btn, 2)
+	v.btns[0] = BtnAcceptInvitations
+	v.btns[1] = BtnDenyInvitations
 
 	return menu
 }

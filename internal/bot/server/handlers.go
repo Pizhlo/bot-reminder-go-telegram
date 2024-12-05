@@ -232,6 +232,16 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	restricted.Handle(tele.OnContact, func(telectx tele.Context) error {
+		err := s.controller.HandleContact(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
 	// кнопка приглашения участника: принять
 	restricted.Handle(&view.BtnAcceptInvitations, func(telectx tele.Context) error {
 		err := s.controller.AcceptInvitation(ctx, telectx)
