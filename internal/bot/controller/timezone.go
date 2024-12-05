@@ -44,7 +44,15 @@ func (c *Controller) AcceptTimezone(ctx context.Context, telectx tele.Context) e
 	}
 
 	// сохраняем пользователя и часовой пояс
-	u, err := c.userSrv.ProcessTimezoneAndSave(ctx, telectx.Chat().ID, loc, telectx.Chat().Username)
+	username := ""
+
+	if telectx.Chat().Username != "" {
+		username = telectx.Chat().Username
+	} else {
+		username = fmt.Sprintf("%s %s", telectx.Chat().FirstName, telectx.Chat().LastName)
+	}
+
+	u, err := c.userSrv.ProcessTimezoneAndSave(ctx, telectx.Chat().ID, loc, username)
 	if err != nil {
 		logrus.Errorf("Controller: error while processing user's location: %v\n", err)
 		return err

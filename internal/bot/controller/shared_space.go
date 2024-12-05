@@ -155,11 +155,6 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 
 	msg := fmt.Sprintf(messages.InvitationsMessage, from, spaceName)
 
-	_, err = c.bot.Send(&tele.Chat{ID: toUser.TGID}, msg, view.InvintationKeyboard())
-	if err != nil {
-		return err
-	}
-
 	spaceID := c.sharedSpace.CurrentSpaceID(telectx.Chat().ID)
 
 	fromUser := model.Participant{
@@ -175,10 +170,19 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 		State: model.PendingState,
 	}
 
+	_, err = c.bot.Send(&tele.Chat{ID: toUser.TGID}, msg,
+		view.InvintationKeyboard(fmt.Sprintf("%d", telectx.Chat().ID),
+			fmt.Sprintf("%d", to.TGID), fmt.Sprintf("%d", spaceID)))
+	if err != nil {
+		return err
+	}
+
 	err = c.sharedSpace.ProcessInvitation(ctx, fromUser, to, int64(spaceID))
 	if err != nil {
 		return fmt.Errorf("error processing invitation: %+v", err)
 	}
+
+	// btns := c.sharedSpace.Buttons(telectx.Chat().ID)
 
 	return telectx.EditOrSend(messages.SuccessfullySentInvitationsMessage)
 }
@@ -298,5 +302,13 @@ func (c *Controller) FirstPageNotesSharedSpace(ctx context.Context, telectx tele
 		return checkError(err)
 	}
 
+	return nil
+}
+
+// AcceptInvitation обрабатывает кнопку согласия вступить в совместное пространство
+func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context) error {
+	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь согласился
+	// удалить приглашение из БД
+	// обновить state у приглашенного пользователя
 	return nil
 }

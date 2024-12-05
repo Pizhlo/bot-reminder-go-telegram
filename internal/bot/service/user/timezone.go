@@ -24,7 +24,7 @@ func (s *UserService) ProcessTimezoneAndSave(ctx context.Context, userID int64, 
 		Timezone: model.Timezone{
 			Name: tz,
 		},
-		Username: "",
+		Username: username,
 	}
 
 	loc, err := time.LoadLocation(u.Timezone.Name)

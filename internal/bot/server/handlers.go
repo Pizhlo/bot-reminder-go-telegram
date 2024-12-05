@@ -234,13 +234,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 
 	// кнопка приглашения участника: принять
 	restricted.Handle(&view.BtnAcceptInvitations, func(telectx tele.Context) error {
-		_, err := s.bot.Send(&tele.Chat{ID: 297850814}, "Кирилл принял приглашение")
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		err = telectx.EditOrSend("Кирилл лох!!!", view.BackToMenuBtn())
+		err := s.controller.AcceptInvitation(ctx, telectx)
 		if err != nil {
 			s.HandleError(telectx, err)
 			return err

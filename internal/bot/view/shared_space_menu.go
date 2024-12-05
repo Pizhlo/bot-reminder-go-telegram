@@ -75,8 +75,17 @@ func BackToSharedSpaceMenu() *tele.ReplyMarkup {
 	return menu
 }
 
-func InvintationKeyboard() *tele.ReplyMarkup {
+// InvintationKeyboard формирует клавиатуру для приглашения в совместное пространство.
+// Клавиатура состоит из двух кнопок: согласиться и отказаться.
+// Аргументами необходимо передать айди пользователя, который приглашает (from),
+// пользователя, которого пригласили (to) и spaceID в виде строк.
+func InvintationKeyboard(from, to, spaceID string) *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
+
+	unique := fmt.Sprintf("from=%s; to=%s; spaceID=%s", from, to, spaceID)
+
+	BtnAcceptInvitations.Unique = unique
+	BtnDenyInvitations.Unique = unique
 
 	menu.Inline(
 		menu.Row(BtnAcceptInvitations, BtnDenyInvitations),
