@@ -65,7 +65,12 @@ func (s *SharedSpace) CurrentSpaceName(userID int64) string {
 	return s.viewsMap[userID].CurrentSpaceName()
 }
 
+// CurrentSpace возвращает ID текущего (выбранного) совметного доступа
+func (s *SharedSpace) CurrentSpaceID(userID int64) int {
+	return s.viewsMap[userID].CurrentSpaceID()
+}
+
 // SpaceCreator возвращает создателя совместного пространства
-func (s *SharedSpace) SpaceCreator(userID int64) model.User {
+func (s *SharedSpace) SpaceCreator(userID int64) model.Participant {
 	return s.viewsMap[userID].CurrentSpace().Creator
 }

@@ -30,6 +30,8 @@ type storage interface {
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.SharedSpace, error)
 	Save(ctx context.Context, space model.SharedSpace) error
 	SaveNote(ctx context.Context, note model.Note) error
+	SaveParticipant(ctx context.Context, spaceID int64, user model.Participant) error
+	ProcessInvitation(ctx context.Context, from, to model.Participant, spaceID int64) error
 }
 
 func New(userSrv *user.UserService,

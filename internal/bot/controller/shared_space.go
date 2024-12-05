@@ -58,9 +58,12 @@ func (c *Controller) CreateSharedSpace(ctx context.Context, telectx tele.Context
 	space := model.SharedSpace{
 		Name:    telectx.Message().Text,
 		Created: time.Now().In(loc),
-		Creator: model.User{
-			TGID:     telectx.Chat().ID,
-			Username: telectx.Chat().Username,
+		Creator: model.Participant{
+			User: model.User{
+				TGID:     telectx.Chat().ID,
+				Username: telectx.Chat().Username,
+			},
+			State: model.AddedState,
 		},
 	}
 
@@ -141,7 +144,7 @@ func (c *Controller) HandleParticipant(ctx context.Context, telectx tele.Context
 
 // handleUsername обрабатывает username во время добавления пользователя как нового участника пространства
 func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, username, from, spaceName string) error {
-	user, err := c.userSrv.GetByUsername(ctx, username)
+	toUser, err := c.userSrv.GetByUsername(ctx, username)
 	if err != nil {
 		if errors.Is(err, api_errors.ErrUserNotFound) {
 			return telectx.EditOrSend(messages.UserNotRegisteredMessage, view.BackToMenuBtn())
@@ -150,14 +153,34 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 		return err
 	}
 
-	msg := fmt.Sprintf(messages.InvintationMessage, from, spaceName)
+	msg := fmt.Sprintf(messages.InvitationsMessage, from, spaceName)
 
-	_, err = c.bot.Send(&tele.Chat{ID: user.TGID}, msg, view.InvintationKeyboard())
+	_, err = c.bot.Send(&tele.Chat{ID: toUser.TGID}, msg, view.InvintationKeyboard())
 	if err != nil {
 		return err
 	}
 
-	return telectx.EditOrSend(messages.SuccessfullySentInvintationMessage)
+	spaceID := c.sharedSpace.CurrentSpaceID(telectx.Chat().ID)
+
+	fromUser := model.Participant{
+		User: model.User{
+			TGID: telectx.Chat().ID,
+		},
+	}
+
+	to := model.Participant{
+		User: model.User{
+			TGID: toUser.TGID,
+		},
+		State: model.PendingState,
+	}
+
+	err = c.sharedSpace.ProcessInvitation(ctx, fromUser, to, int64(spaceID))
+	if err != nil {
+		return fmt.Errorf("error processing invitation: %+v", err)
+	}
+
+	return telectx.EditOrSend(messages.SuccessfullySentInvitationsMessage)
 }
 
 // handleUserLink обрабатывает ссылку на пользователя во время добавления его как нового участника пространства

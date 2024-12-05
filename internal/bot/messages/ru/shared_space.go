@@ -9,13 +9,13 @@ const SharedSpaceCreationSuccessMessage = "Пространство <b>%s</b> у
 // Participants
 const SharedSpaceMessage = "<b>%d. %s</b>\n\n%s\nЗаметок: %d\nНапоминаний: %d\n\nСоздано: %+v\n\n"
 const AddParticipantMessage = "Пришли username или ссылку пользователя, которого хочешь добавить в пространство"
-const InvintationMessage = "Пользователь @%s приглашает вас в совместное пространство <b>%s</b>"
+const InvitationsMessage = "Пользователь @%s приглашает вас в совместное пространство <b>%s</b>"
 const UserNotRegisteredMessage = "⚠️Пользователь с таким username не зарегистрирован в боте. Попросите пользователя написать боту и повторите попытку"
 const InvalidUserLinkMessage = "Невалидная ссылка. Пришлите другую ссылку и повторите попытку"
-const SuccessfullySentInvintationMessage = "✅Приглашение было успешно отправлено"
+const SuccessfullySentInvitationsMessage = "✅Приглашение было успешно отправлено"
 
 // Records
-const NoNotesInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одной заметки. Чтобы создать, пришли текст или нажми кнопку"
+const NoNotesInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одной заметки. Чтобы создать, просто пришли текст"
 const NoRemindersInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одного напоминания"
 
 // Notes

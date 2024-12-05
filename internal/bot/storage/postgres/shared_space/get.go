@@ -61,11 +61,12 @@ func (db *sharedSpaceRepo) GetAllByUserID(ctx context.Context, userID int64) ([]
 	return spaces, nil
 }
 
-func (db *sharedSpaceRepo) getAllParticipants(ctx context.Context, spaceID int) ([]model.User, error) {
-	res := make([]model.User, 0)
+func (db *sharedSpaceRepo) getAllParticipants(ctx context.Context, spaceID int) ([]model.Participant, error) {
+	res := make([]model.Participant, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select tg_id, username from shared_spaces.participants 
+	rows, err := db.db.QueryContext(ctx, `select tg_id, username, state from shared_spaces.participants 
 join users.users on users.users.id = shared_spaces.participants.user_id
+join shared_spaces.participants_states on shared_spaces.participants_states.id = shared_spaces.participants.state_id
 where space_id = $1;`, spaceID)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting all participants for shared space from DB: %w", err)
@@ -73,9 +74,9 @@ where space_id = $1;`, spaceID)
 	defer rows.Close()
 
 	for rows.Next() {
-		user := model.User{}
+		user := model.Participant{}
 
-		err := rows.Scan(&user.TGID, &user.UsernameSQL)
+		err := rows.Scan(&user.TGID, &user.UsernameSQL, &user.State)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
 		}

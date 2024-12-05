@@ -7,7 +7,7 @@ import (
 )
 
 // SpaceParticipants возвращает участников выбранного совместного пространства
-func (s *SharedSpace) SpaceParticipants(userID int64) []model.User {
+func (s *SharedSpace) SpaceParticipants(userID int64) []model.Participant {
 	return s.viewsMap[userID].CurrentSpace().Participants
 }
 

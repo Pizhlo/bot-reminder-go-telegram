@@ -233,7 +233,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// кнопка приглашения участника: принять
-	restricted.Handle(&view.BtnAcceptInvintation, func(telectx tele.Context) error {
+	restricted.Handle(&view.BtnAcceptInvitations, func(telectx tele.Context) error {
 		_, err := s.bot.Send(&tele.Chat{ID: 297850814}, "Кирилл принял приглашение")
 		if err != nil {
 			s.HandleError(telectx, err)
@@ -250,7 +250,7 @@ func (s *Server) setupHandlers(ctx context.Context) {
 	})
 
 	// кнопка приглашения участника: отклонить
-	restricted.Handle(&view.BtnDenyInvintation, func(telectx tele.Context) error {
+	restricted.Handle(&view.BtnDenyInvitations, func(telectx tele.Context) error {
 		_, err := s.bot.Send(&tele.Chat{ID: 297850814}, "Кирилл отклонил приглашение")
 		if err != nil {
 			s.HandleError(telectx, err)

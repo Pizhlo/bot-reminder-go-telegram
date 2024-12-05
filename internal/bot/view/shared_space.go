@@ -32,9 +32,9 @@ var (
 	// inline кнопка для исключения участников
 	BtnRemoveParticipants = tele.Btn{Text: "🚫Исключить", Unique: "add_users_to_shared_space"}
 
-	// invintation
-	BtnAcceptInvintation = tele.Btn{Text: "✅Принять", Unique: "accept_invintation"}
-	BtnDenyInvintation   = tele.Btn{Text: "❌Отклонить", Unique: "deny_invintation"}
+	// invitations
+	BtnAcceptInvitations = tele.Btn{Text: "✅Принять", Unique: "accept_invintation"}
+	BtnDenyInvitations   = tele.Btn{Text: "❌Отклонить", Unique: "deny_invintation"}
 
 	// notes buttons
 
@@ -112,6 +112,8 @@ func (s *SharedSpaceView) MessageBySpace(spaceID int) (string, error) {
 
 	s.currentSpace = spaceID
 
+	logrus.Debugf("SharedSpaceView: MessageBySpace set currentSpaceID to %d", spaceID)
+
 	return s.messageBySpace(space), nil
 }
 
@@ -120,6 +122,8 @@ func (s *SharedSpaceView) MessageByCurrentSpace() (string, error) {
 	if !ok {
 		return "", fmt.Errorf("not found space by ID %d", s.currentSpace)
 	}
+
+	logrus.Debugf("SharedSpaceView: MessageByCurrentSpace currentSpaceID %d", s.currentSpace)
 
 	return s.messageBySpace(space), nil
 }
@@ -130,13 +134,22 @@ func (s *SharedSpaceView) messageBySpace(space model.SharedSpace) string {
 	return fmt.Sprintf(messages.SharedSpaceMessage, space.ViewID, space.Name, participants, len(space.Notes), len(space.Reminders), space.Created.Format(createdFieldFormat))
 }
 
-func formatParticipants(participants []model.User, creatorID int64) string {
+func formatParticipants(participants []model.Participant, creatorID int64) string {
 	participantsTxt := "Участники:\n"
 
 	for _, u := range participants {
 		if u.TGID == creatorID {
 			participantsTxt += fmt.Sprintf("* @%s - админ\n", u.UsernameSQL.String)
 		} else {
+			if u.State == model.PendingState {
+				participantsTxt += fmt.Sprintf("* @%s - ожидание ответа\n", u.UsernameSQL.String)
+				continue
+			}
+
+			if u.State == model.RejectedState {
+				continue
+			}
+
 			participantsTxt += fmt.Sprintf("* @%s\n", u.UsernameSQL.String)
 		}
 	}
@@ -146,16 +159,19 @@ func formatParticipants(participants []model.User, creatorID int64) string {
 
 // CurrentSpaceName возвращает название текущего (выбранного) совметного доступа
 func (s *SharedSpaceView) CurrentSpaceName() string {
+	logrus.Debugf("SharedSpaceView: CurrentSpaceName currentSpaceID %d", s.currentSpace)
 	return s.spacesMap[s.currentSpace].Name
 }
 
 // CurrentSpaceName возвращает ID текущего (выбранного) совметного доступа
 func (s *SharedSpaceView) CurrentSpaceID() int {
+	logrus.Debugf("SharedSpaceView: CurrentSpaceID currentSpaceID %d", s.currentSpace)
 	return s.spacesMap[s.currentSpace].ID
 }
 
 // CurrentSpace возвращает текущее выбранное совместное пространство
 func (s *SharedSpaceView) CurrentSpace() model.SharedSpace {
+	logrus.Debugf("SharedSpaceView: CurrentSpace currentSpaceID %d", s.currentSpace)
 	return s.spacesMap[s.currentSpace]
 }
 
@@ -224,11 +240,11 @@ func (s *SharedSpaceView) ParticipantsMessage() string {
 
 	msg := fmt.Sprintf("Участники пространства <b>%s</b>:\n\n", space.Name)
 
-	for _, u := range participants {
-		msg += fmt.Sprintf("* @%s\n", u.UsernameSQL.String)
-	}
+	txt := formatParticipants(participants, space.Creator.TGID)
 
-	return msg
+	logrus.Debugf("SharedSpaceView: ParticipantsMessage currentSpaceID %d", s.currentSpace)
+
+	return fmt.Sprintf("%s%s", msg, txt)
 }
 
 // Next возвращает следующую страницу сообщений

@@ -79,7 +79,7 @@ func InvintationKeyboard() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
-		menu.Row(BtnAcceptInvintation, BtnDenyInvintation),
+		menu.Row(BtnAcceptInvitations, BtnDenyInvitations),
 	)
 
 	return menu
@@ -88,6 +88,16 @@ func InvintationKeyboard() *tele.ReplyMarkup {
 // Keyboard делает клавиатуру для навигации по страницам заметок
 func (v *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
+
+	space := v.spacesMap[v.currentSpace]
+
+	if len(space.Notes) == 0 {
+		menu.Inline(
+			menu.Row(BtnBackToSharedSpace),
+		)
+
+		return menu
+	}
 
 	// если страниц 1, клавиатура не нужна
 	if v.total() == 1 {

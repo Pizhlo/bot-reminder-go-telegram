@@ -13,6 +13,7 @@ import (
 type sharedSpaceRepo struct {
 	db            *sql.DB
 	elasticClient elasticClient
+	currentTx     *sql.Tx
 }
 
 type elasticClient interface {
@@ -36,18 +37,37 @@ func New(dbURl string, elasticClient elasticClient) (*sharedSpaceRepo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to a db: %w", err)
 	}
-	return &sharedSpaceRepo{db, elasticClient}, nil
+	return &sharedSpaceRepo{db, elasticClient, nil}, nil
 }
 
 func (db *sharedSpaceRepo) tx(ctx context.Context) (*sql.Tx, error) {
-	return db.db.BeginTx(ctx, &sql.TxOptions{
+	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	db.currentTx = tx
+
+	return tx, nil
 }
 
 func (db *sharedSpaceRepo) Close() {
 	if err := db.db.Close(); err != nil {
 		logrus.Errorf("error on closing shared space repo: %v", err)
 	}
+}
+
+func (db *sharedSpaceRepo) commit() error {
+	tx := db.currentTx
+	db.currentTx = nil
+	return tx.Commit()
+}
+
+func (db *sharedSpaceRepo) rollback() error {
+	tx := db.currentTx
+	db.currentTx = nil
+	return tx.Rollback()
 }

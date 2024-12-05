@@ -12,6 +12,15 @@ func (s *SharedSpace) Save(ctx context.Context, space model.SharedSpace) error {
 	return s.storage.Save(ctx, space)
 }
 
+func (s *SharedSpace) SaveParticipant(ctx context.Context, user model.Participant, spaceID int64) error {
+	return s.storage.SaveParticipant(ctx, int64(spaceID), user)
+}
+
+// ProcessInvitation сохраняет приглашение и нового участника совместного пространства
+func (s *SharedSpace) ProcessInvitation(ctx context.Context, from, to model.Participant, spaceID int64) error {
+	return s.storage.ProcessInvitation(ctx, from, to, spaceID)
+}
+
 func (s *SharedSpace) SaveNote(ctx context.Context, note model.Note) error {
 	spaceID := s.viewsMap[note.Creator.TGID].CurrentSpaceID()
 
