@@ -144,3 +144,18 @@ func (db *sharedSpaceRepo) getAllReminders(ctx context.Context, spaceID int) ([]
 
 	return res, nil
 }
+
+func (db *sharedSpaceRepo) GetSharedSpaceByName(ctx context.Context, name string) (model.SharedSpace, error) {
+	space := model.SharedSpace{}
+
+	rows := db.db.QueryRowContext(ctx, `select shared_spaces.shared_spaces.id, name, created, tg_id, username from shared_spaces.shared_spaces 
+join users.users on users.users.id = shared_spaces.shared_spaces.creator
+where name  like $1;`, name)
+
+	err := rows.Scan(&space.ID, &space.Name, &space.Created, &space.Creator.TGID, &space.Creator.Username)
+	if err != nil {
+		return model.SharedSpace{}, err
+	}
+
+	return space, nil
+}

@@ -134,3 +134,7 @@ func wrap(s string, args ...any) string {
 func (s *UserService) GetByUsername(ctx context.Context, username string) (*model.User, error) {
 	return s.userEditor.GetByUsername(ctx, username)
 }
+
+func (s *UserService) GetByID(ctx context.Context, tgID int64) (*model.User, error) {
+	return s.userEditor.GetByID(ctx, tgID)
+}

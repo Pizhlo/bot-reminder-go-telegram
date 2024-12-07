@@ -79,3 +79,7 @@ func (s *SharedSpace) CurrentSpace(userID int64) model.SharedSpace {
 func (s *SharedSpace) SpaceCreator(userID int64) model.Participant {
 	return s.viewsMap[userID].CurrentSpace().Creator
 }
+
+func (s *SharedSpace) GetSharedSpaceByName(ctx context.Context, name string) (model.SharedSpace, error) {
+	return s.storage.GetSharedSpaceByName(ctx, name)
+}

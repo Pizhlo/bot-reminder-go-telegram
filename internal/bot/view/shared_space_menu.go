@@ -93,7 +93,7 @@ func InvintationKeyboard() *tele.ReplyMarkup {
 func (v *SharedSpaceView) KeyboardForNotes() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
-	space := v.spacesMap[v.currentSpace]
+	space := v.spacesMap[v.currentSpaceIndex]
 
 	if len(space.Notes) == 0 {
 		menu.Inline(
@@ -133,6 +133,38 @@ func ParticipantsKeyboard() *tele.ReplyMarkup {
 		menu.Row(BtnRemoveParticipants),
 		menu.Row(BtnBackToSharedSpace),
 	)
+
+	return menu
+}
+
+var RemoveParticipantBtn = tele.Btn{Text: "", Unique: "remove_user"}
+
+// ParticipantsListKeyboard возвращает клавиатуру со списком участников совместного пространства.
+// UserID передается, чтобы у пользователя в клавиатуре не появился он же сам
+func (s *SharedSpaceView) ParticipantsListKeyboard(userID int64) *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{}
+
+	btns := []tele.Btn{}
+
+	space := s.spacesMap[s.currentSpaceIndex]
+
+	for _, user := range space.Participants {
+		if user.TGID != userID {
+			unique := fmt.Sprintf("user=%d space=%s", user.TGID, space.Name)
+			RemoveParticipantBtn.Text = user.Username
+			RemoveParticipantBtn.Data = unique
+			// btn := tele.Btn{Text: user.Username, Unique: unique}
+			btns = append(btns, RemoveParticipantBtn)
+		}
+
+	}
+
+	menu.Inline(
+		menu.Row(btns...),
+		menu.Row(BtnBackToParticipants),
+	)
+
+	s.btns = btns
 
 	return menu
 }

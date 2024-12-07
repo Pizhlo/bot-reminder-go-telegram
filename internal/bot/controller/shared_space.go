@@ -122,6 +122,67 @@ func (c *Controller) AddParticipant(ctx context.Context, telectx tele.Context) e
 	return telectx.EditOrSend(messages.AddParticipantMessage, view.BackToMenuBtn())
 }
 
+// RemoveParticipant обрабатывает нажатие на кнопку "Иключить участника"
+func (c *Controller) RemoveParticipant(ctx context.Context, telectx tele.Context) error {
+	kb := c.sharedSpace.ParticipantsListKeyboard(telectx.Chat().ID)
+	// btns := c.sharedSpace.Buttons(telectx.Chat().ID)
+
+	c.bot.Handle(&view.RemoveParticipantBtn, func(telectx tele.Context) error {
+		return c.removeParticipant(ctx, telectx)
+	})
+
+	return telectx.EditOrSend(messages.RemoveParticipantMessage, kb)
+}
+
+func (c *Controller) removeParticipant(ctx context.Context, telectx tele.Context) error {
+	// "user=%d space=%s"
+
+	userAndSpace := strings.Split(telectx.Callback().Data, " ")
+
+	userIDStr := strings.Split(userAndSpace[0], "=")
+	spaceStr := strings.Split(userAndSpace[1], "=")
+
+	spaceName := ""
+	words := ""
+
+	for i := 2; i < len(userAndSpace); i++ {
+		words += fmt.Sprintf(" %s", userAndSpace[i])
+	}
+
+	spaceName = fmt.Sprintf("%s%s", spaceStr[1], words)
+
+	userID, err := strconv.Atoi(userIDStr[1])
+	if err != nil {
+		return err
+	}
+
+	user, err := c.userSrv.GetByID(ctx, int64(userID))
+	if err != nil {
+		return err
+	}
+
+	space, err := c.sharedSpace.GetSharedSpaceByName(ctx, spaceName)
+	if err != nil {
+		return err
+	}
+
+	err = c.sharedSpace.DeleteParticipant(ctx, int64(space.ID), model.Participant{User: model.User{TGID: int64(userID)}})
+	if err != nil {
+		return err
+	}
+
+	msg := fmt.Sprintf(messages.UserWasRemovedMessage, space.Name, formatUsername(telectx))
+
+	err = c.sendMessage(int64(userID), msg, nil)
+	if err != nil {
+		return err
+	}
+
+	msg = fmt.Sprintf(messages.UserSuccesfullyRemoved, user.Username, space.Name)
+
+	return telectx.EditOrSend(msg, view.BackToMenuBtn())
+}
+
 // HandleParticipant обрабатывает ссылку на пользователя, которого надо добавить в совместное пространство
 func (c *Controller) HandleParticipant(ctx context.Context, telectx tele.Context, spaceName string) error {
 	user := telectx.Message().Text
@@ -351,12 +412,7 @@ func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) er
 func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, space model.SharedSpace) error {
 	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь согласился
 
-	username := ""
-	if to.Username != "" {
-		username = fmt.Sprintf("@%s", to.Username)
-	} else {
-		username = fmt.Sprintf("%s %s", telectx.Chat().FirstName, telectx.Chat().LastName)
-	}
+	username := formatUsername(telectx)
 
 	msg := fmt.Sprintf(messages.UserAcceptedInvitationMessage, username, space.Name)
 	err := c.sendMessage(from.TGID, msg, view.ShowSharedSpacesMenu())
@@ -377,12 +433,7 @@ func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context,
 // AcceptInvitation обрабатывает кнопку отказаться вступить в совместное пространство
 func (c *Controller) DenyInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, space model.SharedSpace) error {
 	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь отказался
-	username := ""
-	if to.Username != "" {
-		username = fmt.Sprintf("@%s", to.Username)
-	} else {
-		username = fmt.Sprintf("%s %s", telectx.Chat().FirstName, telectx.Chat().LastName)
-	}
+	username := formatUsername(telectx)
 
 	msg := fmt.Sprintf(messages.UserRejecteddInvitationMessage, username, space.Name)
 	err := c.sendMessage(from.TGID, msg, view.ShowSharedSpacesMenu())
@@ -404,4 +455,12 @@ func (c *Controller) sendInvitation(from, spaceName string, toID, fromID int64) 
 	msg := fmt.Sprintf(messages.InvitationsMessage, from, spaceName)
 
 	return c.sendMessage(toID, msg, view.InvintationKeyboard())
+}
+
+func formatUsername(telectx tele.Context) string {
+	if telectx.Chat().Username != "" {
+		return fmt.Sprintf("@%s", telectx.Chat().Username)
+	}
+
+	return fmt.Sprintf("%s %s", telectx.Chat().FirstName, telectx.Chat().LastName)
 }

@@ -39,3 +39,11 @@ func (s *SharedSpace) DenyInvitation(ctx context.Context, from, to model.Partici
 
 	return s.storage.DeleteParticipant(ctx, spaceID, to)
 }
+
+func (s *SharedSpace) DeleteParticipant(ctx context.Context, spaceID int64, user model.Participant) error {
+	return s.storage.DeleteParticipant(ctx, spaceID, user)
+}
+
+func (s *SharedSpace) ParticipantsListKeyboard(userID int64) *telebot.ReplyMarkup {
+	return s.viewsMap[userID].ParticipantsListKeyboard(userID)
+}

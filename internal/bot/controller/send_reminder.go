@@ -28,10 +28,12 @@ func (c *Controller) SendReminder(ctx context.Context, reminder *model.Reminder)
 		return nil
 	})
 
-	_, err = c.bot.Send(&telebot.Chat{ID: reminder.TgID}, msg, &telebot.SendOptions{
-		ParseMode:   htmlParseMode,
-		ReplyMarkup: view.ReminderWorkMenu(),
-	})
+	// _, err = c.bot.Send(&telebot.Chat{ID: reminder.TgID}, msg, &telebot.SendOptions{
+	// 	ParseMode:   htmlParseMode,
+	// 	ReplyMarkup: view.ReminderWorkMenu(),
+	// })
+
+	err = c.sendMessage(reminder.TgID, msg, view.ReminderWorkMenu())
 
 	if err != nil {
 		logrus.Errorf("error while sending reminder to user: %v", err)

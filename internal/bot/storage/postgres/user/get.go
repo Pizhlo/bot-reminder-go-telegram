@@ -11,20 +11,17 @@ import (
 )
 
 func (db *UserRepo) GetByID(ctx context.Context, tgID int64) (*model.User, error) {
-	var dbID int
+	user := &model.User{}
 
-	row := db.db.QueryRowContext(ctx, `select id from users.users where tg_id = $1`, tgID)
-	err := row.Scan(&dbID)
+	row := db.db.QueryRowContext(ctx, `select users.users.id, tg_id, username, timezone from users.users 
+join users.timezones on users.timezones.user_id = users.users."id"
+where tg_id = $1;`, tgID)
+	err := row.Scan(&user.ID, &user.TGID, &user.Username, &user.Timezone.Name)
 	if err != nil {
 		return nil, fmt.Errorf("error while scanning user by id %d: %w", tgID, err)
 	}
 
-	u := &model.User{
-		ID:   dbID,
-		TGID: tgID,
-	}
-
-	return u, nil
+	return user, nil
 }
 
 func (db *UserRepo) GetAll(ctx context.Context) ([]*model.User, error) {

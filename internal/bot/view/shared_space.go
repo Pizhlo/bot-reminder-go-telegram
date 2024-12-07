@@ -24,13 +24,13 @@ var (
 	BtnBackToSharedSpace = tele.Btn{Text: "⬅️Назад", Unique: "back_to_shared_space"}
 	// inline кнопка для возврата в совместные пространства
 	BtnBackToAllSharedSpaces = tele.Btn{Text: "⬅️Назад", Unique: "shared_space"}
-	//
+	// inline кнопка для возврата к списку участников
 	BtnBackToParticipants = tele.Btn{Text: "⬅️Назад", Unique: "shared_space_participants"}
 
 	// inline кнопка для добавления участников
 	BtnAddParticipants = tele.Btn{Text: "➕Добавить", Unique: "add_users_to_shared_space"}
 	// inline кнопка для исключения участников
-	BtnRemoveParticipants = tele.Btn{Text: "🚫Исключить", Unique: "add_users_to_shared_space"}
+	BtnRemoveParticipants = tele.Btn{Text: "🚫Исключить", Unique: "remove_user_from_shared_space"}
 
 	// invitations
 	BtnAcceptInvitations = tele.Btn{Text: "✅Принять", Unique: "accept_invintation"}
@@ -53,11 +53,11 @@ var (
 )
 
 type SharedSpaceView struct {
-	pages        []string
-	currentPage  int
-	spacesMap    map[int]model.SharedSpace
-	btns         []tele.Btn
-	currentSpace int
+	pages             []string
+	currentPage       int
+	spacesMap         map[int]model.SharedSpace
+	btns              []tele.Btn
+	currentSpaceIndex int
 
 	noteView     *NoteView
 	reminderView *ReminderView
@@ -65,13 +65,13 @@ type SharedSpaceView struct {
 
 func NewSharedSpaceView() *SharedSpaceView {
 	return &SharedSpaceView{
-		pages:        make([]string, 0),
-		currentPage:  0,
-		currentSpace: 0,
-		spacesMap:    make(map[int]model.SharedSpace, 0),
-		btns:         make([]tele.Btn, 0),
-		noteView:     NewNote(),
-		reminderView: NewReminder()}
+		pages:             make([]string, 0),
+		currentPage:       0,
+		currentSpaceIndex: 0,
+		spacesMap:         make(map[int]model.SharedSpace, 0),
+		btns:              make([]tele.Btn, 0),
+		noteView:          NewNote(),
+		reminderView:      NewReminder()}
 }
 
 func (s *SharedSpaceView) Message(spaces []model.SharedSpace) string {
@@ -110,7 +110,7 @@ func (s *SharedSpaceView) MessageBySpace(spaceID int) (string, error) {
 		return "", fmt.Errorf("not found space by ID %d", spaceID)
 	}
 
-	s.currentSpace = spaceID
+	s.currentSpaceIndex = spaceID
 
 	logrus.Debugf("SharedSpaceView: MessageBySpace set currentSpaceID to %d", spaceID)
 
@@ -118,12 +118,12 @@ func (s *SharedSpaceView) MessageBySpace(spaceID int) (string, error) {
 }
 
 func (s *SharedSpaceView) MessageByCurrentSpace() (string, error) {
-	space, ok := s.spacesMap[s.currentSpace]
+	space, ok := s.spacesMap[s.currentSpaceIndex]
 	if !ok {
-		return "", fmt.Errorf("not found space by ID %d", s.currentSpace)
+		return "", fmt.Errorf("not found space by ID %d", s.currentSpaceIndex)
 	}
 
-	logrus.Debugf("SharedSpaceView: MessageByCurrentSpace currentSpaceID %d", s.currentSpace)
+	logrus.Debugf("SharedSpaceView: MessageByCurrentSpace currentSpaceID %d", s.currentSpaceIndex)
 
 	return s.messageBySpace(space), nil
 }
@@ -159,24 +159,24 @@ func formatParticipants(participants []model.Participant, creatorID int64) strin
 
 // CurrentSpaceName возвращает название текущего (выбранного) совметного доступа
 func (s *SharedSpaceView) CurrentSpaceName() string {
-	logrus.Debugf("SharedSpaceView: CurrentSpaceName currentSpaceID %d", s.currentSpace)
-	return s.spacesMap[s.currentSpace].Name
+	logrus.Debugf("SharedSpaceView: CurrentSpaceName currentSpaceID %d", s.currentSpaceIndex)
+	return s.spacesMap[s.currentSpaceIndex].Name
 }
 
 // CurrentSpaceName возвращает ID текущего (выбранного) совметного доступа
 func (s *SharedSpaceView) CurrentSpaceID() int {
-	logrus.Debugf("SharedSpaceView: CurrentSpaceID currentSpaceID %d", s.currentSpace)
-	return s.spacesMap[s.currentSpace].ID
+	logrus.Debugf("SharedSpaceView: CurrentSpaceID currentSpaceID %d", s.currentSpaceIndex)
+	return s.spacesMap[s.currentSpaceIndex].ID
 }
 
 // CurrentSpace возвращает текущее выбранное совместное пространство
 func (s *SharedSpaceView) CurrentSpace() model.SharedSpace {
-	logrus.Debugf("SharedSpaceView: CurrentSpace currentSpaceID %d", s.currentSpace)
-	return s.spacesMap[s.currentSpace]
+	logrus.Debugf("SharedSpaceView: CurrentSpace currentSpaceID %d", s.currentSpaceIndex)
+	return s.spacesMap[s.currentSpaceIndex]
 }
 
 func (s *SharedSpaceView) Notes() (string, error) {
-	space := s.spacesMap[s.currentSpace]
+	space := s.spacesMap[s.currentSpaceIndex]
 
 	if len(space.Notes) == 0 {
 		return fmt.Sprintf(messages.NoNotesInSharedSpaceMessage, space.Name), nil
@@ -224,7 +224,7 @@ func (s *SharedSpaceView) Notes() (string, error) {
 // }
 
 func (s *SharedSpaceView) Reminders() (string, error) {
-	space := s.spacesMap[s.currentSpace]
+	space := s.spacesMap[s.currentSpaceIndex]
 
 	if len(space.Reminders) == 0 {
 		return fmt.Sprintf(messages.NoRemindersInSharedSpaceMessage, space.Name), nil
@@ -235,14 +235,14 @@ func (s *SharedSpaceView) Reminders() (string, error) {
 
 // ParticipantsMessage возвращает сообщение для пункта меню "Участники"
 func (s *SharedSpaceView) ParticipantsMessage() string {
-	space := s.spacesMap[s.currentSpace]
+	space := s.spacesMap[s.currentSpaceIndex]
 	participants := space.Participants
 
 	msg := fmt.Sprintf("Участники пространства <b>%s</b>:\n\n", space.Name)
 
 	txt := formatParticipants(participants, space.Creator.TGID)
 
-	logrus.Debugf("SharedSpaceView: ParticipantsMessage currentSpaceID %d", s.currentSpace)
+	logrus.Debugf("SharedSpaceView: ParticipantsMessage currentSpaceID %d", s.currentSpaceIndex)
 
 	return fmt.Sprintf("%s%s", msg, txt)
 }

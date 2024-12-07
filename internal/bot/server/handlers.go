@@ -232,6 +232,18 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// исключить участника shared space
+	restricted.Handle(&view.BtnRemoveParticipants, func(telectx tele.Context) error {
+		err := s.controller.RemoveParticipant(ctx, telectx)
+		if err != nil {
+			s.HandleError(telectx, err)
+			return err
+		}
+
+		return nil
+	})
+
+	// обработка контакта. используется при добавлении пользователя в совместное пространство
 	restricted.Handle(tele.OnContact, func(telectx tele.Context) error {
 		err := s.controller.HandleContact(ctx, telectx)
 		if err != nil {
