@@ -81,6 +81,10 @@ where space_id = $1;`, spaceID)
 			return nil, fmt.Errorf("error scanning user ID while searching all space's participants: %+v", err)
 		}
 
+		if user.UsernameSQL.Valid {
+			user.Username = user.UsernameSQL.String
+		}
+
 		res = append(res, user)
 	}
 

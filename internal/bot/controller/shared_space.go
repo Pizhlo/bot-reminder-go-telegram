@@ -163,7 +163,8 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 
 	to := model.Participant{
 		User: model.User{
-			TGID: toUser.TGID,
+			TGID:     toUser.TGID,
+			Username: username,
 		},
 		State: model.PendingState,
 	}
@@ -179,6 +180,9 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 func (c *Controller) processInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, spaceID int64) error {
 	err := c.sharedSpace.ProcessInvitation(ctx, from, to, int64(spaceID))
 	if err != nil {
+		if errors.Is(err, api_errors.ErrInvitationExists) {
+			return telectx.EditOrSend(messages.UserAlreadyInvitedMessage, view.BackToMenuBtn())
+		}
 		return fmt.Errorf("error processing invitation: %+v", err)
 	}
 

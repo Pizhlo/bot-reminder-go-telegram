@@ -142,7 +142,7 @@ func formatParticipants(participants []model.Participant, creatorID int64) strin
 			participantsTxt += fmt.Sprintf("* @%s - админ\n", u.UsernameSQL.String)
 		} else {
 			if u.State == model.PendingState {
-				participantsTxt += fmt.Sprintf("* @%s - ожидание ответа\n", u.UsernameSQL.String)
+				participantsTxt += fmt.Sprintf("* @%s - ожидание ответа\n", u.Username)
 				continue
 			}
 

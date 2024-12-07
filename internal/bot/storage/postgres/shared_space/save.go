@@ -3,11 +3,14 @@ package sharedspace
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
+	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model/elastic"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 func (db *sharedSpaceRepo) Save(ctx context.Context, space model.SharedSpace) error {
@@ -59,10 +62,10 @@ func (db *sharedSpaceRepo) saveParticipant(ctx context.Context, tx *sql.Tx, spac
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "update users.users set username=$1 where tg_id = $2;", user.Username, user.TGID)
-	if err != nil {
-		return fmt.Errorf("error saving participant's username: %+v", err)
-	}
+	// _, err = tx.ExecContext(ctx, "update users.users set username=$1 where tg_id = $2;", user.Username, user.TGID)
+	// if err != nil {
+	// 	return fmt.Errorf("error saving participant's username: %+v", err)
+	// }
 
 	return nil
 }
@@ -111,6 +114,11 @@ func (db *sharedSpaceRepo) ProcessInvitation(ctx context.Context, from, to model
 
 	err = db.saveInvitation(ctx, from.TGID, to.TGID, spaceID)
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return api_errors.ErrInvitationExists
+		}
+
 		_ = db.rollback()
 		return err
 	}
