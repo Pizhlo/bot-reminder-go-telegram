@@ -41,6 +41,10 @@ func New(dbURl string, elasticClient elasticClient) (*sharedSpaceRepo, error) {
 }
 
 func (db *sharedSpaceRepo) tx(ctx context.Context) (*sql.Tx, error) {
+	if db.currentTx != nil {
+		return db.currentTx, nil
+	}
+
 	tx, err := db.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,

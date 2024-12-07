@@ -242,34 +242,6 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
-	// кнопка приглашения участника: принять
-	restricted.Handle(&view.BtnAcceptInvitations, func(telectx tele.Context) error {
-		err := s.controller.AcceptInvitation(ctx, telectx)
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		return nil
-	})
-
-	// кнопка приглашения участника: отклонить
-	restricted.Handle(&view.BtnDenyInvitations, func(telectx tele.Context) error {
-		_, err := s.bot.Send(&tele.Chat{ID: 297850814}, "Кирилл отклонил приглашение")
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		err = telectx.EditOrSend("Кирилл лох!!!", view.BackToMenuBtn())
-		if err != nil {
-			s.HandleError(telectx, err)
-			return err
-		}
-
-		return nil
-	})
-
 	// вернуться назад в shared space
 	restricted.Handle(&view.BtnBackToSharedSpace, func(telectx tele.Context) error {
 		err := s.controller.GetCurrentSharedSpace(ctx, telectx)

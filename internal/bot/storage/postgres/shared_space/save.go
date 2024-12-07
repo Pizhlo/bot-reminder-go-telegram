@@ -137,3 +137,24 @@ func (db *sharedSpaceRepo) saveInvitation(ctx context.Context, from, to, spaceID
 		from, to, spaceID)
 	return err
 }
+
+func (db *sharedSpaceRepo) SetParticipantState(ctx context.Context, user model.Participant, state string, spaceID int64) error {
+	_, err := db.tx(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.currentTx.ExecContext(ctx,
+		`insert into shared_spaces.participants (space_id, user_id, state_id) values 
+	($1, (select id from users.users where tg_id = $2), 
+	(select id from shared_spaces.participants_states where state = $3))
+	on conflict (space_id, user_id) do update
+	set state_id=(select id from shared_spaces.participants_states where state = $3);`,
+		spaceID, user.TGID, state)
+	if err != nil {
+		_ = db.rollback()
+		return err
+	}
+
+	return db.commit()
+}

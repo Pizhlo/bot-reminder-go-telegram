@@ -14,6 +14,8 @@ const UserNotRegisteredMessage = "⚠️Пользователь с таким u
 const InvalidUserLinkMessage = "Невалидная ссылка. Пришлите другую ссылку и повторите попытку"
 const SuccessfullySentInvitationsMessage = "✅Приглашение было успешно отправлено"
 const UserAlreadyInvitedMessage = "Пользователь уже приглашен в совместное пространство"
+const UserAcceptedInvitationMessage = "✅Пользователь <b>%s</b> принял приглашение в совместное пространство <b>%s</b>"
+const InvitationAcceptedMessage = "✅Приглашение в пространство <b>%s</b> успешно принято"
 
 // Records
 const NoNotesInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одной заметки. Чтобы создать, просто пришли текст"

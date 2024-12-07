@@ -51,7 +51,9 @@ func KeyboardForSpace() *tele.ReplyMarkup {
 }
 
 func (s *SharedSpaceView) Buttons() []tele.Btn {
-	return s.btns
+	btns := s.btns
+	s.btns = make([]tele.Btn, 0)
+	return btns
 }
 
 func KeyboardForReminders() *tele.ReplyMarkup {
@@ -77,23 +79,12 @@ func BackToSharedSpaceMenu() *tele.ReplyMarkup {
 
 // InvintationKeyboard формирует клавиатуру для приглашения в совместное пространство.
 // Клавиатура состоит из двух кнопок: согласиться и отказаться.
-// Аргументами необходимо передать айди пользователя, который приглашает (from),
-// пользователя, которого пригласили (to) и spaceID в виде строк.
-func (v *SharedSpaceView) InvintationKeyboard(from, to, spaceID string) *tele.ReplyMarkup {
+func InvintationKeyboard() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
-
-	unique := fmt.Sprintf("from=%s; to=%s; spaceID=%s", from, to, spaceID)
-
-	BtnAcceptInvitations.Unique = fmt.Sprintf("accept: %s", unique)
-	BtnDenyInvitations.Unique = fmt.Sprintf("deny: %s", unique)
 
 	menu.Inline(
 		menu.Row(BtnAcceptInvitations, BtnDenyInvitations),
 	)
-
-	v.btns = make([]tele.Btn, 2)
-	v.btns[0] = BtnAcceptInvitations
-	v.btns[1] = BtnDenyInvitations
 
 	return menu
 }

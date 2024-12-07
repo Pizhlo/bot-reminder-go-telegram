@@ -1,6 +1,8 @@
 package sharedaccess
 
 import (
+	"context"
+
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"gopkg.in/telebot.v3"
@@ -18,6 +20,12 @@ func (s *SharedSpace) SharedSpaceParticipants(userID int64) (string, *telebot.Re
 	return msg, view.ParticipantsKeyboard()
 }
 
-func (s *SharedSpace) InvintationKeyboard(userID int64, from, to, spaceID string) *telebot.ReplyMarkup {
-	return s.viewsMap[userID].InvintationKeyboard(from, to, spaceID)
+// DeleteInvitation удаляет приглашение из БД и устанавливает состояние приглашенного участника в added
+func (s *SharedSpace) DeleteInvitation(ctx context.Context, from, to model.Participant, spaceID int64) error {
+	err := s.storage.DeleteInvitation(ctx, from, to, spaceID)
+	if err != nil {
+		return err
+	}
+
+	return s.storage.SetParticipantState(ctx, to, model.AddedState, spaceID)
 }
