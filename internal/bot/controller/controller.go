@@ -202,3 +202,8 @@ func (c *Controller) GetState(ctx context.Context, tgID int64) (string, error) {
 func (c *Controller) SaveMemoryReminder(ctx context.Context) error {
 	return c.reminderSrv.SaveMemory(ctx)
 }
+
+func (c *Controller) sendMessage(userID int64, text string, kb *tele.ReplyMarkup) error {
+	_, err := c.bot.Send(&tele.Chat{ID: userID}, text, kb)
+	return err
+}

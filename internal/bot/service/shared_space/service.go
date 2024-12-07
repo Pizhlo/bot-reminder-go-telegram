@@ -31,6 +31,7 @@ type storage interface {
 	Save(ctx context.Context, space model.SharedSpace) error
 	SaveNote(ctx context.Context, note model.Note) error
 	SaveParticipant(ctx context.Context, spaceID int64, user model.Participant) error
+	DeleteParticipant(ctx context.Context, spaceID int64, user model.Participant) error
 	ProcessInvitation(ctx context.Context, from, to model.Participant, spaceID int64) error
 	DeleteInvitation(ctx context.Context, from, to model.Participant, spaceID int64) error
 	SetParticipantState(ctx context.Context, user model.Participant, state string, spaceID int64) error

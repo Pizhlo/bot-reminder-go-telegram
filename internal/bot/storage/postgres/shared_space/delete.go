@@ -23,3 +23,20 @@ func (db *sharedSpaceRepo) DeleteInvitation(ctx context.Context, from, to model.
 
 	return nil
 }
+
+func (db *sharedSpaceRepo) DeleteParticipant(ctx context.Context, spaceID int64, user model.Participant) error {
+	_, err := db.tx(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.db.ExecContext(ctx, `delete from shared_spaces.participants where user_id = (select id from users.users where tg_id = $1)
+	and space_id = $2`,
+		user.TGID, spaceID)
+	if err != nil {
+		_ = db.rollback()
+		return err
+	}
+
+	return db.commit()
+}

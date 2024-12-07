@@ -365,7 +365,7 @@ func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context,
 	}
 
 	// удалить приглашение из БД и обновить state у приглашенного пользователя
-	err = c.sharedSpace.DeleteInvitation(ctx, from, to, int64(space.ID))
+	err = c.sharedSpace.AcceptInvitation(ctx, from, to, int64(space.ID))
 	if err != nil {
 		return err
 	}
@@ -376,19 +376,32 @@ func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context,
 
 // AcceptInvitation обрабатывает кнопку отказаться вступить в совместное пространство
 func (c *Controller) DenyInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, space model.SharedSpace) error {
-	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь согласился
-	// удалить приглашение из БД
-	// обновить state у приглашенного пользователя
-	return telectx.EditOrSend("deny")
+	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь отказался
+	username := ""
+	if to.Username != "" {
+		username = fmt.Sprintf("@%s", to.Username)
+	} else {
+		username = fmt.Sprintf("%s %s", telectx.Chat().FirstName, telectx.Chat().LastName)
+	}
+
+	msg := fmt.Sprintf(messages.UserRejecteddInvitationMessage, username, space.Name)
+	err := c.sendMessage(from.TGID, msg, view.ShowSharedSpacesMenu())
+	if err != nil {
+		return err
+	}
+
+	// удалить приглашение и участника из БД
+	err = c.sharedSpace.DenyInvitation(ctx, from, to, int64(space.ID))
+	if err != nil {
+		return err
+	}
+
+	msg = fmt.Sprintf(messages.InvitationRejectedMessage, space.Name)
+	return telectx.EditOrSend(msg, view.ShowSharedSpacesMenu())
 }
 
 func (c *Controller) sendInvitation(from, spaceName string, toID, fromID int64) error {
 	msg := fmt.Sprintf(messages.InvitationsMessage, from, spaceName)
 
 	return c.sendMessage(toID, msg, view.InvintationKeyboard())
-}
-
-func (c *Controller) sendMessage(userID int64, text string, kb *tele.ReplyMarkup) error {
-	_, err := c.bot.Send(&tele.Chat{ID: userID}, text, kb)
-	return err
 }
