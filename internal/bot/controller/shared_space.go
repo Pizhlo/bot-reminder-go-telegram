@@ -464,3 +464,7 @@ func formatUsername(telectx tele.Context) string {
 
 	return fmt.Sprintf("%s %s", telectx.Chat().FirstName, telectx.Chat().LastName)
 }
+
+func (c *Controller) AddReminderSharedSpace(ctx context.Context, telectx tele.Context) error {
+	return nil
+}

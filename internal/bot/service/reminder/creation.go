@@ -166,6 +166,40 @@ func (n *ReminderService) SaveID(userID int64, reminderID uuid.UUID) error {
 	return nil
 }
 
+// SaveID сохраняет совместное пространство, если напоминание создается в совместном пространстве
+func (n *ReminderService) SaveSpace(userID int64, space *model.SharedSpace) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return errors.New(wrap("error while getting reminder by user ID: reminder not found"))
+	}
+
+	r.Space = space
+
+	n.reminderMap[userID] = r
+
+	return nil
+}
+
+// SaveID сохраняет список пользователей, которым нужно разослать напоминание
+func (n *ReminderService) SaveUsers(userID int64, users []model.Participant) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	r, ok := n.reminderMap[userID]
+	if !ok {
+		return errors.New(wrap("error while getting reminder by user ID: reminder not found"))
+	}
+
+	r.Users = users
+
+	n.reminderMap[userID] = r
+
+	return nil
+}
+
 // GetID возвращает ID напоминания
 func (n *ReminderService) GetID(userID int64) (uuid.UUID, error) {
 	n.mu.Lock()
@@ -233,6 +267,16 @@ func (n *ReminderService) SaveAndStartReminder(ctx context.Context, userID int64
 	}
 
 	r.ID = id
+
+	// если напоминание создано для совместного пространства, сохраняем туда
+	if r.Space != nil {
+		err = n.SaveJobSharedSpace(ctx, nextRun.JobID, r.ID)
+		if err != nil {
+			return gocron.NewJob{}, err
+		}
+
+		return nextRun, nil
+	}
 
 	// сохраняем задачу в базе
 	err = n.SaveJobID(ctx, nextRun.JobID, r.ID)

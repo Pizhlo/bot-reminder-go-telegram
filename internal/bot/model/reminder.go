@@ -35,7 +35,8 @@ type Reminder struct {
 	Type             ReminderType
 	Created          time.Time
 	Job              Job
-	SpaceID          int
+	Space            *SharedSpace
+	Users            []Participant // пользователи, кому необходимо разослать напоминание
 }
 
 type Job struct {

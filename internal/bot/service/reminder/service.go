@@ -29,6 +29,12 @@ type reminderEditor interface {
 	// Save сохраняет напоминание в базе данных. Для сохранения требуется: ID пользователя, содержимое напоминания, дата создания
 	Save(ctx context.Context, reminder *model.Reminder) (uuid.UUID, error)
 
+	// SaveToSharedSpace сохраняет напоминание в базе данных для совместного напоминания
+	SaveToSharedSpace(ctx context.Context, reminder *model.Reminder) (uuid.UUID, error)
+
+	// SaveJobSharedSpace сохраняет таску для напоминания в совместном пространстве
+	SaveJobSharedSpace(ctx context.Context, reminderID uuid.UUID, jobID uuid.UUID) error
+
 	// SaveMemory сохраняет напоминание из кэша в базе данных. Напоминание может быть не полным, т.к. находится на стадии создания
 	// и в памяти хранится промежуточный результат
 	SaveMemory(ctx context.Context, reminder *model.Reminder) error

@@ -31,6 +31,7 @@ const InvalidDateMessage = "🙅‍♂️Эта дата уже прошла, н
 
 // USER REMINDER
 const ReminderMessage = "%s\n\n<i>Напоминание сработало %s</i>"
+const ReminderMessageSharedSpace = "%s\n\n<i>Напоминание сработало %s в совместном пространстве <b>%s</b></i>"
 
 // DELETE
 const ConfirmDeleteRemindersMessage = "Ой-ой... Ты точно хочешь удалить ВСЕ напоминания?😥"

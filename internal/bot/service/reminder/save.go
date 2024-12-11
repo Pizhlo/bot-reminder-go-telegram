@@ -16,6 +16,16 @@ func (s *ReminderService) Save(ctx context.Context, userID int64, r *model.Remin
 		return uuid.UUID{}, err
 	}
 
+	// если напоминание создано в совместном пространстве, сохраняем
+	if r.Space != nil {
+		id, err := s.reminderEditor.SaveToSharedSpace(ctx, r)
+		if err != nil {
+			return uuid.UUID{}, err
+		}
+
+		return id, s.SaveID(userID, id)
+	}
+
 	id, err := s.reminderEditor.Save(ctx, r)
 	if err != nil {
 		return uuid.UUID{}, err
@@ -34,6 +44,18 @@ func (s *ReminderService) SaveJobID(ctx context.Context, jobID uuid.UUID, remind
 	logrus.Debugf(wrap(fmt.Sprintf("saving user's job. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)))
 
 	return s.reminderEditor.SaveJob(ctx, reminderID, jobID)
+}
+
+// SaveJobID сохраняет в базе ID задачи, связанной с напоминанием, созданным для совместного пространства
+func (s *ReminderService) SaveJobSharedSpace(ctx context.Context, jobID uuid.UUID, reminderID uuid.UUID) error {
+	// r, err := s.GetFromMemory(userID)
+	// if err != nil {
+	// 	return err
+	// }
+
+	logrus.Debugf(wrap(fmt.Sprintf("saving user's job for shared space. UUID: %+v. Reminder ID: %v\n", jobID, reminderID)))
+
+	return s.reminderEditor.SaveJobSharedSpace(ctx, reminderID, jobID)
 }
 
 // Clear очищает память после успешного сохранения

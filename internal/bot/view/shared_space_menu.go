@@ -60,7 +60,7 @@ func KeyboardForReminders() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{}
 
 	menu.Inline(
-		menu.Row(BtnAddReminder),
+		menu.Row(BtnAddReminderSharedSpace),
 		menu.Row(BtnBackToSharedSpace),
 	)
 

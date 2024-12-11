@@ -200,6 +200,17 @@ func (s *Server) setupHandlers(ctx context.Context) {
 		return nil
 	})
 
+	// добавить напоминание в shared space
+	// restricted.Handle(&view.BtnAddReminderSharedSpace, func(telectx tele.Context) error {
+	// 	err := s.controller.AddReminderSharedSpace(ctx, telectx)
+	// 	if err != nil {
+	// 		s.HandleError(telectx, err)
+	// 		return err
+	// 	}
+
+	// 	return nil
+	// })
+
 	// участники shared space
 	restricted.Handle(&view.BtnSpaceParticipants, func(telectx tele.Context) error {
 		err := s.controller.SharedSpaceParticipants(ctx, telectx)

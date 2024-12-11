@@ -177,14 +177,37 @@ func (v *ReminderView) Clear() {
 // Напоминание сработало 23.10.2023 в 18:00
 func ReminderMessage(reminder *model.Reminder) (string, error) {
 	logrus.Debugf("View: new reminder message. Reminder: %+v", reminder)
-	name := reminder.Name
-
-	date, err := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
+	name, date, err := nameAndDate(reminder)
 	if err != nil {
 		return "", err
 	}
 
 	return fmt.Sprintf(messages.ReminderMessage, name, date), nil
+}
+
+func nameAndDate(reminder *model.Reminder) (string, string, error) {
+	date, err := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
+	if err != nil {
+		return "", "", err
+	}
+
+	return reminder.Name, date, nil
+}
+
+// ReminderMessage возвращает модифицированный текст сообщения с напоминанием для совместного пространства.
+// Пример:
+//
+// купить хлеб
+//
+// Напоминание сработало 23.10.2023 в 18:00 в совместном пространстве тест1
+func SharedSpaceReminderMessage(reminder *model.Reminder) (string, error) {
+	logrus.Debugf("View: new reminder message for shared space. Reminder: %+v", reminder)
+	name, date, err := nameAndDate(reminder)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(messages.ReminderMessageSharedSpace, name, date, reminder.Space.Name), nil
 }
 
 // ProcessTypeAndDate обрабатывает тип напоминания и дату. Пример:

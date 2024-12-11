@@ -18,7 +18,7 @@ var (
 	// inline кнопка для управления участниками в совместном пространстве
 	BtnSpaceParticipants = tele.Btn{Text: "🫂Участники", Unique: "shared_space_participants"}
 	// inline кнопка для добавления напоминания в совметное пространство
-	BtnAddReminder = tele.Btn{Text: "Добавить напоминание", Unique: "add_reminder_to_shared_space"}
+	BtnAddReminderSharedSpace = tele.Btn{Text: "📝Добавить напоминание", Unique: "create_reminder"}
 
 	// inline кнопка для возврата в совместное пространство
 	BtnBackToSharedSpace = tele.Btn{Text: "⬅️Назад", Unique: "back_to_shared_space"}
