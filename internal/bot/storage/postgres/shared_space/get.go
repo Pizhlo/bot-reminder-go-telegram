@@ -119,11 +119,13 @@ func (db *sharedSpaceRepo) getAllNotes(ctx context.Context, spaceID int) ([]mode
 func (db *sharedSpaceRepo) getAllReminders(ctx context.Context, spaceID int) ([]model.Reminder, error) {
 	res := make([]model.Reminder, 0)
 
-	rows, err := db.db.QueryContext(ctx, `select reminder_number, text, created, username, tg_id from shared_spaces.reminders
-	join shared_spaces.reminders_view on shared_spaces.reminders_view.id = shared_spaces.reminders.id
-	join users.users on users.users.id = shared_spaces.reminders.user_id
-	where shared_spaces.reminders.space_id = $1 
-	order by created ASC;`, spaceID)
+	rows, err := db.db.QueryContext(ctx, `select shared_spaces.reminders.id, reminder_number, tg_id, text, created, date, time, name, shared_spaces.jobs.job_id 
+from shared_spaces.reminders
+join reminders.types on reminders.types.id = shared_spaces.reminders.type_id
+join shared_spaces.reminders_view on shared_spaces.reminders_view.id = shared_spaces.reminders.id
+join users.users on users.id = shared_spaces.reminders.user_id
+join shared_spaces.jobs on shared_spaces.jobs.reminder_id = shared_spaces.reminders.id
+where space_id = $1;`, spaceID)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting all reminders for shared space from DB: %w", err)
 	}
