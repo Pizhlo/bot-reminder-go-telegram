@@ -15,12 +15,14 @@ const UserNotRegisteredMessage = "⚠️Пользователь с таким u
 const InvalidUserLinkMessage = "Невалидная ссылка. Пришлите другую ссылку и повторите попытку"
 const SuccessfullySentInvitationsMessage = "✅Приглашение было успешно отправлено"
 const UserAlreadyInvitedMessage = "Пользователь уже приглашен в совместное пространство"
+const UserAlreadyExistsMessage = "Пользователь уже состоит в совместном пространстве <b>%s</b>"
 const UserAcceptedInvitationMessage = "✅Пользователь <b>%s</b> принял приглашение в совместное пространство <b>%s</b>"
 const UserRejecteddInvitationMessage = "❌Пользователь <b>%s</b> отклонил приглашение в совместное пространство <b>%s</b>"
 const InvitationAcceptedMessage = "✅Приглашение в пространство <b>%s</b> успешно принято"
 const InvitationRejectedMessage = "✅Приглашение в пространство <b>%s</b> успешно отклонено"
 const UserWasRemovedMessage = "⚠️Вы были исключены из пространства <b>%s</b> пользователем %s"
 const UserSuccesfullyRemoved = "✅Пользователь <b>%s</b> успешно исключен из пространства <b>%s</b>"
+const UserWasAdded = "Пользователь <b>%s</b> пригласил пользователя <b>%s</b>"
 
 // Records
 const NoNotesInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одной заметки. Чтобы создать, просто пришли текст"

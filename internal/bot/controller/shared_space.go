@@ -68,7 +68,6 @@ func (c *Controller) CreateSharedSpace(ctx context.Context, telectx tele.Context
 	}
 
 	if err := c.sharedSpace.Save(ctx, space); err != nil {
-		return err
 	}
 
 	msg := fmt.Sprintf(messages.SharedSpaceCreationSuccessMessage, space.Name)
@@ -171,7 +170,7 @@ func (c *Controller) removeParticipant(ctx context.Context, telectx tele.Context
 		return err
 	}
 
-	msg := fmt.Sprintf(messages.UserWasRemovedMessage, space.Name, formatUsername(telectx))
+	msg := fmt.Sprintf(messages.UserWasRemovedMessage, space.Name, formatUsername(telectx.Chat()))
 
 	err = c.sendMessage(int64(userID), msg, nil)
 	if err != nil {
@@ -244,6 +243,12 @@ func (c *Controller) processInvitation(ctx context.Context, telectx tele.Context
 		if errors.Is(err, api_errors.ErrInvitationExists) {
 			return telectx.EditOrSend(messages.UserAlreadyInvitedMessage, view.BackToMenuBtn())
 		}
+
+		if errors.Is(err, api_errors.ErrUserAlreadyExists) {
+			msg := fmt.Sprintf(messages.UserAlreadyExistsMessage, space.Name)
+			return telectx.EditOrSend(msg)
+		}
+
 		return fmt.Errorf("error processing invitation: %+v", err)
 	}
 
@@ -394,7 +399,8 @@ func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) er
 
 	fromUser := model.Participant{
 		User: model.User{
-			TGID: telectx.Chat().ID,
+			TGID:     telectx.Chat().ID,
+			Username: formatUsername(telectx.Chat()),
 		},
 	}
 
@@ -412,7 +418,7 @@ func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) er
 func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, space model.SharedSpace) error {
 	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь согласился
 
-	username := formatUsername(telectx)
+	username := formatUsername(telectx.Chat())
 
 	msg := fmt.Sprintf(messages.UserAcceptedInvitationMessage, username, space.Name)
 	err := c.sendMessage(from.TGID, msg, view.ShowSharedSpacesMenu())
@@ -426,6 +432,15 @@ func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context,
 		return err
 	}
 
+	// отправить уведомление участникам беседы о том, что пользователь добавил другого пользователя
+	for _, user := range space.Participants {
+		msg := fmt.Sprintf(messages.UserWasAdded, from.Username, to.Username)
+		_, err := c.bot.Send(&tele.Chat{ID: user.TGID}, msg)
+		if err != nil {
+			c.HandleError(telectx, err, "notify_partisipants_new_user")
+		}
+	}
+
 	msg = fmt.Sprintf(messages.InvitationAcceptedMessage, space.Name)
 	return telectx.EditOrSend(msg, view.ShowSharedSpacesMenu())
 }
@@ -433,7 +448,7 @@ func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context,
 // AcceptInvitation обрабатывает кнопку отказаться вступить в совместное пространство
 func (c *Controller) DenyInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, space model.SharedSpace) error {
 	// отправить пользователю, который пригласил, уведомление о том, что второй пользователь отказался
-	username := formatUsername(telectx)
+	username := formatUsername(telectx.Chat())
 
 	msg := fmt.Sprintf(messages.UserRejecteddInvitationMessage, username, space.Name)
 	err := c.sendMessage(from.TGID, msg, view.ShowSharedSpacesMenu())
@@ -457,12 +472,12 @@ func (c *Controller) sendInvitation(from, spaceName string, toID, fromID int64) 
 	return c.sendMessage(toID, msg, view.InvintationKeyboard())
 }
 
-func formatUsername(telectx tele.Context) string {
-	if telectx.Chat().Username != "" {
-		return fmt.Sprintf("@%s", telectx.Chat().Username)
+func formatUsername(chat *tele.Chat) string {
+	if chat.Username != "" {
+		return fmt.Sprintf("@%s", chat.Username)
 	}
 
-	return fmt.Sprintf("%s %s", telectx.Chat().FirstName, telectx.Chat().LastName)
+	return fmt.Sprintf("%s %s", chat.FirstName, chat.LastName)
 }
 
 func (c *Controller) AddReminderSharedSpace(ctx context.Context, telectx tele.Context) error {

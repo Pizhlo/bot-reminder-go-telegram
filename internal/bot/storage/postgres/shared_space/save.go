@@ -59,6 +59,13 @@ func (db *sharedSpaceRepo) saveParticipant(ctx context.Context, tx *sql.Tx, spac
 	_, err := tx.ExecContext(ctx, "insert into shared_spaces.participants (space_id, user_id, state_id) values($1, (select id from users.users where tg_id = $2), (select id from shared_spaces.participants_states where state = $3))",
 		spaceID, user.TGID, user.State)
 	if err != nil {
+		switch e := err.(type) {
+		case *pq.Error: // пользователь уже существует в пространстве
+			if e.Code == "23505" {
+				return api_errors.ErrUserAlreadyExists
+			}
+		}
+
 		return err
 	}
 
