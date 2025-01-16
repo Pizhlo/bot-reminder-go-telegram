@@ -129,6 +129,14 @@ func (c *ReminderService) StartAllJobs(ctx context.Context, userID int64, loc *t
 		}
 	}
 
+	// достаем напоминания из совместных пространств
+	sharedReminders, err := c.reminderEditor.GetAllByUserIDFromSharedSpaces(ctx, userID)
+	if err != nil {
+		if !errors.Is(err, api_errors.ErrRemindersNotFound) {
+			return err
+		}
+	}
+
 	for _, r := range reminders {
 		newJob, err := c.CreateReminder(ctx, loc, f, &r)
 		if err != nil {
@@ -136,6 +144,18 @@ func (c *ReminderService) StartAllJobs(ctx context.Context, userID int64, loc *t
 		}
 
 		err = c.SaveJobID(ctx, newJob.JobID, r.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, r := range sharedReminders {
+		newJob, err := c.CreateReminder(ctx, loc, f, &r)
+		if err != nil {
+			return err
+		}
+
+		err = c.SaveJobSharedSpace(ctx, newJob.JobID, r.ID)
 		if err != nil {
 			return err
 		}

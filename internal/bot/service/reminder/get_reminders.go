@@ -31,6 +31,37 @@ func (s *ReminderService) GetAll(ctx context.Context, userID int64) ([]model.Rem
 	}
 
 	// заполняем поле nextRun у всех напоминаний
+	reminders, err = MapRemindersAndJobs(sch, reminders)
+	if err != nil {
+		return nil, err
+	}
+
+	// for i := 0; i < len(reminders); i++ {
+	// 	j, ok := jobsMap[reminders[i].Job.ID]
+	// 	if !ok {
+	// 		return nil, errors.New("not found job in JobsMap by ID")
+	// 	}
+
+	// 	nextRun, err := j.NextRun()
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	reminders[i].Job.NextRun = nextRun
+	// }
+
+	return reminders, nil
+}
+
+func MapRemindersAndJobs(sch gocron.Scheduler, reminders []model.Reminder) ([]model.Reminder, error) {
+	jobs := sch.Jobs()
+
+	jobsMap := map[uuid.UUID]gocron.Job{}
+
+	for _, j := range jobs {
+		jobsMap[j.ID()] = j
+	}
+
 	for i := 0; i < len(reminders); i++ {
 		j, ok := jobsMap[reminders[i].Job.ID]
 		if !ok {

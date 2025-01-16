@@ -7,6 +7,7 @@ import (
 	api_errors "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/errors"
 	messages "github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/messages/ru"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/model"
+	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/service/reminder"
 	"github.com/Pizhlo/bot-reminder-go-telegram/internal/bot/view"
 	"gopkg.in/telebot.v3"
 )
@@ -20,6 +21,28 @@ func (s *SharedSpace) GetAllByUserID(ctx context.Context, userID int64) (string,
 		}
 
 		return "", nil, err
+	}
+
+	mappedReminders := []model.Reminder{}
+
+	for _, space := range spaces {
+		reminders := space.Reminders
+
+		for _, r := range reminders {
+			sch, err := s.reminderSrv.GetScheduler(r.TgID)
+			if err != nil {
+				return "", nil, err
+			}
+
+			reminders, err := reminder.MapRemindersAndJobs(sch, []model.Reminder{r})
+			if err != nil {
+				return "", nil, err
+			}
+
+			mappedReminders = append(mappedReminders, reminders...)
+		}
+
+		space.Reminders = mappedReminders
 	}
 
 	msg := s.viewsMap[userID].Message(spaces)
@@ -50,7 +73,7 @@ func (s *SharedSpace) CurrentSharedSpace(userID int64) (string, *telebot.ReplyMa
 // RemindersBySpace возвращает напоминания, принадлежащие конкретному пространству, которое уже было выбрано, поэтому
 // для запроса нужен только userID
 func (s *SharedSpace) RemindersBySpace(userID int64) (string, *telebot.ReplyMarkup, error) {
-	msg, err := s.viewsMap[userID].Reminders()
+	msg, err := s.viewsMap[userID].Reminders(model.User{TGID: userID})
 	if err != nil {
 		return "", nil, err
 	}

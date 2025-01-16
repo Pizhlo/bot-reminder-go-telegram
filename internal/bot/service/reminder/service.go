@@ -48,6 +48,9 @@ type reminderEditor interface {
 	// GetAllByUserID достает из базы все напоминания пользователя по ID, возвращает ErrRemindersNotFound
 	GetAllByUserID(ctx context.Context, userID int64) ([]model.Reminder, error)
 
+	// GetAllByUserIDFromSharedSpaces возвращает все напоминания пользователя, созданные в совместных пространствах
+	GetAllByUserIDFromSharedSpaces(ctx context.Context, userID int64) ([]model.Reminder, error)
+
 	// SaveJob сохраняет задачу в базе
 	SaveJob(ctx context.Context, reminderID uuid.UUID, jobID uuid.UUID) error
 

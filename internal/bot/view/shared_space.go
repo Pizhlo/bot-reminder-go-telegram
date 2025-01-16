@@ -223,14 +223,38 @@ func (s *SharedSpaceView) Notes() (string, error) {
 // 	return menu
 // }
 
-func (s *SharedSpaceView) Reminders() (string, error) {
+func (s *SharedSpaceView) Reminders(user model.User) (string, error) {
 	space := s.spacesMap[s.currentSpaceIndex]
 
 	if len(space.Reminders) == 0 {
 		return fmt.Sprintf(messages.NoRemindersInSharedSpaceMessage, space.Name), nil
 	}
 
-	return s.reminderView.Message(space.Reminders)
+	var res = ""
+
+	s.pages = make([]string, 0)
+
+	for i, reminder := range space.Reminders {
+		header := s.reminderView.fillHeader(i+1, reminder, user)
+		txt, err := ProcessTypeAndDate(reminder.Type, reminder.Date, reminder.Time)
+		if err != nil {
+			return "", err
+		}
+
+		res += fmt.Sprintf("<b>%s</b>\n\nСрабатывает: %s\nСледующее срабатывание: %s\nСоздано: %s\nУдалить: /dr%d\n\n", header, txt, reminder.Job.NextRun.Format(createdFieldFormat), reminder.Created.Format(createdFieldFormat), reminder.ViewID)
+		if i%noteCountPerPage == 0 && i > 0 || len(res) == maxMessageLen {
+			s.pages = append(s.pages, res)
+			res = ""
+		}
+	}
+
+	if len(s.pages) < 5 && res != "" {
+		s.pages = append(s.pages, res)
+	}
+
+	s.currentPage = 0
+
+	return s.pages[0], nil
 }
 
 // ParticipantsMessage возвращает сообщение для пункта меню "Участники"

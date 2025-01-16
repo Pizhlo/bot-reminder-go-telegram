@@ -194,6 +194,20 @@ func nameAndDate(reminder *model.Reminder) (string, string, error) {
 	return reminder.Name, date, nil
 }
 
+func (v *ReminderView) fillHeader(idx int, reminder model.Reminder, creator model.User) string {
+	header := "%d. %s - создано %s"
+
+	creatorStr := ""
+
+	if creator.TGID == reminder.TgID {
+		creatorStr = "вами"
+	} else {
+		creatorStr = creator.Username
+	}
+
+	return fmt.Sprintf(header, idx, reminder.Name, creatorStr)
+}
+
 // ReminderMessage возвращает модифицированный текст сообщения с напоминанием для совместного пространства.
 // Пример:
 //

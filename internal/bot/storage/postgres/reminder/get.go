@@ -151,3 +151,39 @@ func (db *ReminderRepo) GetMemory(ctx context.Context) ([]model.Reminder, error)
 
 	return res, nil
 }
+
+// GetAllByUserIDFromSharedSpaces возвращает все напоминания пользователя, созданные в совместных пространствах
+func (db *ReminderRepo) GetAllByUserIDFromSharedSpaces(ctx context.Context, userID int64) ([]model.Reminder, error) {
+	reminders := make([]model.Reminder, 0)
+
+	rows, err := db.db.QueryContext(ctx, `select shared_spaces.reminders.id, reminder_number, tg_id, text, created, date, time, name as type, shared_spaces.jobs.job_id
+	from shared_spaces.reminders
+		join reminders.types on reminders.types.id = shared_spaces.reminders.type_id
+		join users.users on users.id = reminders.user_id
+		join shared_spaces.reminders_view on shared_spaces.reminders_view.id = shared_spaces.reminders.id
+		join shared_spaces.jobs on shared_spaces.jobs.reminder_id = shared_spaces.reminders.id
+		where shared_spaces.reminders.user_id = (select id from users.users where tg_id = $1)
+		order by created ASC;`, userID)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting all reminders from DB by user ID %d from shared spaces: %w", userID, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		reminder := model.Reminder{}
+
+		err := rows.Scan(&reminder.ID, &reminder.ViewID, &reminder.TgID, &reminder.Name, &reminder.Created, &reminder.Date, &reminder.Time, &reminder.Type, &reminder.Job.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error while scanning reminder from shared space: %w", err)
+		}
+
+		reminders = append(reminders, reminder)
+	}
+
+	if len(reminders) == 0 {
+		return nil, api_errors.ErrRemindersNotFound
+	}
+
+	return reminders, nil
+}
