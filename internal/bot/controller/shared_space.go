@@ -229,12 +229,17 @@ func (c *Controller) handleUsername(ctx context.Context, telectx tele.Context, u
 		State: model.PendingState,
 	}
 
-	err = c.sendInvitation(from, spaceName, to.TGID, fromUser.TGID)
+	// здесь проверяется, что участник не состоит в пространстве
+	err = c.processInvitation(ctx, telectx, fromUser, to, space)
 	if err != nil {
-		return err
+		if !errors.Is(err, api_errors.ErrUserAlreadyExists) {
+			return err
+		}
+
+		return nil
 	}
 
-	return c.processInvitation(ctx, telectx, fromUser, to, space)
+	return c.sendInvitation(from, spaceName, to.TGID, fromUser.TGID)
 }
 
 func (c *Controller) processInvitation(ctx context.Context, telectx tele.Context, from model.Participant, to model.Participant, space model.SharedSpace) error {
@@ -246,7 +251,12 @@ func (c *Controller) processInvitation(ctx context.Context, telectx tele.Context
 
 		if errors.Is(err, api_errors.ErrUserAlreadyExists) {
 			msg := fmt.Sprintf(messages.UserAlreadyExistsMessage, space.Name)
-			return telectx.EditOrSend(msg, view.BackToMenuBtn())
+			sendErr := telectx.EditOrSend(msg, view.BackToMenuBtn())
+			if sendErr != nil {
+				return sendErr
+			}
+
+			return err
 		}
 
 		return fmt.Errorf("error processing invitation: %+v", err)
@@ -393,11 +403,6 @@ func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) er
 
 	space := c.sharedSpace.CurrentSpace(telectx.Chat().ID)
 
-	err := c.sendInvitation(telectx.Chat().Username, space.Name, contact.UserID, telectx.Chat().ID)
-	if err != nil {
-		return fmt.Errorf("error sending invitation by contact: %+v", err)
-	}
-
 	fromUser := model.Participant{
 		User: model.User{
 			TGID:     telectx.Chat().ID,
@@ -413,7 +418,16 @@ func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) er
 		State: model.PendingState,
 	}
 
-	return c.processInvitation(ctx, telectx, fromUser, to, space)
+	err := c.processInvitation(ctx, telectx, fromUser, to, space)
+	if err != nil {
+		if !errors.Is(err, api_errors.ErrUserAlreadyExists) {
+			return err
+		}
+
+		return nil
+	}
+
+	return c.sendInvitation(telectx.Chat().Username, space.Name, contact.UserID, telectx.Chat().ID)
 }
 
 // AcceptInvitation обрабатывает кнопку согласия вступить в совместное пространство
