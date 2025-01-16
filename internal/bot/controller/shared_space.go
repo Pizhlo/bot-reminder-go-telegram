@@ -246,7 +246,7 @@ func (c *Controller) processInvitation(ctx context.Context, telectx tele.Context
 
 		if errors.Is(err, api_errors.ErrUserAlreadyExists) {
 			msg := fmt.Sprintf(messages.UserAlreadyExistsMessage, space.Name)
-			return telectx.EditOrSend(msg)
+			return telectx.EditOrSend(msg, view.BackToMenuBtn())
 		}
 
 		return fmt.Errorf("error processing invitation: %+v", err)
@@ -385,6 +385,7 @@ func (c *Controller) FirstPageNotesSharedSpace(ctx context.Context, telectx tele
 func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) error {
 	contact := telectx.Message().Contact
 
+	// проверяем, зарегистрирован ли пользователь в боте
 	exists := c.userSrv.CheckUser(ctx, contact.UserID)
 	if !exists {
 		return telectx.EditOrSend(messages.UserNotRegisteredMessage, view.BackToMenuBtn())
@@ -406,7 +407,8 @@ func (c *Controller) HandleContact(ctx context.Context, telectx tele.Context) er
 
 	to := model.Participant{
 		User: model.User{
-			TGID: contact.UserID,
+			TGID:     contact.UserID,
+			Username: formatUsername(&tele.Chat{ID: contact.UserID, FirstName: contact.FirstName, LastName: contact.LastName}),
 		},
 		State: model.PendingState,
 	}
@@ -433,12 +435,17 @@ func (c *Controller) AcceptInvitation(ctx context.Context, telectx tele.Context,
 	}
 
 	// отправить уведомление участникам беседы о том, что пользователь добавил другого пользователя
+	msg = fmt.Sprintf(messages.UserWasAdded, from.Username, to.Username, space.Name)
+
 	for _, user := range space.Participants {
-		msg := fmt.Sprintf(messages.UserWasAdded, from.Username, to.Username)
-		_, err := c.bot.Send(&tele.Chat{ID: user.TGID}, msg)
-		if err != nil {
-			c.HandleError(telectx, err, "notify_partisipants_new_user")
+		// отправляем всем, кроме того, кто пригласил
+		if user.ID != int(from.TGID) {
+			_, err := c.bot.Send(&tele.Chat{ID: user.TGID}, msg)
+			if err != nil {
+				c.HandleError(telectx, err, "notify_partisipants_new_user")
+			}
 		}
+
 	}
 
 	msg = fmt.Sprintf(messages.InvitationAcceptedMessage, space.Name)

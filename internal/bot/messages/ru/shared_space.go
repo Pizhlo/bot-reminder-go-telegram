@@ -22,7 +22,7 @@ const InvitationAcceptedMessage = "✅Приглашение в простран
 const InvitationRejectedMessage = "✅Приглашение в пространство <b>%s</b> успешно отклонено"
 const UserWasRemovedMessage = "⚠️Вы были исключены из пространства <b>%s</b> пользователем %s"
 const UserSuccesfullyRemoved = "✅Пользователь <b>%s</b> успешно исключен из пространства <b>%s</b>"
-const UserWasAdded = "Пользователь <b>%s</b> пригласил пользователя <b>%s</b>"
+const UserWasAdded = "Пользователь <b>%s</b> пригласил пользователя <b>%s</b> в совместное пространство <b>%s</b>"
 
 // Records
 const NoNotesInSharedSpaceMessage = "В пространстве <b>%s</b> пока не создано ни одной заметки. Чтобы создать, просто пришли текст"
