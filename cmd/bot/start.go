@@ -34,7 +34,7 @@ func Start(confName, path string) {
 
 	conf, err := config.LoadConfig(confName, path)
 	if err != nil {
-		logrus.Errorf("unable to load config: %v", err)
+		logrus.Fatalf("unable to load config: %v", err)
 	}
 
 	switch conf.LogLvl {
@@ -61,7 +61,7 @@ func Start(confName, path string) {
 	// elastic
 	elasticClient, err := elastic.New([]string{conf.ElasticAddr})
 	if err != nil {
-		logrus.Errorf("error creating elastic client: %+v", err)
+		logrus.Fatalf("error creating elastic client: %+v", err)
 	}
 
 	// db
@@ -69,22 +69,22 @@ func Start(confName, path string) {
 
 	userRepo, err := user_db.New(dbAddr)
 	if err != nil {
-		logrus.Errorf("cannot create user repo: %v", err)
+		logrus.Fatalf("cannot create user repo: %v", err)
 	}
 
 	tzRepo, err := tz_db.New(dbAddr)
 	if err != nil {
-		logrus.Errorf("cannot create user timezone repo: %v", err)
+		logrus.Fatalf("cannot create user timezone repo: %v", err)
 	}
 
 	noteRepo, err := note_db.New(dbAddr, elasticClient)
 	if err != nil {
-		logrus.Errorf("cannot create note repo: %v", err)
+		logrus.Fatalf("cannot create note repo: %v", err)
 	}
 
 	reminderRepo, err := reminder_db.New(dbAddr)
 	if err != nil {
-		logrus.Errorf("cannot create reminder repo: %v", err)
+		logrus.Fatalf("cannot create reminder repo: %v", err)
 	}
 
 	// bot
@@ -95,7 +95,7 @@ func Start(confName, path string) {
 		ParseMode: "html",
 	})
 	if err != nil {
-		logrus.Errorf("cannot create a bot: %v", err)
+		logrus.Fatalf("cannot create a bot: %v", err)
 	}
 
 	logrus.Info("successfully created bot")
